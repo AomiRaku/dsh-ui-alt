@@ -421,8 +421,7 @@ html[data-dcc-full="on"] [class*="_overlay"]:has([class*="_navTitle"]) [class*="
 }
 html[data-dcc-full="on"] [class*="_overlay"]:has([class*="_navTitle"]) [class*="_navTitle"] {
   padding-left: 52px !important;
-  /* 标题文字本身也可点，和左边箭头一样返回 */
-  cursor: pointer;
+  /* 手型由脚本按文字实际矩形设置，见 installSettingsBackButton */
 }
 /* 设置导航项：略矮一点（与全屏与否无关，始终生效） */
 html [class*="_overlay"]:has([class*="_navTitle"]) [class*="_navCell"] {
@@ -716,6 +715,19 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         }, 350);
       };
 
+      /* 标题元素被撑满整行，空白处也在它盒子里；只有落在文字实际矩形上才算点击 */
+      const hitsLabel = (title, event) => {
+        const range = document.createRange();
+        range.selectNodeContents(title);
+        const rects = range.getClientRects();
+        for (let i = 0; i < rects.length; i += 1) {
+          const rect = rects[i];
+          if (event.clientX >= rect.left && event.clientX <= rect.right
+            && event.clientY >= rect.top && event.clientY <= rect.bottom) return true;
+        }
+        return false;
+      };
+
       /* 点面板标题（「设置」这几个字）也能返回；用委托，面板重渲染不会丢监听 */
       const onClick = (event) => {
         if (document.documentElement.dataset.dccFull !== 'on') return;
@@ -723,19 +735,41 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         if (!(target instanceof Element)) return;
         const title = target.closest('[class*="_navTitle"]');
         if (title === null || title.parentElement === null) return;
+        if (!hitsLabel(title, event)) return;
         closePanel(title.parentElement);
+      };
+
+      /* 手型只跟着文字走：整行都是标题的盒子，光标形状不能贴着空白装可点 */
+      let cursorTitle = null;
+      const onMove = (event) => {
+        if (document.documentElement.dataset.dccFull !== 'on') {
+          if (cursorTitle !== null) { cursorTitle.style.cursor = ''; cursorTitle = null; }
+          return;
+        }
+        const target = event.target;
+        const title = target instanceof Element ? target.closest('[class*="_navTitle"]') : null;
+        if (title === null) {
+          if (cursorTitle !== null) { cursorTitle.style.cursor = ''; cursorTitle = null; }
+          return;
+        }
+        const want = hitsLabel(title, event) ? 'pointer' : '';
+        if (title.style.cursor !== want) title.style.cursor = want;
+        cursorTitle = title;
       };
 
       ensure();
       observer = new MutationObserver(schedule);
       observer.observe(document.body, { childList: true, subtree: true });
       document.addEventListener('click', onClick, true);
+      document.addEventListener('mousemove', onMove, true);
 
       return () => {
         observer.disconnect();
         if (timer !== null) clearTimeout(timer);
         if (rafId !== 0) window.cancelAnimationFrame(rafId);
         document.removeEventListener('click', onClick, true);
+        document.removeEventListener('mousemove', onMove, true);
+        if (cursorTitle !== null) cursorTitle.style.cursor = '';
         if (btn !== null) btn.remove();
       };
     }
