@@ -447,8 +447,13 @@ html [class*="_overlay"]:has([class*="_navTitle"]) [class*="_navCell"] {
   background: transparent;
   color: var(--dsw-alias-label-primary);
   cursor: pointer;
+  transition: background-color .15s;
 }
 .dcc-settings-back:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+/* 悬停「设置」标题时，左侧箭头一起高亮：整行都可点，反馈得跟得上 */
+html[data-dcc-full="on"] [class*="_overlay"]:has([class*="_navTitle"]:hover) .dcc-settings-back {
   background: var(--dsw-alias-interactive-bg-hover);
 }
 /* 非全屏时用宿主自己的关闭按钮，自绘的返回箭头不出现 */
