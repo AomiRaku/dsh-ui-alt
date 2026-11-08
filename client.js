@@ -451,8 +451,9 @@ html [class*="_overlay"]:has([class*="_navTitle"]) [class*="_navCell"] {
 .dcc-settings-back:hover {
   background: var(--dsw-alias-interactive-bg-hover);
 }
-/* 悬停「设置」标题时，左侧箭头一起高亮：整行都可点，反馈得跟得上 */
-html[data-dcc-full="on"] [class*="_overlay"]:has([class*="_navTitle"]:hover) .dcc-settings-back {
+/* 悬停「设置」标题时，左侧箭头一起高亮。
+   标题盒子撑满整行，:hover 会连空白一起算，所以这里认脚本按文字矩形写的属性。 */
+html[data-dcc-full="on"] [class*="_overlay"]:has([class*="_navTitle"][data-dcc-hot="on"]) .dcc-settings-back {
   background: var(--dsw-alias-interactive-bg-hover);
 }
 /* 非全屏时用宿主自己的关闭按钮，自绘的返回箭头不出现 */
@@ -739,21 +740,30 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         closePanel(title.parentElement);
       };
 
-      /* 手型只跟着文字走：整行都是标题的盒子，光标形状不能贴着空白装可点 */
+      /* 手型和高亮都只跟着文字走：整行都是标题的盒子，空白不该有可点反馈 */
       let cursorTitle = null;
+      const clearHot = () => {
+        if (cursorTitle === null) return;
+        cursorTitle.style.cursor = '';
+        cursorTitle.dataset.dccHot = 'off';
+        cursorTitle = null;
+      };
       const onMove = (event) => {
         if (document.documentElement.dataset.dccFull !== 'on') {
-          if (cursorTitle !== null) { cursorTitle.style.cursor = ''; cursorTitle = null; }
+          clearHot();
           return;
         }
         const target = event.target;
         const title = target instanceof Element ? target.closest('[class*="_navTitle"]') : null;
         if (title === null) {
-          if (cursorTitle !== null) { cursorTitle.style.cursor = ''; cursorTitle = null; }
+          clearHot();
           return;
         }
-        const want = hitsLabel(title, event) ? 'pointer' : '';
+        const hot = hitsLabel(title, event);
+        const want = hot ? 'pointer' : '';
         if (title.style.cursor !== want) title.style.cursor = want;
+        const wantHot = hot ? 'on' : 'off';
+        if (title.dataset.dccHot !== wantHot) title.dataset.dccHot = wantHot;
         cursorTitle = title;
       };
 
@@ -769,7 +779,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         if (rafId !== 0) window.cancelAnimationFrame(rafId);
         document.removeEventListener('click', onClick, true);
         document.removeEventListener('mousemove', onMove, true);
-        if (cursorTitle !== null) cursorTitle.style.cursor = '';
+        if (cursorTitle !== null) clearHot();
         if (btn !== null) btn.remove();
       };
     }
