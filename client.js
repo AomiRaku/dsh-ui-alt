@@ -421,6 +421,8 @@ html[data-dcc-full="on"] [class*="_overlay"]:has([class*="_navTitle"]) [class*="
 }
 html[data-dcc-full="on"] [class*="_overlay"]:has([class*="_navTitle"]) [class*="_navTitle"] {
   padding-left: 52px !important;
+  /* 标题文字本身也可点，和左边箭头一样返回 */
+  cursor: pointer;
 }
 /* 设置导航项：略矮一点（与全屏与否无关，始终生效） */
 html [class*="_overlay"]:has([class*="_navTitle"]) [class*="_navCell"] {
@@ -636,15 +638,23 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
 
     /**
      * 设置面板左上角的返回按钮：点击触发原关闭按钮，保留原关闭逻辑。
+     * 面板挂载时走 requestAnimationFrame 在下一帧补上，不让按钮比面板慢一拍；
+     * 其它 DOM 变动仍用 350ms 兜底，避免流式输出时每帧都做全局查询。
      */
     function installSettingsBackButton() {
       let btn = null;
       let observer = null;
       let timer = null;
+      let rafId = 0;
 
       const findPanel = () => {
         const title = document.querySelector('[class*="_navTitle"]');
         return title === null ? null : title.parentElement;
+      };
+
+      const closePanel = (panel) => {
+        const close = panel.querySelector('[class*="_header"] [class*="_close"]');
+        if (close !== null) close.click();
       };
 
       const ensure = () => {
@@ -664,14 +674,36 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         btn.innerHTML = '<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">'
           + '<path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.6"'
           + ' stroke-linecap="round" stroke-linejoin="round"/></svg>';
-        btn.addEventListener('click', () => {
-          const close = panel.querySelector('[class*="_header"] [class*="_close"]');
-          if (close !== null) close.click();
-        });
+        btn.addEventListener('click', () => closePanel(panel));
         panel.appendChild(btn);
       };
 
-      const schedule = () => {
+      const insertSoon = () => {
+        if (rafId !== 0) return;
+        rafId = window.requestAnimationFrame(() => {
+          rafId = 0;
+          ensure();
+          /* 万一这一帧面板还没挂完，退回原来的兜底节奏 */
+          if (btn === null && timer === null) {
+            timer = window.setTimeout(() => {
+              timer = null;
+              ensure();
+            }, 350);
+          }
+        });
+      };
+
+      const schedule = (records) => {
+        /* 面板是「新增了包含 _navTitle 的节点」，这类变动要求下一帧就有按钮 */
+        for (const record of records) {
+          for (const node of record.addedNodes) {
+            if (node.nodeType !== 1) continue;
+            if (node.matches('[class*="_navTitle"]') || node.querySelector('[class*="_navTitle"]') !== null) {
+              insertSoon();
+              return;
+            }
+          }
+        }
         if (timer !== null) return;
         timer = window.setTimeout(() => {
           timer = null;
@@ -679,13 +711,26 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         }, 350);
       };
 
+      /* 点面板标题（「设置」这几个字）也能返回；用委托，面板重渲染不会丢监听 */
+      const onClick = (event) => {
+        if (document.documentElement.dataset.dccFull !== 'on') return;
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const title = target.closest('[class*="_navTitle"]');
+        if (title === null || title.parentElement === null) return;
+        closePanel(title.parentElement);
+      };
+
       ensure();
       observer = new MutationObserver(schedule);
       observer.observe(document.body, { childList: true, subtree: true });
+      document.addEventListener('click', onClick, true);
 
       return () => {
         observer.disconnect();
         if (timer !== null) clearTimeout(timer);
+        if (rafId !== 0) window.cancelAnimationFrame(rafId);
+        document.removeEventListener('click', onClick, true);
         if (btn !== null) btn.remove();
       };
     }
