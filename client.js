@@ -14,6 +14,7 @@ window.__ModuleLoader__.load({
       workspaceSmall: true,
       winFont: true,
       sessionDot: true,
+      settingsFullscreen: true,
     };
 
     const isZh = () => {
@@ -40,6 +41,7 @@ window.__ModuleLoader__.load({
       root.dataset.dccWs = prefs.workspaceSmall ? 'on' : 'off';
       root.dataset.dccDot = prefs.sessionDot ? 'on' : 'off';
       root.dataset.dccFont = prefs.winFont ? 'on' : 'off';
+      root.dataset.dccFull = prefs.settingsFullscreen ? 'on' : 'off';
     }
 
     function savePrefs(prefs) {
@@ -391,12 +393,12 @@ html[data-dcc-new="on"] body[data-ds-dark-theme] nav[class*="_panelList"] [class
 }
 
 /* ---------- 设置面板：全屏（避开 Electron 标题栏）+ 标题左侧返回按钮 ---------- */
-html [class*="_overlay"]:has([class*="_navTitle"]) {
+html[data-dcc-full="on"] [class*="_overlay"]:has([class*="_navTitle"]) {
   top: var(--dsh-windows-titlebar-height, 0px) !important;
   align-items: stretch !important;
   justify-content: stretch !important;
 }
-html [class*="_overlay"]:has([class*="_navTitle"]) > [class*="_panel"] {
+html[data-dcc-full="on"] [class*="_overlay"]:has([class*="_navTitle"]) > [class*="_panel"] {
   width: 100% !important;
   max-width: none !important;
   height: 100% !important;
@@ -406,21 +408,21 @@ html [class*="_overlay"]:has([class*="_navTitle"]) > [class*="_panel"] {
 }
 /* 只在窗口足够宽时锁定两列布局，窄窗口沿用宿主自己的单列布局 */
 @media (min-width: 720px) {
-  html [class*="_overlay"]:has([class*="_navTitle"]) > [class*="_panel"] {
+  html[data-dcc-full="on"] [class*="_overlay"]:has([class*="_navTitle"]) > [class*="_panel"] {
     grid-template-columns: 220px minmax(0, 1fr) !important;
   }
 }
 /* 全屏时不需要遮罩，去掉它会露出标题栏下方的一条描边 */
-html [class*="_overlay"]:has([class*="_navTitle"]) [class*="_mask"] {
+html[data-dcc-full="on"] [class*="_overlay"]:has([class*="_navTitle"]) [class*="_mask"] {
   display: none !important;
 }
-html [class*="_overlay"]:has([class*="_navTitle"]) [class*="_close"] {
+html[data-dcc-full="on"] [class*="_overlay"]:has([class*="_navTitle"]) [class*="_close"] {
   display: none !important;
 }
-html [class*="_overlay"]:has([class*="_navTitle"]) [class*="_navTitle"] {
+html[data-dcc-full="on"] [class*="_overlay"]:has([class*="_navTitle"]) [class*="_navTitle"] {
   padding-left: 52px !important;
 }
-/* 设置导航项：略矮一点 */
+/* 设置导航项：略矮一点（与全屏与否无关，始终生效） */
 html [class*="_overlay"]:has([class*="_navTitle"]) [class*="_navCell"] {
   position: relative;
   height: 38px !important;
@@ -446,6 +448,10 @@ html [class*="_overlay"]:has([class*="_navTitle"]) [class*="_navCell"] {
 }
 .dcc-settings-back:hover {
   background: var(--dsw-alias-interactive-bg-hover);
+}
+/* 非全屏时用宿主自己的关闭按钮，自绘的返回箭头不出现 */
+html[data-dcc-full="off"] .dcc-settings-back {
+  display: none !important;
 }
 
 /* ---------- 左上角品牌区 ---------- */
@@ -768,6 +774,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             desc: zh ? '在会话行前显示一个淡化的小圆点。' : 'Show a faint dot before each session row.',
             checked: prefs.sessionDot,
             onChange: update('sessionDot'),
+          }),
+          h(Row, {
+            title: zh ? '设置面板全屏' : 'Full-screen settings panel',
+            desc: zh ? '设置面板铺满窗口，隐藏右上角关闭按钮，改用左上角返回箭头；关闭后恢复为居中对话框。' : 'Fill the window with the settings panel, replace its close button with a back arrow at the top left; off restores the centered dialog.',
+            checked: prefs.settingsFullscreen,
+            onChange: update('settingsFullscreen'),
           })));
     }
 
@@ -813,6 +825,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             delete root.dataset.dccWs;
             delete root.dataset.dccDot;
             delete root.dataset.dccFont;
+            delete root.dataset.dccFull;
           };
         }, 'dsh-ui-alt: styles and preference attributes');
 
