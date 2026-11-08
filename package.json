@@ -4,6 +4,24 @@
   "private": false,
   "type": "module",
   "description": "基于原版 UI 进行紧凑化、沉稳化、易读化改进。",
+  "license": "MIT",
+  "author": "AomiRaku",
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "plugin",
+    "ui",
+    "theme",
+    "compact"
+  ],
+  "homepage": "https://github.com/AomiRaku/dsh-ui-alt#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AomiRaku/dsh-ui-alt.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AomiRaku/dsh-ui-alt/issues"
+  },
   "exports": {
     ".": "./index.js",
     "./client": "./client.js",
@@ -15,7 +33,9 @@
     "client.js",
     "cordis.patch.yml",
     "locale/*.json",
-    "icon.svg"
+    "icon.svg",
+    "README.md",
+    "LICENSE"
   ],
   "dsh": {
     "bundle": {
