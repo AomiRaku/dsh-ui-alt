@@ -15,6 +15,7 @@ window.__ModuleLoader__.load({
       winFont: true,
       sessionDot: true,
       settingsFullscreen: true,
+      hoverPreview: true,
     };
 
     const isZh = () => {
@@ -42,6 +43,7 @@ window.__ModuleLoader__.load({
       root.dataset.dccDot = prefs.sessionDot ? 'on' : 'off';
       root.dataset.dccFont = prefs.winFont ? 'on' : 'off';
       root.dataset.dccFull = prefs.settingsFullscreen ? 'on' : 'off';
+      root.dataset.dccHover = prefs.hoverPreview ? 'on' : 'off';
     }
 
     function savePrefs(prefs) {
@@ -139,6 +141,10 @@ html[data-dcc-radius="on"] [class*="_trailing"] > [class*="_primary"] svg {
   width: 16px !important;
   height: 16px !important;
 }
+/* 输入框左下角的「+」：宿主是 999px 圆形，同样收成小圆角方形 */
+html[data-dcc-radius="on"] button[class*="_add"] {
+  border-radius: var(--dsw-radius-md) !important;
+}
 
 /* 主内容区左上角的大圆角（Windows 标题栏） */
 html[data-dcc-radius="on"][data-windows-titlebar] [class*="_centerCol"] {
@@ -218,6 +224,10 @@ html[data-dcc-nav] nav[class*="_panelList"] > * + * {
   margin-top: 0 !important;
   margin-bottom: 0 !important;
 }
+/* 折叠箭头自己就有上下内边距，紧随其后的分组标题不再额外留白 */
+html[data-dcc-nav] [class*="_sectionHeader"] {
+  margin-top: 0 !important;
+}
 
 /* ---------- 侧栏导航：默认只留前两项；悬停时工作区平移、其余按钮只做渐显 ---------- */
 /* 导航行左右内边距与图标/文字间距稍微放宽（折叠窄栏由宿主规则覆盖） */
@@ -239,7 +249,7 @@ html[data-dcc-nav="collapsed"] nav[class*="_panelList"] > *:nth-child(n + 3) {
   align-items: center;
   justify-content: center;
   width: calc(100% - 8px);
-  margin: 0 4px 2px;
+  margin: 0 4px;
   padding: 2px 0;
   border: 0;
   border-radius: var(--dsw-radius-md, 6px);
@@ -351,6 +361,15 @@ html[data-dcc-ws="on"] [class*="_trigger"][data-signed-out="false"]:not([data-co
 html[data-dcc-ws="on"] [class*="_trigger"][data-signed-out="false"] [class*="_avatar"] {
   width: 22px !important;
   height: 22px !important;
+}
+
+/* ---------- 会话行悬停预览卡片 ---------- */
+/* 宿主把卡片挂在 body 下（_card / _preview / _bridge 三段），默认 fixed + z-index:100。
+   关掉后直接不渲染，滑动侧栏时不再闪出预览，也不会因卡片定位计算掉帧。 */
+html[data-dcc-hover="off"] [class*="_card_bgejw"],
+html[data-dcc-hover="off"] [class*="_preview_bgejw"],
+html[data-dcc-hover="off"] [class*="_bridge_bgejw"] {
+  display: none !important;
 }
 
 /* ---------- 已归档会话：标题画删除线 ---------- */
@@ -716,14 +735,16 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         }, 350);
       };
 
-      /* 标题元素被撑满整行，空白处也在它盒子里；只有落在文字实际矩形上才算点击 */
+      /* 标题元素被撑满整行，空白处也在它盒子里；只有落在文字实际矩形上才算点击。
+         左侧再放宽一点，把标题与返回箭头之间那段 padding 空隙也算进来。 */
+      const LABEL_LEFT_SLACK = 14;
       const hitsLabel = (title, event) => {
         const range = document.createRange();
         range.selectNodeContents(title);
         const rects = range.getClientRects();
         for (let i = 0; i < rects.length; i += 1) {
           const rect = rects[i];
-          if (event.clientX >= rect.left && event.clientX <= rect.right
+          if (event.clientX >= rect.left - LABEL_LEFT_SLACK && event.clientX <= rect.right
             && event.clientY >= rect.top && event.clientY <= rect.bottom) return true;
         }
         return false;
@@ -874,6 +895,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             desc: zh ? '设置面板铺满窗口，隐藏右上角关闭按钮，改用左上角返回箭头；关闭后恢复为居中对话框。' : 'Fill the window with the settings panel, replace its close button with a back arrow at the top left; off restores the centered dialog.',
             checked: prefs.settingsFullscreen,
             onChange: update('settingsFullscreen'),
+          }),
+          h(Row, {
+            title: zh ? '会话行悬停预览' : 'Hover preview card',
+            desc: zh ? '关掉后鼠标划过会话行不再弹出预览卡片，侧栏滚动更顺。' : 'Turn off to stop the preview card from popping up over session rows, which keeps sidebar scrolling smoother.',
+            checked: prefs.hoverPreview,
+            onChange: update('hoverPreview'),
           })));
     }
 
@@ -920,6 +947,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             delete root.dataset.dccDot;
             delete root.dataset.dccFont;
             delete root.dataset.dccFull;
+            delete root.dataset.dccHover;
           };
         }, 'dsh-ui-alt: styles and preference attributes');
 
