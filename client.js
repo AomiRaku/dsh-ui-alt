@@ -886,16 +886,24 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         h('div', { className: 'dcc-group' },
           h('div', { className: 'dcc-group-title' }, zh ? '外观' : 'Appearance'),
           h(Row, {
-            title: zh ? 'Windows 默认字体微软雅黑' : 'Microsoft YaHei on Windows',
-            desc: zh ? '仅当设置里没填正文字体时生效；填了字体则以你的设置为准。macOS 不受影响。' : 'Applies only when no body font is set in Settings; your own font still wins. macOS is unaffected.',
-            checked: prefs.winFont,
-            onChange: update('winFont'),
-          }),
-          h(Row, {
             title: zh ? '紧凑圆角与密度' : 'Compact radius and density',
             desc: zh ? '缩小全局圆角、收紧间距并降低阴影。' : 'Shrink the global radius scale, tighten spacing and soften shadows.',
             checked: prefs.radiusDensity,
             onChange: update('radiusDensity'),
+          }),
+          h(Row, {
+            title: zh ? 'Windows 默认字体微软雅黑' : 'Microsoft YaHei on Windows',
+            desc: zh ? '仅当设置里没填正文字体时生效；填了字体则以你的设置为准。macOS 不受影响。' : 'Applies only when no body font is set in Settings; your own font still wins. macOS is unaffected.',
+            checked: prefs.winFont,
+            onChange: update('winFont'),
+          })),
+        h('div', { className: 'dcc-group' },
+          h('div', { className: 'dcc-group-title' }, zh ? '布局' : 'Layout'),
+          h(Row, {
+            title: zh ? '隐藏左上角 Logo' : 'Hide corner logo',
+            desc: zh ? '隐藏侧栏顶部的品牌标记。' : 'Hide the brand mark at the top of the sidebar.',
+            checked: prefs.hideLogo,
+            onChange: update('hideLogo'),
           }),
           h(Row, {
             title: zh ? '统一新会话按钮' : 'Unified new-session button',
@@ -916,12 +924,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             onChange: update('dimSessions'),
           }),
           h(Row, {
-            title: zh ? '隐藏左上角 Logo' : 'Hide corner logo',
-            desc: zh ? '隐藏侧栏顶部的品牌标记。' : 'Hide the brand mark at the top of the sidebar.',
-            checked: prefs.hideLogo,
-            onChange: update('hideLogo'),
-          }),
-          h(Row, {
             title: zh ? '工作区标题与会话小一号' : 'Smaller workspace and sessions',
             desc: zh ? '侧栏工作区名称与会话标题使用更小的字号。' : 'Use a smaller font size for sidebar workspace names and session titles.',
             checked: prefs.workspaceSmall,
@@ -934,16 +936,16 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             onChange: update('sessionDot'),
           }),
           h(Row, {
-            title: zh ? '设置面板全屏' : 'Full-screen settings panel',
-            desc: zh ? '设置面板铺满窗口，隐藏右上角关闭按钮，改用左上角返回箭头；关闭后恢复为居中对话框。' : 'Fill the window with the settings panel, replace its close button with a back arrow at the top left; off restores the centered dialog.',
-            checked: prefs.settingsFullscreen,
-            onChange: update('settingsFullscreen'),
-          }),
-          h(Row, {
             title: zh ? '移除工作区与会话悬停提示' : 'Remove workspace and session hover hints',
             desc: zh ? '打开后鼠标划过工作区行、会话行都不再弹出悬停提示卡片，侧栏滚动也更顺。' : 'On by default: hovering a workspace or session row no longer pops up a hint card, which also keeps sidebar scrolling smooth.',
             checked: prefs.hideHoverCard,
             onChange: update('hideHoverCard'),
+          }),
+          h(Row, {
+            title: zh ? '设置面板全屏' : 'Full-screen settings panel',
+            desc: zh ? '设置面板铺满窗口，隐藏右上角关闭按钮，改用左上角返回箭头；关闭后恢复为居中对话框。' : 'Fill the window with the settings panel, replace its close button with a back arrow at the top left; off restores the centered dialog.',
+            checked: prefs.settingsFullscreen,
+            onChange: update('settingsFullscreen'),
           })));
     }
 
