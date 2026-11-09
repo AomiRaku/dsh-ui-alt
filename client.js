@@ -15,7 +15,7 @@ window.__ModuleLoader__.load({
       winFont: true,
       sessionDot: true,
       settingsFullscreen: true,
-      hoverPreview: true,
+      hoverPreview: false,
     };
 
     const isZh = () => {
@@ -898,7 +898,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           }),
           h(Row, {
             title: zh ? '会话行悬停预览' : 'Hover preview card',
-            desc: zh ? '关掉后鼠标划过会话行不再弹出预览卡片，侧栏滚动更顺。' : 'Turn off to stop the preview card from popping up over session rows, which keeps sidebar scrolling smoother.',
+            desc: zh ? '默认不弹。打开后鼠标划过会话行会显示预览卡片；开着时侧栏滚动更容易卡。' : 'Off by default. Turn on to show the preview card when hovering a session row; leaving it on makes sidebar scrolling more likely to stutter.',
             checked: prefs.hoverPreview,
             onChange: update('hoverPreview'),
           })));
