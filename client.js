@@ -891,10 +891,10 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         h('div', { className: 'dcc-group' },
           h('div', { className: 'dcc-group-title' }, zh ? '外观' : 'Appearance'),
           h(Row, {
-            title: zh ? '紧凑圆角与密度' : 'Compact radius and density',
-            desc: zh ? '缩小全局圆角、收紧间距、降低阴影，并把侧栏工作区与会话字号收小一号。' : 'Shrink the global radius scale, tighten spacing, soften shadows, and step sidebar workspace and session text down one size.',
-            checked: prefs.radiusDensity,
-            onChange: update('radiusDensity'),
+            title: zh ? '隐藏左上角 Logo' : 'Hide corner logo',
+            desc: zh ? '隐藏侧栏顶部的品牌标记。' : 'Hide the brand mark at the top of the sidebar.',
+            checked: prefs.hideLogo,
+            onChange: update('hideLogo'),
           }),
           h(Row, {
             title: zh ? 'Windows 默认字体微软雅黑' : 'Microsoft YaHei on Windows',
@@ -905,10 +905,10 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         h('div', { className: 'dcc-group' },
           h('div', { className: 'dcc-group-title' }, zh ? '布局' : 'Layout'),
           h(Row, {
-            title: zh ? '隐藏左上角 Logo' : 'Hide corner logo',
-            desc: zh ? '隐藏侧栏顶部的品牌标记。' : 'Hide the brand mark at the top of the sidebar.',
-            checked: prefs.hideLogo,
-            onChange: update('hideLogo'),
+            title: zh ? '紧凑圆角与密度' : 'Compact radius and density',
+            desc: zh ? '缩小全局圆角、收紧间距、降低阴影，并把侧栏工作区与会话字号收小一号。' : 'Shrink the global radius scale, tighten spacing, soften shadows, and step sidebar workspace and session text down one size.',
+            checked: prefs.radiusDensity,
+            onChange: update('radiusDensity'),
           }),
           h(Row, {
             title: zh ? '统一新会话按钮' : 'Unified new-session button',
