@@ -886,7 +886,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       return h('div', { className: 'dcc-page' },
         h('div', { className: 'dcc-title' }, zh ? 'UI 改进' : 'UI improvements'),
         h('p', { className: 'dcc-intro' },
-          zh ? '基于原版 UI 进行紧凑化、减小圆角、秩序化、整洁化改进。使 UI 更加专业、冷静、易读。每一项改动都可在下方单独开关。' : 'Tighter, smaller-radius, more orderly styling over the stock UI for a calmer, more professional and easier-to-read look. Every change can be switched on or off individually below.'),
+          zh ? '在保持原版 UI 大风格不变的情况下，进行减小圆角、紧凑化、秩序化、整洁化改进。使 UI 视觉更加冷静、专业、高效。可在设置中单独调整每一项改动。' : 'A tidying pass over the stock UI that keeps its overall look: smaller radii, tighter spacing and a more orderly layout, for a calmer, more professional and more efficient interface. Every change can be adjusted individually in Settings.'),
         h('div', { className: 'dcc-group' },
           h('div', { className: 'dcc-group-title' }, zh ? '外观' : 'Appearance'),
           h(Row, {
