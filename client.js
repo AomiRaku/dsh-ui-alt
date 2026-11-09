@@ -874,14 +874,18 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       let timer = null;
       let lastRow = null;
 
+      const isPinButton = (btn) => /置顶|pin/i.test(btn.getAttribute('aria-label') || '');
+
       const filterRow = (row) => {
         if (row === null) return;
         const actions = row.querySelector('[class*="_rowActions"]');
         if (actions === null) return;
-        const buttons = actions.querySelectorAll('button');
+        const buttons = Array.from(actions.querySelectorAll('button'));
+        /* 认不出置顶按钮（例如界面是其它语言，或这一行本来就没有置顶）时整行不动：
+           宁可不生效，也不要把用户需要的按钮误藏掉。 */
+        if (!buttons.some(isPinButton)) return;
         for (const btn of buttons) {
-          const keep = btn.hasAttribute('data-context-menu-trigger')
-            || /置顶|pin/i.test(btn.getAttribute('aria-label') || '');
+          const keep = btn.hasAttribute('data-context-menu-trigger') || isPinButton(btn);
           if (keep) {
             if (btn.hasAttribute('data-dcc-hidden')) btn.removeAttribute('data-dcc-hidden');
           } else if (!btn.hasAttribute('data-dcc-hidden')) {
