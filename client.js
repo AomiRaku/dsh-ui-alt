@@ -285,7 +285,8 @@ html[data-dcc-nav="collapsed"] nav[class*="_panelList"] > *:nth-child(n + 3) {
   display: block;
   width: 14px;
   height: 14px;
-  transition: transform .18s ease;
+  /* 与宿主工作区折叠箭头同一套曲线：.15s + var(--ds-ease-in-out) */
+  transition: transform .15s var(--ds-ease-in-out);
 }
 html[data-dcc-nav="collapsed"] .dcc-nav-toggle svg {
   transform: rotate(180deg);
