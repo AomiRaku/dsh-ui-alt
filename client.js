@@ -5,6 +5,9 @@ window.__ModuleLoader__.load({
     const h = React.createElement;
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
+    /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
+    const VERSION = '0.2.10';
+    const UPDATED = '2026-11-09';
     const DEFAULTS = {
       radiusDensity: true,
       invertNewSession: true,
@@ -78,6 +81,7 @@ html[data-dcc-font="on"][data-windows-titlebar] body {
 .dcc-page { display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 760px; }
 .dcc-title { margin: 0; padding: 0 2px; font-size: 16px; line-height: 24px; font-weight: 600; color: var(--dsw-alias-label-primary); }
 .dcc-intro { margin: 0; padding: 0 2px; font-size: 13px; line-height: 20px; color: var(--dsw-alias-label-secondary); }
+.dcc-meta { margin: 0; padding: 2px 2px 0; font-size: 12px; line-height: 18px; color: var(--dsw-alias-label-tertiary); }
 .dcc-group { display: flex; flex-direction: column; padding: 6px 20px; border: 1px solid var(--dsw-alias-border-l2); border-radius: var(--dsw-radius-lg); background: var(--dsw-alias-bg-layer-1); }
 .dcc-group-title { padding: 14px 2px 4px; font-size: 13px; line-height: 20px; font-weight: 600; color: var(--dsw-alias-label-primary); }
 .dcc-row { display: flex; align-items: center; gap: 16px; padding: 14px 2px; border-top: 1px solid var(--dsw-alias-border-l1); }
@@ -946,7 +950,9 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             desc: zh ? '设置面板铺满窗口，隐藏右上角关闭按钮，改用左上角返回箭头；关闭后恢复为居中对话框。' : 'Fill the window with the settings panel, replace its close button with a back arrow at the top left; off restores the centered dialog.',
             checked: prefs.settingsFullscreen,
             onChange: update('settingsFullscreen'),
-          })));
+          })),
+        h('p', { className: 'dcc-meta' },
+          zh ? `版本：${VERSION}  ${UPDATED}` : `Version: ${VERSION}  ${UPDATED}`));
     }
 
     function SectionIcon(props) {
