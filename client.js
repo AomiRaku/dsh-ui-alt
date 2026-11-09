@@ -89,8 +89,10 @@ html[data-dcc-font="on"][data-windows-titlebar] body {
 .dcc-row-desc { font-size: 12px; line-height: 17px; color: var(--dsw-alias-label-secondary); }
 .dcc-switch { position: relative; display: inline-flex; width: 36px; height: 20px; flex: none; cursor: pointer; }
 .dcc-input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
-.dcc-track { position: absolute; inset: 0; border-radius: 999px; border: 1px solid var(--dsw-alias-border-l2); background: var(--dsw-alias-bg-layer-2); transition: background .15s, border-color .15s; }
-.dcc-thumb { position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--dsw-alias-label-secondary); transition: transform .15s, background .15s; }
+/* 宿主全站默认 corner-shape: superellipse(1.5)，999px 会被渲染成圆角矩形而不是胶囊。
+   开关和滑块自己声明 round，形状不随「紧凑圆角与密度」开关变化。 */
+.dcc-track { position: absolute; inset: 0; border-radius: 999px; corner-shape: round; border: 1px solid var(--dsw-alias-border-l2); background: var(--dsw-alias-bg-layer-2); transition: background .15s, border-color .15s; }
+.dcc-thumb { position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; corner-shape: round; background: var(--dsw-alias-label-secondary); transition: transform .15s, background .15s; }
 .dcc-input:checked + .dcc-track { border-color: transparent; background: var(--dsw-alias-label-primary); }
 .dcc-input:checked + .dcc-track .dcc-thumb { transform: translateX(16px); background: var(--dsw-alias-label-primary-foreground); }
 .dcc-input:focus-visible + .dcc-track { outline: 2px solid var(--dsw-alias-brand-primary); outline-offset: 2px; }
