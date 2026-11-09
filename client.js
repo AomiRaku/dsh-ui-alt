@@ -244,7 +244,10 @@ html[data-dcc-nav="collapsed"] nav[class*="_panelList"] > *:nth-child(n + 3) {
 }
 
 /* 导航底部的展开/收起箭头 */
+/* 整行都能点（点击区不变），但高亮只画在图标那一小块上：背景交给中心伪元素，
+   按钮本身保持透明，所以整行悬停时也只有中间那个矩形亮起来。 */
 .dcc-nav-toggle {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -256,11 +259,27 @@ html[data-dcc-nav="collapsed"] nav[class*="_panelList"] > *:nth-child(n + 3) {
   background: transparent;
   color: var(--dsw-alias-label-tertiary);
   cursor: pointer;
-  transition: background-color .15s, color .15s;
+  transition: color .15s;
+}
+.dcc-nav-toggle::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 26px;
+  height: 20px;
+  margin: -10px 0 0 -13px;
+  border-radius: var(--dsw-radius-md, 6px);
+  background: transparent;
+  transition: background-color .15s;
+  pointer-events: none;
 }
 .dcc-nav-toggle:hover {
-  background: var(--dsw-alias-interactive-bg-hover);
+  background: transparent;
   color: var(--dsw-alias-label-secondary);
+}
+.dcc-nav-toggle:hover::before {
+  background: var(--dsw-alias-interactive-bg-hover);
 }
 .dcc-nav-toggle svg {
   display: block;
