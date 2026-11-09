@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.10';
+    const VERSION = '0.2.11';
     const UPDATED = '2026-11-09';
     const DEFAULTS = {
       radiusDensity: true,
@@ -184,14 +184,10 @@ html[data-dcc-new="off"] button[data-dcc-newrow] {
   display: none !important;
 }
 /* 克隆行直接使用 panelRow 的类，宽度/内边距/行高/焦点环全部来自宿主；
-   常规底色比其它按钮的 hover 色再弱一档，悬停时恢复成 hover 色 */
+   默认和其它导航行一样是透明底，悬停时统一由下面的导航行规则上色 */
 html[data-dcc-new="on"] button[data-dcc-newrow] {
-  background-color: color-mix(in srgb, var(--dsw-alias-interactive-bg-hover) 88%, transparent) !important;
+  background-color: transparent !important;
   color: var(--dsw-alias-label-primary) !important;
-}
-html[data-dcc-new="on"] button[data-dcc-newrow]:hover {
-  background-color: var(--dsw-alias-interactive-bg-hover) !important;
-  box-shadow: inset 0 0 0 999px rgba(127, 127, 127, .1) !important;
 }
 .dcc-newrow-content {
   display: flex;
@@ -433,22 +429,19 @@ html[data-dcc-dot="on"] body[data-ds-dark-theme] [class*="_sessionRow"]::before 
 body:not([data-ds-dark-theme]) nav[class*="_panelList"] [class*="_panelRow"]:hover {
   box-shadow: inset 0 0 0 999px rgba(0, 0, 0, .035) !important;
 }
-html[data-dcc-new="on"] body:not([data-ds-dark-theme]) button[data-dcc-newrow] {
-  background-color: color-mix(in srgb, var(--dsw-alias-interactive-bg-hover) 82%, rgba(0, 0, 0, .05)) !important;
-}
 /* 浅色主题下选中会话的背景再强一点 */
 body:not([data-ds-dark-theme]) [class*="_sessionRow"][class*="_selected"] {
   box-shadow: inset 0 0 0 999px rgba(0, 0, 0, .04) !important;
 }
 
-/* 导航行的悬停 / 选中：比新会话默认底更明显 */
-html[data-dcc-new="on"] nav[class*="_panelList"] [class*="_panelRow"]:hover:not([data-dcc-newrow]),
-html[data-dcc-new="on"] nav[class*="_panelList"] [class*="_panelRow"][class*="_panelActive"]:not([data-dcc-newrow]) {
+/* 导航行的悬停 / 选中：新会话行已经是普通导航行的一员，不再单独排除 */
+html[data-dcc-new="on"] nav[class*="_panelList"] [class*="_panelRow"]:hover,
+html[data-dcc-new="on"] nav[class*="_panelList"] [class*="_panelRow"][class*="_panelActive"] {
   background-color: var(--dsw-alias-interactive-bg-hover) !important;
   box-shadow: inset 0 0 0 999px rgba(0, 0, 0, .07) !important;
 }
-html[data-dcc-new="on"] body[data-ds-dark-theme] nav[class*="_panelList"] [class*="_panelRow"]:hover:not([data-dcc-newrow]),
-html[data-dcc-new="on"] body[data-ds-dark-theme] nav[class*="_panelList"] [class*="_panelRow"][class*="_panelActive"]:not([data-dcc-newrow]) {
+html[data-dcc-new="on"] body[data-ds-dark-theme] nav[class*="_panelList"] [class*="_panelRow"]:hover,
+html[data-dcc-new="on"] body[data-ds-dark-theme] nav[class*="_panelList"] [class*="_panelRow"][class*="_panelActive"] {
   background-color: var(--dsw-alias-interactive-bg-hover) !important;
   box-shadow: inset 0 0 0 999px rgba(255, 255, 255, .1) !important;
 }
