@@ -14,7 +14,6 @@ window.__ModuleLoader__.load({
       collapseNav: true,
       dimSessions: true,
       hideLogo: false,
-      workspaceSmall: true,
       winFont: true,
       sessionDot: true,
       settingsFullscreen: true,
@@ -42,7 +41,6 @@ window.__ModuleLoader__.load({
       root.dataset.dccNav = prefs.collapseNav ? 'collapsed' : 'expanded';
       root.dataset.dccDim = prefs.dimSessions ? 'on' : 'off';
       root.dataset.dccLogo = prefs.hideLogo ? 'hidden' : 'shown';
-      root.dataset.dccWs = prefs.workspaceSmall ? 'on' : 'off';
       root.dataset.dccDot = prefs.sessionDot ? 'on' : 'off';
       root.dataset.dccFont = prefs.winFont ? 'on' : 'off';
       root.dataset.dccFull = prefs.settingsFullscreen ? 'on' : 'off';
@@ -357,38 +355,39 @@ html [class*="_projectRow"]:hover [class*="_chevron"] {
   display: none !important;
 }
 
-/* ---------- 工作区：标题与会话都小一号，并同步收一点行高 ---------- */
+/* ---------- 工作区：标题与会话都小一号，并同步收一点行高 ----------
+   归在「紧凑圆角与密度」开关下：密度本来就是一整套，字号不再单独开一项。 */
 /* 「工作区」分组标题：更小、更弱，并与下方项目行左对齐 */
-html[data-dcc-ws="on"] [class*="_sectionHeader"] {
+html[data-dcc-radius="on"] [class*="_sectionHeader"] {
   height: 30px !important;
   margin-bottom: 2px !important;
 }
-html[data-dcc-ws="on"] [class*="_sectionHeader"] [class*="_sectionLabel"]:not([class*="_sectionLabelHidden"]) {
+html[data-dcc-radius="on"] [class*="_sectionHeader"] [class*="_sectionLabel"]:not([class*="_sectionLabelHidden"]) {
   font-size: 13px;
   left: -2px;
   opacity: .72;
   color: var(--dsw-alias-label-tertiary);
 }
-html[data-dcc-ws="on"] [class*="_projectRow"] [class*="_title"],
-html[data-dcc-ws="on"] [class*="_sessionRow"] [class*="_title"] {
+html[data-dcc-radius="on"] [class*="_projectRow"] [class*="_title"],
+html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_title"] {
   font-size: 13px !important;
   line-height: 18px !important;
 }
-html[data-dcc-ws="on"] [class*="_projectRow"] {
+html[data-dcc-radius="on"] [class*="_projectRow"] {
   height: 32px !important;
 }
-html[data-dcc-ws="on"] [class*="_sessionRow"] {
+html[data-dcc-radius="on"] [class*="_sessionRow"] {
   height: 30px !important;
 }
 /* 左下角账户区：整体压矮一点 */
-html[data-dcc-ws="on"] [class*="_trigger"][data-signed-out="false"]:not([data-collapsed="true"]) {
+html[data-dcc-radius="on"] [class*="_trigger"][data-signed-out="false"]:not([data-collapsed="true"]) {
   height: 38px !important;
   padding-top: 4px !important;
   padding-bottom: 4px !important;
   gap: 6px !important;
   font-size: 13px !important;
 }
-html[data-dcc-ws="on"] [class*="_trigger"][data-signed-out="false"] [class*="_avatar"] {
+html[data-dcc-radius="on"] [class*="_trigger"][data-signed-out="false"] [class*="_avatar"] {
   width: 22px !important;
   height: 22px !important;
 }
@@ -891,7 +890,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           h('div', { className: 'dcc-group-title' }, zh ? '外观' : 'Appearance'),
           h(Row, {
             title: zh ? '紧凑圆角与密度' : 'Compact radius and density',
-            desc: zh ? '缩小全局圆角、收紧间距并降低阴影。' : 'Shrink the global radius scale, tighten spacing and soften shadows.',
+            desc: zh ? '缩小全局圆角、收紧间距、降低阴影，并把侧栏工作区与会话字号收小一号。' : 'Shrink the global radius scale, tighten spacing, soften shadows, and step sidebar workspace and session text down one size.',
             checked: prefs.radiusDensity,
             onChange: update('radiusDensity'),
           }),
@@ -926,12 +925,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             desc: zh ? '工作区名称用更弱的文字色，会话标题保持正常。' : 'Workspace names use a weaker text color; session titles stay normal.',
             checked: prefs.dimSessions,
             onChange: update('dimSessions'),
-          }),
-          h(Row, {
-            title: zh ? '工作区标题与会话小一号' : 'Smaller workspace and sessions',
-            desc: zh ? '侧栏工作区名称与会话标题使用更小的字号。' : 'Use a smaller font size for sidebar workspace names and session titles.',
-            checked: prefs.workspaceSmall,
-            onChange: update('workspaceSmall'),
           }),
           h(Row, {
             title: zh ? '会话前圆点' : 'Session leading dot',
@@ -994,7 +987,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             delete root.dataset.dccNav;
             delete root.dataset.dccDim;
             delete root.dataset.dccLogo;
-            delete root.dataset.dccWs;
             delete root.dataset.dccDot;
             delete root.dataset.dccFont;
             delete root.dataset.dccFull;
