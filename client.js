@@ -952,7 +952,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             onChange: update('settingsFullscreen'),
           })),
         h('p', { className: 'dcc-meta' },
-          zh ? `版本：${VERSION}  ${UPDATED}` : `Version: ${VERSION}  ${UPDATED}`));
+          zh ? `版本：${VERSION}  更新日期：${UPDATED}` : `Version: ${VERSION}  Updated: ${UPDATED}`));
     }
 
     function SectionIcon(props) {
