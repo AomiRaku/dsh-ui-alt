@@ -18,6 +18,7 @@ window.__ModuleLoader__.load({
       sessionDot: true,
       settingsFullscreen: true,
       hideHoverCard: true,
+      hideRowButtons: true,
     };
 
     const isZh = () => {
@@ -45,6 +46,7 @@ window.__ModuleLoader__.load({
       root.dataset.dccFont = prefs.winFont ? 'on' : 'off';
       root.dataset.dccFull = prefs.settingsFullscreen ? 'on' : 'off';
       root.dataset.dccHover = prefs.hideHoverCard ? 'off' : 'on';
+      root.dataset.dccRowButtons = prefs.hideRowButtons ? 'on' : 'off';
     }
 
     function savePrefs(prefs) {
@@ -400,6 +402,15 @@ html[data-dcc-radius="on"] [class*="_trigger"][data-signed-out="false"] [class*=
 html[data-dcc-hover="off"] [class*="_card_bgejw"],
 html[data-dcc-hover="off"] [class*="_preview_bgejw"],
 html[data-dcc-hover="off"] [class*="_bridge_bgejw"] {
+  display: none !important;
+}
+
+/* ---------- 会话行悬停按钮 ---------- */
+/* 悬停时行尾会冒出一排按钮：「…」菜单在 rowActions 里，其余（宿主归档、以及各插件
+   塞进 rowQuickActions 的按钮）紧跟在后面。DOM 上它们只有同一个 iconButton 类，
+   分不出谁是谁，所以保留哪几个由脚本按 data-context-menu-trigger / aria-label 判定，
+   再打上 data-dcc-hidden，这里只负责隐藏。 */
+html[data-dcc-row-buttons="on"] [class*="_sessionRow"] [class*="_rowActions"] button[data-dcc-hidden] {
   display: none !important;
 }
 
@@ -853,6 +864,80 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
     }
 
+    /**
+     * 会话行悬停时只留「…」菜单和置顶按钮，其余（宿主的归档、各插件加的）隐藏。
+     * 按钮上只有共用的 iconButton 类，所以按 data-context-menu-trigger 和 aria-label
+     * 认人：菜单按钮带前者，置顶按钮的 aria-label 里是「置顶会话 / 取消置顶 / pin」。
+     */
+    function installRowActionFilter() {
+      let observer = null;
+      let timer = null;
+      let lastRow = null;
+
+      const filterRow = (row) => {
+        if (row === null) return;
+        const actions = row.querySelector('[class*="_rowActions"]');
+        if (actions === null) return;
+        const buttons = actions.querySelectorAll('button');
+        for (const btn of buttons) {
+          const keep = btn.hasAttribute('data-context-menu-trigger')
+            || /置顶|pin/i.test(btn.getAttribute('aria-label') || '');
+          if (keep) {
+            if (btn.hasAttribute('data-dcc-hidden')) btn.removeAttribute('data-dcc-hidden');
+          } else if (!btn.hasAttribute('data-dcc-hidden')) {
+            btn.setAttribute('data-dcc-hidden', '');
+          }
+        }
+      };
+
+      const onPointer = (event) => {
+        if (document.documentElement.dataset.dccRowButtons !== 'on') return;
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const row = target.closest('[class*="_sessionRow"]');
+        if (row === null || row === lastRow) return;
+        lastRow = row;
+        filterRow(row);
+      };
+
+      /* 兜底：行是复用的，按钮可能在后来的渲染里才挂上去，定期把没扫过的行补一遍 */
+      const sweep = () => {
+        if (document.documentElement.dataset.dccRowButtons !== 'on') return;
+        const rows = document.querySelectorAll('[class*="_sessionRow"]:not([data-dcc-scanned])');
+        for (const row of rows) {
+          filterRow(row);
+          row.setAttribute('data-dcc-scanned', '');
+        }
+      };
+
+      const schedule = () => {
+        if (timer !== null) return;
+        timer = window.setTimeout(() => {
+          timer = null;
+          lastRow = null;
+          sweep();
+        }, 400);
+      };
+
+      document.addEventListener('pointerover', onPointer, true);
+      document.addEventListener('focusin', onPointer, true);
+      sweep();
+      observer = new MutationObserver(schedule);
+      observer.observe(document.body, { childList: true, subtree: true });
+
+      return () => {
+        document.removeEventListener('pointerover', onPointer, true);
+        document.removeEventListener('focusin', onPointer, true);
+        observer.disconnect();
+        if (timer !== null) clearTimeout(timer);
+        const marked = document.querySelectorAll('[data-dcc-hidden], [data-dcc-scanned]');
+        for (const el of marked) {
+          el.removeAttribute('data-dcc-hidden');
+          el.removeAttribute('data-dcc-scanned');
+        }
+      };
+    }
+
     function Switch(props) {
       return h('label', { className: 'dcc-switch' },
         h('input', {
@@ -941,6 +1026,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             onChange: update('hideHoverCard'),
           }),
           h(Row, {
+            title: zh ? '隐藏会话悬停多余按钮' : 'Hide extra session-row buttons',
+            desc: zh ? '隐藏会话悬停时除了菜单和置顶之外的其他按钮，避免拥挤遮盖过多标题。正常情况下这些按钮都已经在右键菜单中包含。若其他插件添加的按钮未在右键菜单包含，可以关闭此功能。' : 'Hide every button on a hovered session row except the "…" menu and pin, so they stop crowding the title. These actions are normally in the right-click menu too; turn this off if a plugin adds a button that is not.',
+            checked: prefs.hideRowButtons,
+            onChange: update('hideRowButtons'),
+          }),
+          h(Row, {
             title: zh ? '设置面板全屏' : 'Full-screen settings panel',
             desc: zh ? '使用非窗口化的设置页面。' : 'Use a non-windowed settings page.',
             checked: prefs.settingsFullscreen,
@@ -979,11 +1070,13 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const removeNewSessionRow = installNewSessionRow();
           const removeNavToggle = installNavToggle();
           const removeSettingsBack = installSettingsBackButton();
+          const removeRowActionFilter = installRowActionFilter();
           return () => {
             removeCss();
             removeNewSessionRow();
             removeNavToggle();
             removeSettingsBack();
+            removeRowActionFilter();
             const root = document.documentElement;
             delete root.dataset.dccRadius;
             delete root.dataset.dccNew;
@@ -994,6 +1087,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             delete root.dataset.dccFont;
             delete root.dataset.dccFull;
             delete root.dataset.dccHover;
+            delete root.dataset.dccRowButtons;
           };
         }, 'dsh-ui-alt: styles and preference attributes');
 
