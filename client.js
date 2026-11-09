@@ -236,11 +236,17 @@ html[data-dcc-nav]:not(:has([data-sidebar-collapsed="true"])) nav[class*="_panel
   padding-right: calc(var(--dsh-sidebar-row-padding) - var(--dsh-sidebar-paint-inset) + 3px);
   gap: calc(var(--dsh-sidebar-label-gap) + 2px);
 }
-/* 收起态：只保留前两项，其余直接不参与布局。
-   之前用 max-height 估算高度，多出来的空白会露在列表和箭头之间，
-   改成 display:none 后高度完全由剩下的行决定。 */
-html[data-dcc-nav="collapsed"] nav[class*="_panelList"] > *:nth-child(n + 3) {
-  display: none;
+/* 收起态：只保留前两项。用 max-height 过渡让列表能平滑展开/收起；
+   折叠高度与展开高度都由脚本按实测行高写进 CSS 变量，过渡速度才是均匀的。 */
+html[data-dcc-nav] nav[class*="_panelList"] {
+  overflow: hidden;
+  transition: max-height .15s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
+}
+html[data-dcc-nav="collapsed"] nav[class*="_panelList"] {
+  max-height: var(--dcc-nav-collapsed-height, 70px);
+}
+html[data-dcc-nav="expanded"] nav[class*="_panelList"] {
+  max-height: var(--dcc-nav-expanded-height, 1200px);
 }
 
 /* 导航底部的展开/收起箭头 */
@@ -623,6 +629,23 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         const nav = findNav();
         const count = nav === null ? 0 : nav.children.length;
         btn.style.display = count > 2 ? '' : 'none';
+        /* 折叠高度 = 前两项实测高度 + 一项行距；展开高度 = 全部实测高度。
+           写进变量后，max-height 的过渡是匀速的，不会「弹一下再停」。 */
+        if (nav !== null) {
+          const items = Array.from(nav.children);
+          const gap = parseFloat(window.getComputedStyle(nav).rowGap) || 0;
+          let collapsedHeight = 0;
+          let full = 0;
+          for (let i = 0; i < items.length; i += 1) {
+            const h = items[i].getBoundingClientRect().height;
+            full += h;
+            if (i < 2) collapsedHeight += h;
+          }
+          full += Math.max(0, items.length - 1) * gap;
+          if (items.length > 1) collapsedHeight += gap;
+          nav.style.setProperty('--dcc-nav-collapsed-height', `${Math.ceil(collapsedHeight)}px`);
+          nav.style.setProperty('--dcc-nav-expanded-height', `${Math.ceil(full)}px`);
+        }
         const collapsed = document.documentElement.dataset.dccNav === 'collapsed';
         const label = collapsed ? (isZh() ? '展开导航' : 'Expand navigation') : (isZh() ? '收起导航' : 'Collapse navigation');
         btn.setAttribute('aria-label', label);
