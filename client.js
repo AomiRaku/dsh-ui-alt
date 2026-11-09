@@ -15,7 +15,7 @@ window.__ModuleLoader__.load({
       winFont: true,
       sessionDot: true,
       settingsFullscreen: true,
-      hoverPreview: false,
+      hideHoverCard: true,
     };
 
     const isZh = () => {
@@ -43,7 +43,7 @@ window.__ModuleLoader__.load({
       root.dataset.dccDot = prefs.sessionDot ? 'on' : 'off';
       root.dataset.dccFont = prefs.winFont ? 'on' : 'off';
       root.dataset.dccFull = prefs.settingsFullscreen ? 'on' : 'off';
-      root.dataset.dccHover = prefs.hoverPreview ? 'on' : 'off';
+      root.dataset.dccHover = prefs.hideHoverCard ? 'off' : 'on';
     }
 
     function savePrefs(prefs) {
@@ -363,9 +363,9 @@ html[data-dcc-ws="on"] [class*="_trigger"][data-signed-out="false"] [class*="_av
   height: 22px !important;
 }
 
-/* ---------- 会话行悬停预览卡片 ---------- */
-/* 宿主把卡片挂在 body 下（_card / _preview / _bridge 三段），默认 fixed + z-index:100。
-   关掉后直接不渲染，滑动侧栏时不再闪出预览，也不会因卡片定位计算掉帧。 */
+/* ---------- 工作区 / 会话行的悬停提示卡片 ---------- */
+/* 宿主把卡片挂在 body 下（_card / _preview / _bridge 三段），fixed + z-index:100。
+   打开「移除悬停提示」后直接不渲染，滑动侧栏时不再闪出卡片，也不会因定位计算掉帧。 */
 html[data-dcc-hover="off"] [class*="_card_bgejw"],
 html[data-dcc-hover="off"] [class*="_preview_bgejw"],
 html[data-dcc-hover="off"] [class*="_bridge_bgejw"] {
@@ -897,10 +897,10 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             onChange: update('settingsFullscreen'),
           }),
           h(Row, {
-            title: zh ? '会话行悬停预览' : 'Hover preview card',
-            desc: zh ? '默认不弹。打开后鼠标划过会话行会显示预览卡片；开着时侧栏滚动更容易卡。' : 'Off by default. Turn on to show the preview card when hovering a session row; leaving it on makes sidebar scrolling more likely to stutter.',
-            checked: prefs.hoverPreview,
-            onChange: update('hoverPreview'),
+            title: zh ? '移除工作区与会话悬停提示' : 'Remove workspace and session hover hints',
+            desc: zh ? '打开后鼠标划过工作区行、会话行都不再弹出悬停提示卡片，侧栏滚动也更顺。' : 'On by default: hovering a workspace or session row no longer pops up a hint card, which also keeps sidebar scrolling smooth.',
+            checked: prefs.hideHoverCard,
+            onChange: update('hideHoverCard'),
           })));
     }
 
