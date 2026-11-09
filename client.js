@@ -76,7 +76,7 @@ html[data-dcc-font="on"][data-windows-titlebar] body {
 
 /* ---------- 设置页（始终可用） ---------- */
 .dcc-page { display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 760px; }
-.dcc-title { margin: 0; padding: 0 2px; font-size: 16px; line-height: 24px; font-weight: 500; color: var(--dsw-alias-label-primary); }
+.dcc-title { margin: 0; padding: 0 2px; font-size: 16px; line-height: 24px; font-weight: 600; color: var(--dsw-alias-label-primary); }
 .dcc-intro { margin: 0; padding: 0 2px; font-size: 13px; line-height: 20px; color: var(--dsw-alias-label-secondary); }
 .dcc-group { display: flex; flex-direction: column; padding: 6px 20px; border: 1px solid var(--dsw-alias-border-l2); border-radius: var(--dsw-radius-lg); background: var(--dsw-alias-bg-layer-1); }
 .dcc-group-title { padding: 14px 2px 4px; font-size: 13px; line-height: 20px; font-weight: 600; color: var(--dsw-alias-label-primary); }
