@@ -947,7 +947,8 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             onChange: update('settingsFullscreen'),
           })),
         h('p', { className: 'dcc-meta' },
-          zh ? `版本：${VERSION}  更新日期：${UPDATED}` : `Version: ${VERSION}  Updated: ${UPDATED}`));
+          /* 中文之间用一个全角空格（\u3000）分隔，比两个半角空格更稳 */
+          zh ? `版本：${VERSION}\u3000更新日期：${UPDATED}` : `Version: ${VERSION}  Updated: ${UPDATED}`));
     }
 
     function SectionIcon(props) {
