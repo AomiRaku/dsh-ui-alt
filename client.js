@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.12';
+    const VERSION = '0.2.13';
     const UPDATED = '2026-11-09';
     const DEFAULTS = {
       radiusDensity: true,
@@ -969,7 +969,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       return h('div', { className: 'dcc-page' },
         h('div', { className: 'dcc-title' }, zh ? 'UI 改进' : 'UI improvements'),
         h('p', { className: 'dcc-intro' },
-          zh ? '在保持原版 UI 大风格不变的情况下，进行减小圆角、紧凑化、秩序化、整洁化改进。使 UI 视觉更加冷静、专业、高效。可在设置中单独调整每一项改动。' : 'A tidying pass over the stock UI that keeps its overall look: smaller radii, tighter spacing and a more orderly layout, for a calmer, more professional and more efficient interface. Every change can be adjusted individually in Settings.'),
+          zh ? '在保持原版 UI 大风格不变的情况下，进行减小圆角、紧凑化、秩序化、整洁化改进。使 UI 视觉更加冷静、专业、高效。多数改动可在设置中单独开关。' : 'A tidying pass over the stock UI that keeps its overall look: smaller radii, tighter spacing and a more orderly layout, for a calmer, more professional and more efficient interface. Most changes can be switched on or off individually in Settings.'),
         h('div', { className: 'dcc-group' },
           h('div', { className: 'dcc-group-title' }, zh ? '外观' : 'Appearance'),
           h(Row, {

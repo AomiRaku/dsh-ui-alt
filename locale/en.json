@@ -1,6 +1,6 @@
 {
   "meta": {
     "title": "UI improvements",
-    "description": "A tidying pass over the stock UI that keeps its overall look: smaller radii, tighter spacing and a more orderly layout, for a calmer, more professional and more efficient interface. Every change can be adjusted individually in Settings."
+    "description": "A tidying pass over the stock UI that keeps its overall look: smaller radii, tighter spacing and a more orderly layout, for a calmer, more professional and more efficient interface. Most changes can be switched on or off individually in Settings."
   }
 }
