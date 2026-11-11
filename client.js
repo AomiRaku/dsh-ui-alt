@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.80';
+    const VERSION = '0.2.81';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -627,7 +627,16 @@ html[data-dcc-select="on"] body [data-conversation-scroll] [class*="_action"] *,
 html[data-dcc-select="on"] body [data-conversation-scroll] [class*="_time"],
 html[data-dcc-select="on"] body [data-conversation-scroll] time,
 html[data-dcc-select="on"] body [data-conversation-scroll] [data-changed-files="true"],
-html[data-dcc-select="on"] body [data-conversation-scroll] [data-changed-files="true"] * {
+html[data-dcc-select="on"] body [data-conversation-scroll] [data-changed-files="true"] *,
+/* 进行中的状态提示（「深度求索中，用时 1 秒…」）也是界面元件，不是正文 */
+html[data-dcc-select="on"] body [data-conversation-scroll] [role="status"],
+html[data-dcc-select="on"] body [data-conversation-scroll] [role="status"] *,
+html[data-dcc-select="on"] body [data-conversation-scroll] [aria-live],
+html[data-dcc-select="on"] body [data-conversation-scroll] [aria-live] *,
+html[data-dcc-select="on"] body [data-conversation-scroll] [class*="_running"],
+html[data-dcc-select="on"] body [data-conversation-scroll] [class*="_running"] *,
+html[data-dcc-select="on"] body [data-conversation-scroll] [class*="_status"],
+html[data-dcc-select="on"] body [data-conversation-scroll] [class*="_status"] * {
   user-select: none !important;
   -webkit-user-select: none !important;
 }
