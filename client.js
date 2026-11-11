@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.59';
+    const VERSION = '0.2.60';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1248,10 +1248,11 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const existing = dock.querySelector('.dcc-balance');
           pill = existing !== null ? existing : build();
         }
-        /* 关键：节点只建一次。余额刷新时 React 可能把 dock 的子节点整体重排，
-           手里这个节点会短暂脱离文档——重新插回去即可，不要新建，
-           新建就会看到「消失一下再出现」的闪烁。 */
-        if (!pill.isConnected || pill.parentElement !== dock) {
+        /* 只有在真的脱离文档时才补回去。
+           之前用 parentElement !== dock 判断，一旦 React 重建了 dock，
+           这个条件恒成立，就会把节点从旧 dock 搬到新 dock——
+           移动 DOM 节点本身要重绘，于是每刷新一次就闪一下。 */
+        if (!pill.isConnected) {
           const ringRoot = dock.querySelector('[class*="_root"]:has(button[aria-haspopup="dialog"])');
           dock.insertBefore(pill, ringRoot);
         }
