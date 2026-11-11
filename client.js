@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.18';
+    const VERSION = '0.2.19';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -415,10 +415,27 @@ html[data-dcc-row-buttons="on"] [class*="_sessionRow"] [class*="_rowActions"] bu
 }
 
 /* ---------- 会话视图切换：标签行并入顶部工具区 ---------- */
-/* 原标签行（对话 / 轨迹 / …）整行隐藏；它的按钮仍留在 DOM 里，
-   顶部那个分段控件点击时转发给对应的原按钮。 */
+/* 注意不能 display:none：宿主按标签行的 clientWidth 计算「能显示几个视图」，
+   宽度变 0 会只剩一个「对话」。所以这里只把高度压到 0（不占布局），
+   宽度和可见性照旧，量出来的数量才是对的。 */
 div:has(> [data-conversation-tabs]) {
-  display: none !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  border: 0 !important;
+  overflow: hidden !important;
+  visibility: hidden;
+  pointer-events: none !important;
+}
+/* 标签行虽然高度归零，但它还在 DOM 里，宿主的 :has(._tabs) 依然成立，
+   标题栏会死守 min-height:76px。这里直接按「没有标签行」的形态压平。 */
+[class*="_header"]:has([data-conversation-tabs]) {
+  min-height: 0 !important;
+  padding-bottom: 10px !important;
 }
 [class*="_viewsMore"] {
   display: none !important;
@@ -427,7 +444,7 @@ div:has(> [data-conversation-tabs]) {
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  padding: 2px;
+  padding: 1px;
   border-radius: var(--dsw-radius-md, 6px);
   background: var(--dsw-alias-bg-layer-2);
 }
@@ -437,8 +454,8 @@ div:has(> [data-conversation-tabs]) {
   color: var(--dsw-alias-label-secondary);
   font: inherit;
   font-size: 12px;
-  line-height: 18px;
-  padding: 2px 8px;
+  line-height: 16px;
+  padding: 1px 6px;
   border-radius: var(--dsw-radius-sm, 4px);
   cursor: pointer;
   transition: background-color .12s, color .12s;
