@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.18';
+    const VERSION = '0.2.17';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -411,32 +411,6 @@ html[data-dcc-hover="off"] [class*="_bridge_bgejw"] {
    分不出谁是谁，所以保留哪几个由脚本按 data-context-menu-trigger / aria-label 判定，
    再打上 data-dcc-hidden，这里只负责隐藏。 */
 html[data-dcc-row-buttons="on"] [class*="_sessionRow"] [class*="_rowActions"] button[data-dcc-hidden] {
-  display: none !important;
-}
-
-/* ---------- 过程标签：工具调用 / 思考 / 编辑等 ---------- */
-/* 「图标 + 标题」拼成一块衬底，摘要保持无底：
-   leading 原本 width:16px、margin-right:6px，title 的行高是 24px，
-   两者高度和间距都不一致，所以这里统一高度、去掉间距，只各留一半圆角。 */
-[data-disclosure-row="true"] [class*="_leading_"] {
-  width: auto !important;
-  height: 20px !important;
-  margin-right: 0 !important;
-  padding: 0 2px 0 4px !important;
-  border-radius: 4px 0 0 4px !important;
-  background: var(--dsw-alias-interactive-bg-hover) !important;
-}
-[data-disclosure-row="true"] [class*="_title_"] {
-  display: inline-flex !important;
-  align-items: center !important;
-  height: 20px !important;
-  line-height: 20px !important;
-  margin-right: 4px !important;
-  padding: 0 6px 0 3px !important;
-  border-radius: 0 4px 4px 0 !important;
-  background: var(--dsw-alias-interactive-bg-hover) !important;
-}
-[data-disclosure-row="true"] [class*="_sep"][aria-hidden="true"] {
   display: none !important;
 }
 
