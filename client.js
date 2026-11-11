@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.33';
+    const VERSION = '0.2.34';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1161,7 +1161,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         h('div', { className: 'dcc-group' },
           h('div', { className: 'dcc-group-title' }, zh ? '布局' : 'Layout'),
           h(Row, {
-            title: zh ? '减小圆角与紧凑界面' : 'Smaller radii and a tighter layout',
+            title: zh ? '减小圆角与间距' : 'Smaller radii and spacing',
             desc: zh ? '缩小全局圆角、缩小侧栏部分字号、收紧间距，使界面更高效。' : 'Smaller global radii, smaller sidebar type and tighter spacing, for a more efficient interface.',
             checked: prefs.radiusDensity,
             onChange: update('radiusDensity'),
