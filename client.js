@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.86';
+    const VERSION = '0.2.87';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -607,6 +607,15 @@ html[data-dcc-pointer="on"] [data-href] {
    整张卡片放行手形——只写 button 会漏掉行内的 path / counts 等子元素 */
 html[data-dcc-pointer="on"] [data-changed-files="true"],
 html[data-dcc-pointer="on"] [data-changed-files="true"] * {
+  cursor: pointer !important;
+}
+/* 左上角的品牌 Logo 是可点击的（跳转官网），保留手形 */
+html[data-dcc-pointer="on"] [class*="_brand"],
+html[data-dcc-pointer="on"] [class*="_brand"] *,
+html[data-dcc-pointer="on"] [class*="_logoRow"],
+html[data-dcc-pointer="on"] [class*="_logoRow"] *,
+html[data-dcc-pointer="on"] [class*="_railMark"],
+html[data-dcc-pointer="on"] [class*="_railMark"] * {
   cursor: pointer !important;
 }
 /* 输入区保留文本光标 */
