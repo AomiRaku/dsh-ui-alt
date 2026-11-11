@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.64';
+    const VERSION = '0.2.65';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -591,29 +591,32 @@ html[data-dcc-pointer="on"] [aria-disabled="true"] {
 }
 
 /* ---------- 文字可选范围 ---------- */
-/* 界面文字不可选中（桌面软件的惯例：按钮、标签、菜单不该拖出蓝底），
-   只有消息正文与输入区保留可选中。 */
-html body {
-  user-select: none;
-  -webkit-user-select: none;
+/* 界面文字一律不可选中（桌面软件的惯例：标题、按钮、标签、菜单不该拖出蓝底），
+   只有消息正文与输入区保留可选中。带 !important 是因为宿主自己给若干处写了
+   user-select: text，类选择器的优先级高于 html body，不强化压不住。 */
+html body,
+html body * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
 }
+/* 消息正文（含其后代）可选 */
 html body [data-conversation-scroll],
+html body [data-conversation-scroll] * {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+/* 输入框那一片再压回不可选，否则整行（速率、余额、百分比）会被一起拖蓝 */
+html body [data-conversation-region="composer"],
+html body [data-conversation-region="composer"] * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+/* 输入框本身放在最后，覆盖上面那条 */
 html body input,
 html body textarea,
 html body [contenteditable="true"] {
-  user-select: text;
-  -webkit-user-select: text;
-}
-/* 输入框那一片（按钮、状态行）跟着一起不可选，别把整行都拖成蓝底 */
-html body [data-conversation-region="composer"] {
-  user-select: none;
-  -webkit-user-select: none;
-}
-html body [data-conversation-region="composer"] input,
-html body [data-conversation-region="composer"] textarea,
-html body [data-conversation-region="composer"] [contenteditable="true"] {
-  user-select: text;
-  -webkit-user-select: text;
+  user-select: text !important;
+  -webkit-user-select: text !important;
 }
 
 /* ---------- 已归档会话：标题画删除线 ---------- */
