@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.63';
+    const VERSION = '0.2.64';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -588,6 +588,32 @@ html[data-dcc-pointer="on"] [contenteditable="true"] {
 html[data-dcc-pointer="on"] :disabled,
 html[data-dcc-pointer="on"] [aria-disabled="true"] {
   cursor: not-allowed !important;
+}
+
+/* ---------- 文字可选范围 ---------- */
+/* 界面文字不可选中（桌面软件的惯例：按钮、标签、菜单不该拖出蓝底），
+   只有消息正文与输入区保留可选中。 */
+html body {
+  user-select: none;
+  -webkit-user-select: none;
+}
+html body [data-conversation-scroll],
+html body input,
+html body textarea,
+html body [contenteditable="true"] {
+  user-select: text;
+  -webkit-user-select: text;
+}
+/* 输入框那一片（按钮、状态行）跟着一起不可选，别把整行都拖成蓝底 */
+html body [data-conversation-region="composer"] {
+  user-select: none;
+  -webkit-user-select: none;
+}
+html body [data-conversation-region="composer"] input,
+html body [data-conversation-region="composer"] textarea,
+html body [data-conversation-region="composer"] [contenteditable="true"] {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 /* ---------- 已归档会话：标题画删除线 ---------- */
