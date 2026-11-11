@@ -1,6 +1,6 @@
 {
   "meta": {
     "title": "UI improvements",
-    "description": "A tidying pass over the stock UI that keeps its overall look: smaller radii, tighter spacing and a more orderly layout, for a calmer, more professional and more efficient interface. Most changes can be switched on or off individually in Settings."
+    "description": "Keeps the overall layout of the stock UI while tightening its radii, spacing and tidiness for a calmer, more professional and more efficient look. Also adds an account balance display. Most changes can be switched on or off individually in Settings."
   }
 }
