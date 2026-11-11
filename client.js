@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.53';
+    const VERSION = '0.2.54';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1394,7 +1394,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           h('div', { className: 'dcc-group-title' }, zh ? '性能与用量信息' : 'Performance and usage'),
           h(Row, {
             title: zh ? '优化布局' : 'Optimize layout',
-            desc: zh ? '优化输入框下方性能与用量布局。' : 'Improve the layout of the performance and usage row under the composer.',
+            desc: zh ? '优化输入框下方性能与用量布局，将数据分布在左右两侧平衡视觉重心。' : 'Improve the layout of the performance and usage row, spreading the data across both sides to balance the visual weight.',
             checked: prefs.optimizeStatsLayout,
             onChange: update('optimizeStatsLayout'),
           }),
@@ -1407,7 +1407,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           h('div', { className: 'dcc-row' },
             h('div', { className: 'dcc-row-text' },
               h('div', { className: 'dcc-row-title' }, zh ? '余额警告阈值' : 'Low balance threshold'),
-              h('div', { className: 'dcc-row-desc' }, zh ? '余额低于此值将变为红色。' : 'The balance turns red below this value.')),
+              h('div', { className: 'dcc-row-desc' }, zh ? '余额低于此值将变为红色。最小为 0。' : 'The balance turns red below this value. Minimum 0.')),
             h('input', {
               type: 'number',
               min: '0',
