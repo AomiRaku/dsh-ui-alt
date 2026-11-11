@@ -985,7 +985,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           }),
           h(Row, {
             title: zh ? 'Windows 默认微软雅黑字体' : 'Microsoft YaHei on Windows',
-            desc: zh ? '将 Windows 端默认字体改为微软雅黑，使文字在低分辨率屏幕 200% 以下缩放带有 hinting，更加锐利清晰。若手动设置了字体，或使用 macOS 端，则不受影响。' : 'Use Microsoft YaHei as the default Windows font so text keeps hinting — and stays sharp — at display scaling below 200%. Has no effect if you set a font manually, or on macOS.',
+            desc: zh ? '将 Windows 端默认字体改为微软雅黑。微软雅黑带有 hinting，使文字在显示设置低于 200% 缩放比例下，更加锐利清晰。若手动设置了字体，或使用 macOS 端，则不受影响。' : 'Use Microsoft YaHei as the default Windows font. It carries hinting, which keeps text sharp below 200% display scaling. Has no effect if you set a font manually, or on macOS.',
             checked: prefs.winFont,
             onChange: update('winFont'),
           })),
