@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.60';
+    const VERSION = '0.2.61';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -23,6 +23,7 @@ window.__ModuleLoader__.load({
       optimizeStatsLayout: true,
       showBalance: true,
       balanceThreshold: 3,
+      pointerNormalize: true,
     };
 
     const isZh = () => {
@@ -54,6 +55,7 @@ window.__ModuleLoader__.load({
       root.dataset.dccCompactHeader = prefs.compactHeader ? 'on' : 'off';
       root.dataset.dccStats = prefs.optimizeStatsLayout ? 'on' : 'off';
       root.dataset.dccBalance = prefs.showBalance ? 'on' : 'off';
+      root.dataset.dccPointer = prefs.pointerNormalize ? 'on' : 'off';
     }
 
     function savePrefs(prefs) {
@@ -554,6 +556,32 @@ html[data-dcc-balance="off"] .dcc-balance {
 .dcc-number:focus {
   outline: 2px solid var(--dsw-alias-brand-primary);
   outline-offset: 1px;
+}
+
+/* ---------- 指针样式规范化 ---------- */
+/* 桌面软件的惯例：只有可跳转的东西才给手形。Web UI 常把「可点击」和「可跳转」
+   混为一谈，这里统一压回箭头，再单独放行链接和文本输入区。 */
+html[data-dcc-pointer="on"] *,
+html[data-dcc-pointer="on"] *::before,
+html[data-dcc-pointer="on"] *::after {
+  cursor: default !important;
+}
+/* 跳转性元素保留手形 */
+html[data-dcc-pointer="on"] a[href],
+html[data-dcc-pointer="on"] [role="link"],
+html[data-dcc-pointer="on"] [data-href] {
+  cursor: pointer !important;
+}
+/* 输入区保留文本光标 */
+html[data-dcc-pointer="on"] input,
+html[data-dcc-pointer="on"] textarea,
+html[data-dcc-pointer="on"] [contenteditable="true"] {
+  cursor: text !important;
+}
+/* 禁用态保留「禁止」提示，比默认箭头更清楚 */
+html[data-dcc-pointer="on"] :disabled,
+html[data-dcc-pointer="on"] [aria-disabled="true"] {
+  cursor: not-allowed !important;
 }
 
 /* ---------- 已归档会话：标题画删除线 ---------- */
@@ -1359,6 +1387,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             desc: zh ? '将 Windows 端默认字体改为微软雅黑。微软雅黑带有 hinting，使文字在显示设置低于 200% 缩放比例下，更加锐利清晰。若手动设置了字体，或使用 macOS 端，则不受影响。' : 'Use Microsoft YaHei as the default Windows font. It carries hinting, which keeps text sharp below 200% display scaling. Has no effect if you set a font manually, or on macOS.',
             checked: prefs.winFont,
             onChange: update('winFont'),
+          }),
+          h(Row, {
+            title: zh ? '指针样式规范化' : 'Normalize pointer styles',
+            desc: zh ? '遵循桌面软件的指针样式规范，仅链接等跳转性元素会更改指针样式为「手形」。' : 'Follows desktop conventions: only links and other navigational elements show a hand cursor.',
+            checked: prefs.pointerNormalize,
+            onChange: update('pointerNormalize'),
           })),
         h('div', { className: 'dcc-group' },
           h('div', { className: 'dcc-group-title' }, zh ? '布局' : 'Layout'),
@@ -1509,6 +1543,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             delete root.dataset.dccCompactHeader;
             delete root.dataset.dccStats;
             delete root.dataset.dccBalance;
+            delete root.dataset.dccPointer;
           };
         }, 'dsh-ui-alt: styles and preference attributes');
 
