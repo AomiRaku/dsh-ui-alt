@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.88';
+    const VERSION = '0.2.89';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -623,6 +623,11 @@ html[data-dcc-pointer="on"] input,
 html[data-dcc-pointer="on"] textarea,
 html[data-dcc-pointer="on"] [contenteditable="true"] {
   cursor: text !important;
+}
+/* 拖拽手柄保留横向缩放光标：侧栏宽度（_handle）与聊天页边距（_widthHandle） */
+html[data-dcc-pointer="on"] [class*="_handle"],
+html[data-dcc-pointer="on"] [class*="_widthHandle"] {
+  cursor: col-resize !important;
 }
 /* 禁用态保留「禁止」提示，比默认箭头更清楚 */
 html[data-dcc-pointer="on"] :disabled,
