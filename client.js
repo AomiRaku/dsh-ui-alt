@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.70';
+    const VERSION = '0.2.71';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -24,6 +24,7 @@ window.__ModuleLoader__.load({
       showBalance: true,
       balanceThreshold: 3,
       pointerNormalize: true,
+      textSelectLimit: true,
     };
 
     const isZh = () => {
@@ -56,6 +57,7 @@ window.__ModuleLoader__.load({
       root.dataset.dccStats = prefs.optimizeStatsLayout ? 'on' : 'off';
       root.dataset.dccBalance = prefs.showBalance ? 'on' : 'off';
       root.dataset.dccPointer = prefs.pointerNormalize ? 'on' : 'off';
+      root.dataset.dccSelect = prefs.textSelectLimit ? 'on' : 'off';
     }
 
     function savePrefs(prefs) {
@@ -597,57 +599,57 @@ html[data-dcc-pointer="on"] [aria-disabled="true"] {
 /* 界面文字一律不可选中（桌面软件的惯例：标题、按钮、标签、菜单不该拖出蓝底），
    只有消息正文与输入区保留可选中。带 !important 是因为宿主自己给若干处写了
    user-select: text，类选择器的优先级高于 html body，不强化压不住。 */
-html body,
-html body * {
+html[data-dcc-select="on"] body,
+html[data-dcc-select="on"] body * {
   user-select: none !important;
   -webkit-user-select: none !important;
 }
 /* 消息正文（含其后代）可选 */
-html body [data-conversation-scroll],
-html body [data-conversation-scroll] * {
+html[data-dcc-select="on"] body [data-conversation-scroll],
+html[data-dcc-select="on"] body [data-conversation-scroll] * {
   user-select: text !important;
   -webkit-user-select: text !important;
 }
 /* 但消息区里的界面元件不算正文：按钮、操作栏、时间、改动卡片一律压回不可选 */
-html body [data-conversation-scroll] button,
-html body [data-conversation-scroll] button *,
-html body [data-conversation-scroll] [role="button"],
-html body [data-conversation-scroll] [role="button"] *,
-html body [data-conversation-scroll] [class*="_action"],
-html body [data-conversation-scroll] [class*="_action"] *,
-html body [data-conversation-scroll] [class*="_time"],
-html body [data-conversation-scroll] time,
-html body [data-conversation-scroll] [data-changed-files="true"],
-html body [data-conversation-scroll] [data-changed-files="true"] * {
+html[data-dcc-select="on"] body [data-conversation-scroll] button,
+html[data-dcc-select="on"] body [data-conversation-scroll] button *,
+html[data-dcc-select="on"] body [data-conversation-scroll] [role="button"],
+html[data-dcc-select="on"] body [data-conversation-scroll] [role="button"] *,
+html[data-dcc-select="on"] body [data-conversation-scroll] [class*="_action"],
+html[data-dcc-select="on"] body [data-conversation-scroll] [class*="_action"] *,
+html[data-dcc-select="on"] body [data-conversation-scroll] [class*="_time"],
+html[data-dcc-select="on"] body [data-conversation-scroll] time,
+html[data-dcc-select="on"] body [data-conversation-scroll] [data-changed-files="true"],
+html[data-dcc-select="on"] body [data-conversation-scroll] [data-changed-files="true"] * {
   user-select: none !important;
   -webkit-user-select: none !important;
 }
 /* 输入框那一片再压回不可选，否则整行（速率、余额、百分比）会被一起拖蓝 */
-html body [data-conversation-region="composer"],
-html body [data-conversation-region="composer"] * {
+html[data-dcc-select="on"] body [data-conversation-region="composer"],
+html[data-dcc-select="on"] body [data-conversation-region="composer"] * {
   user-select: none !important;
   -webkit-user-select: none !important;
 }
 /* 「本轮改动」卡片与消息时间属于界面元件，不是正文，一并压成不可选 */
-html body [data-changed-files="true"],
-html body [data-changed-files="true"] *,
-html body time {
+html[data-dcc-select="on"] body [data-changed-files="true"],
+html[data-dcc-select="on"] body [data-changed-files="true"] *,
+html[data-dcc-select="on"] body time {
   user-select: none !important;
   -webkit-user-select: none !important;
 }
 /* 输入框本身放在最后，覆盖上面那条 */
-html body input,
-html body textarea,
-html body [contenteditable="true"] {
+html[data-dcc-select="on"] body input,
+html[data-dcc-select="on"] body textarea,
+html[data-dcc-select="on"] body [contenteditable="true"] {
   user-select: text !important;
   -webkit-user-select: text !important;
 }
 /* 会话标题（面包屑那一段）可选中，方便复制标题；
    只放行标题区，右侧的按钮组仍是不可选 */
-html body [class*="_titleRow"],
-html body [class*="_titleCluster"],
-html body [class*="_crumb"],
-html body [class*="_crumb"] * {
+html[data-dcc-select="on"] body [class*="_titleRow"],
+html[data-dcc-select="on"] body [class*="_titleCluster"],
+html[data-dcc-select="on"] body [class*="_crumb"],
+html[data-dcc-select="on"] body [class*="_crumb"] * {
   user-select: text !important;
   -webkit-user-select: text !important;
 }
@@ -1455,12 +1457,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             desc: zh ? '将 Windows 端默认字体改为微软雅黑。微软雅黑带有 hinting，使文字在显示设置低于 200% 缩放比例下，更加锐利清晰。若手动设置了字体，或使用 macOS 端，则不受影响。' : 'Use Microsoft YaHei as the default Windows font. It carries hinting, which keeps text sharp below 200% display scaling. Has no effect if you set a font manually, or on macOS.',
             checked: prefs.winFont,
             onChange: update('winFont'),
-          }),
-          h(Row, {
-            title: zh ? '指针样式规范化' : 'Normalize pointer styles',
-            desc: zh ? '遵循桌面软件的指针样式规范，仅链接等跳转性元素会更改指针样式为「手形」。' : 'Follows desktop conventions: only links and other navigational elements show a hand cursor.',
-            checked: prefs.pointerNormalize,
-            onChange: update('pointerNormalize'),
           })),
         h('div', { className: 'dcc-group' },
           h('div', { className: 'dcc-group-title' }, zh ? '布局' : 'Layout'),
@@ -1549,6 +1545,20 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
                 update('balanceThreshold')(Number.isFinite(next) && next >= 0 ? next : 0);
               },
             }))),
+        h('div', { className: 'dcc-group' },
+          h('div', { className: 'dcc-group-title' }, zh ? '规范化' : 'Normalization'),
+          h(Row, {
+            title: zh ? '指针样式规范化' : 'Normalize pointer styles',
+            desc: zh ? '遵循桌面软件的指针样式规范，仅链接等跳转性元素会更改指针样式为「手形」。' : 'Follows desktop conventions: only links and other navigational elements show a hand cursor.',
+            checked: prefs.pointerNormalize,
+            onChange: update('pointerNormalize'),
+          }),
+          h(Row, {
+            title: zh ? '文本可选中限制' : 'Restrict text selection',
+            desc: zh ? '遵循桌面软件的规范，使 UI 界面元素的文本不可被选中。' : 'Follows desktop conventions: text in interface elements cannot be selected.',
+            checked: prefs.textSelectLimit,
+            onChange: update('textSelectLimit'),
+          })),
         h('p', { className: 'dcc-meta' },
           /* 中文之间用一个全角空格（\u3000）分隔，比两个半角空格更稳 */
           zh ? `版本：${VERSION}\u3000更新日期：${UPDATED}` : `Version: ${VERSION}  Updated: ${UPDATED}`));
@@ -1612,6 +1622,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             delete root.dataset.dccStats;
             delete root.dataset.dccBalance;
             delete root.dataset.dccPointer;
+            delete root.dataset.dccSelect;
           };
         }, 'dsh-ui-alt: styles and preference attributes');
 
