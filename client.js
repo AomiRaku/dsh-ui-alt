@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.45';
+    const VERSION = '0.2.46';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1172,7 +1172,9 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
 
       const load = async () => {
         try {
-          const remote = ctx !== null && ctx.remote !== undefined ? ctx.remote : null;
+          /* 必须用 ctx.get('remote')：点号访问 ctx.remote.* 会被 trace，
+             只有在 inject 了该服务的上下文里才可读，渲染回调里拿不到。 */
+          const remote = typeof ctx.get === 'function' ? ctx.get('remote') : null;
           const account = remote !== null && typeof remote === 'object' ? remote.account : undefined;
           if (account === undefined || typeof account.getBalance !== 'function') return;
           const res = await account.getBalance(identity());
