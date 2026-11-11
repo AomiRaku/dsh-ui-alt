@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.41';
+    const VERSION = '0.2.42';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -502,7 +502,7 @@ html[data-dcc-compact-header="off"] .dcc-segmented {
    这样它会跟着「页面边距」一起走，不会顶到内容区外面。 */
 [class*="_dock"]:has(button[aria-haspopup="dialog"]) {
   box-sizing: border-box !important;
-  width: var(--dsh-chat-content-width, 100%) !important;
+  width: calc(var(--dsh-chat-content-width, 100%) + 16px) !important;
   max-width: var(--dsh-chat-content-width, none) !important;
   margin-inline: auto !important;
   justify-content: space-between !important;
