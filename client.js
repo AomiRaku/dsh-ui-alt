@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.40';
+    const VERSION = '0.2.41';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -498,12 +498,13 @@ html[data-dcc-compact-header="off"] .dcc-segmented {
 
 /* ---------- 输入框下方状态行：速率/缓存靠左，上下文环推到最右 ---------- */
 /* 宿主的 _dock 只有 280px 宽且居中，里面是两个子项：左边的胶囊组和包着环的
-   A6Bq1a_root。撑满后改成两端对齐，把环压到右边缘；左右补上与输入框相同的
-   side clearance，否则会顶到内容区外缘、吃掉页面内边距。 */
+   A6Bq1a_root。这里不撑满容器，而是套用聊天内容区的宽度变量并居中——
+   这样它会跟着「页面边距」一起走，不会顶到内容区外面。 */
 [class*="_dock"]:has(button[aria-haspopup="dialog"]) {
   box-sizing: border-box !important;
-  width: 100% !important;
-  padding-inline: 32px !important;
+  width: var(--dsh-chat-content-width, 100%) !important;
+  max-width: var(--dsh-chat-content-width, none) !important;
+  margin-inline: auto !important;
   justify-content: space-between !important;
 }
 [class*="_dock"]:has(button[aria-haspopup="dialog"]) > [class*="_root"]:has(button[aria-haspopup="dialog"]) {
