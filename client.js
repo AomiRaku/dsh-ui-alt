@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.20';
+    const VERSION = '0.2.21';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -440,15 +440,16 @@ div:has(> [data-conversation-tabs]) {
 [class*="_viewsMore"] {
   display: none !important;
 }
-/* 分组按钮：外框 + 白底 + 细边框，和顶部那排官方按钮同一个观感；
-   段与段之间用一条分隔线切开，选中项用次级底色压住。 */
+/* 分组按钮：与顶部官方按钮对齐——box-sizing 让 height 含边框，
+   圆角用 sm(8px) 而不是 md(12px)，描边用更浅的 l1。 */
 .dcc-segmented {
+  box-sizing: border-box;
   display: inline-flex;
   align-items: stretch;
   height: 28px;
   padding: 0;
-  border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: var(--dsw-radius-md, 6px);
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: var(--dsw-radius-sm, 8px);
   background: var(--dsw-alias-bg-layer-1);
   overflow: hidden;
 }
@@ -466,15 +467,15 @@ div:has(> [data-conversation-tabs]) {
   transition: background-color .12s, color .12s;
 }
 .dcc-seg + .dcc-seg {
-  border-left: 1px solid var(--dsw-alias-border-l2);
+  border-left: 1px solid var(--dsw-alias-border-l1);
 }
-.dcc-seg:hover {
+.dcc-seg:hover:not([data-active="true"]) {
   background: var(--dsw-alias-interactive-bg-hover);
   color: var(--dsw-alias-label-primary);
 }
 .dcc-seg[data-active="true"] {
-  background: var(--dsw-alias-bg-layer-2);
-  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-state-business-primary);
+  color: #fff;
   font-weight: 500;
 }
 
