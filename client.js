@@ -6,8 +6,8 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.13';
-    const UPDATED = '2026-11-09';
+    const VERSION = '0.2.14';
+    const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
       invertNewSession: true,
@@ -935,6 +935,30 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
     }
 
+    /**
+     * 「移除工作区与会话悬停提示」不能只把卡片藏起来：
+     * 宿主仍在监听「进入行」这件事，800ms 后照样渲染卡片内容、做 fixed 定位，
+     * 卡顿正是从这里来的。这里在捕获阶段截住「从行外进入行」的那一次 pointerover，
+     * React 收不到事件，卡片根本不会打开。
+     * 行内元素之间的移动照常放行，所以按钮的 Tooltip 不受影响。
+     */
+    function installHoverCardBlocker() {
+      const onOver = (event) => {
+        if (document.documentElement.dataset.dccHover !== 'off') return;
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const row = target.closest('[class*="_sessionRow"], [class*="_projectRow"]');
+        if (row === null) return;
+        /* 已经在行内移动，不是「进入」，放行给宿主 */
+        const related = event.relatedTarget;
+        if (related instanceof Node && row.contains(related)) return;
+        event.stopPropagation();
+      };
+
+      document.addEventListener('pointerover', onOver, true);
+      return () => document.removeEventListener('pointerover', onOver, true);
+    }
+
     function Switch(props) {
       return h('label', { className: 'dcc-switch' },
         h('input', {
@@ -1068,12 +1092,14 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const removeNavToggle = installNavToggle();
           const removeSettingsBack = installSettingsBackButton();
           const removeRowActionFilter = installRowActionFilter();
+          const removeHoverCardBlocker = installHoverCardBlocker();
           return () => {
             removeCss();
             removeNewSessionRow();
             removeNavToggle();
             removeSettingsBack();
             removeRowActionFilter();
+            removeHoverCardBlocker();
             const root = document.documentElement;
             delete root.dataset.dccRadius;
             delete root.dataset.dccNew;
