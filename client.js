@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.19';
+    const VERSION = '0.2.20';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -440,33 +440,42 @@ div:has(> [data-conversation-tabs]) {
 [class*="_viewsMore"] {
   display: none !important;
 }
+/* 分组按钮：外框 + 白底 + 细边框，和顶部那排官方按钮同一个观感；
+   段与段之间用一条分隔线切开，选中项用次级底色压住。 */
 .dcc-segmented {
   display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  padding: 1px;
+  align-items: stretch;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--dsw-alias-border-l2);
   border-radius: var(--dsw-radius-md, 6px);
-  background: var(--dsw-alias-bg-layer-2);
+  background: var(--dsw-alias-bg-layer-1);
+  overflow: hidden;
 }
 .dcc-seg {
+  display: inline-flex;
+  align-items: center;
   border: 0;
   background: transparent;
   color: var(--dsw-alias-label-secondary);
   font: inherit;
   font-size: 12px;
-  line-height: 16px;
-  padding: 1px 6px;
-  border-radius: var(--dsw-radius-sm, 4px);
+  line-height: 1;
+  padding: 0 10px;
   cursor: pointer;
   transition: background-color .12s, color .12s;
 }
+.dcc-seg + .dcc-seg {
+  border-left: 1px solid var(--dsw-alias-border-l2);
+}
 .dcc-seg:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
   color: var(--dsw-alias-label-primary);
 }
 .dcc-seg[data-active="true"] {
-  background: var(--dsw-alias-bg-layer-1);
+  background: var(--dsw-alias-bg-layer-2);
   color: var(--dsw-alias-label-primary);
-  box-shadow: var(--dsw-shadow-lv1);
+  font-weight: 500;
 }
 
 /* ---------- 已归档会话：标题画删除线 ---------- */
