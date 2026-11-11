@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.74';
+    const VERSION = '0.2.75';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -527,9 +527,9 @@ html[data-dcc-stats="on"] [class*="_dock"] > [class*="_root"]:has(button[aria-ha
 /* 余额：用伪元素 + CSS 变量渲染，不往 React 的 DOM 里插任何节点。
    旁边的速率/缓存是 React 自己渲染的，更新时只改文本；外挂节点会在
    React 重排子节点时被摘掉，于是每次刷新都闪一下——伪元素没有这个问题。
-   注意 data-composer-stat="activity" 是「每个统计项各一个」，不是整组，
-   所以只在最后一个后面显示，否则会夹在速率和缓存之间。 */
-html[data-dcc-balance="on"] [data-composer-stat="activity"]:not(:has(~ [data-composer-stat="activity"]))::after {
+   注意统计项是「activity / usage 各占一个 anchor」，不是同组，
+   所以挂在「后面没有其他统计项」的那个上，也就是整排的最后一个。 */
+html[data-dcc-balance="on"] [data-composer-stat]:not(:has(~ [data-composer-stat]))::after {
   content: var(--dcc-balance-text, '');
   margin-left: 16px;
   font-size: 12px;
@@ -538,7 +538,7 @@ html[data-dcc-balance="on"] [data-composer-stat="activity"]:not(:has(~ [data-com
   white-space: nowrap;
 }
 /* 低于阈值时整段变红 */
-html[data-dcc-balance="on"][data-dcc-balance-low="on"] [data-composer-stat="activity"]:not(:has(~ [data-composer-stat="activity"]))::after {
+html[data-dcc-balance="on"][data-dcc-balance-low="on"] [data-composer-stat]:not(:has(~ [data-composer-stat]))::after {
   color: var(--dsw-alias-state-error-primary);
 }
 /* 设置页的数值输入框 */
