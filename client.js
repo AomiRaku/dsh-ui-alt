@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.50';
+    const VERSION = '0.2.51';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1167,27 +1167,34 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           return;
         }
         if (pill === null || !pill.isConnected) {
-          pill = document.createElement('span');
-          pill.className = 'dcc-balance';
-          /* 宿主没有钱包类图标，这里按同一套 outline 规格手绘一个：
-             16px 视框、1.2 描边、无填充。 */
-          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-          svg.setAttribute('viewBox', '0 0 16 16');
-          svg.setAttribute('width', '16');
-          svg.setAttribute('height', '16');
-          svg.setAttribute('fill', 'none');
-          svg.setAttribute('stroke', 'currentColor');
-          svg.setAttribute('stroke-width', '1');
-          svg.setAttribute('aria-hidden', 'true');
-          svg.innerHTML = '<rect x="1.5" y="4" width="13" height="9" rx="2.5"/>'
-            + '<path d="M1.5 7.2h13"/>'
-            + '<circle cx="11.6" cy="9.8" r="0.9" fill="currentColor" stroke="none"/>';
-          pill.appendChild(svg);
-          const label = document.createElement('span');
-          label.className = 'dcc-balance-label';
-          pill.appendChild(label);
-          const ringRoot = dock.querySelector('[class*="_root"]:has(button[aria-haspopup="dialog"])');
-          dock.insertBefore(pill, ringRoot);
+          /* 插件可能被重复安装/重载，两个闭包各插一个就会看到两个余额。
+             先找现成的复用，保证页面上永远只有一个。 */
+          const existing = dock.querySelector('.dcc-balance');
+          if (existing !== null) {
+            pill = existing;
+          } else {
+            pill = document.createElement('span');
+            pill.className = 'dcc-balance';
+            /* 宿主没有钱包类图标，这里按同一套 outline 规格手绘一个：
+               16px 视框、1 描边、无填充。 */
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('viewBox', '0 0 16 16');
+            svg.setAttribute('width', '16');
+            svg.setAttribute('height', '16');
+            svg.setAttribute('fill', 'none');
+            svg.setAttribute('stroke', 'currentColor');
+            svg.setAttribute('stroke-width', '1');
+            svg.setAttribute('aria-hidden', 'true');
+            svg.innerHTML = '<rect x="1.5" y="4" width="13" height="9" rx="2.5"/>'
+              + '<path d="M1.5 7.2h13"/>'
+              + '<circle cx="11.6" cy="9.8" r="0.9" fill="currentColor" stroke="none"/>';
+            pill.appendChild(svg);
+            const label = document.createElement('span');
+            label.className = 'dcc-balance-label';
+            pill.appendChild(label);
+            const ringRoot = dock.querySelector('[class*="_root"]:has(button[aria-haspopup="dialog"])');
+            dock.insertBefore(pill, ringRoot);
+          }
         }
         const label = pill.querySelector('.dcc-balance-label');
         const text2 = `余额 ${text}`;
