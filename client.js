@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.23';
+    const VERSION = '0.2.24';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -446,9 +446,9 @@ div:has(> [data-conversation-tabs]) {
   box-sizing: border-box;
   display: inline-flex;
   align-items: stretch;
-  height: 28px;
+  height: 24px;
   padding: 0;
-  border: 1px solid var(--dsw-alias-border-l3);
+  border: 0.5px solid var(--dsw-alias-border-l3);
   border-radius: var(--dsw-radius-sm, 8px);
   background: var(--dsw-alias-bg-layer-1);
   overflow: hidden;
@@ -467,7 +467,7 @@ div:has(> [data-conversation-tabs]) {
   transition: background-color .12s, color .12s;
 }
 .dcc-seg + .dcc-seg {
-  border-left: 1px solid var(--dsw-alias-border-l3);
+  border-left: 0.5px solid var(--dsw-alias-border-l3);
 }
 .dcc-seg:hover:not([data-active="true"]) {
   background: var(--dsw-alias-interactive-bg-hover);
@@ -562,7 +562,7 @@ html [class*="_overlay"]:has([class*="_navTitle"]) [class*="_navCell"] {
   align-items: center;
   justify-content: center;
   width: 28px;
-  height: 28px;
+  height: 24px;
   padding: 0;
   border: 0;
   border-radius: var(--dsw-radius-sm);
