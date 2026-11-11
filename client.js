@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.68';
+    const VERSION = '0.2.69';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -471,6 +471,9 @@ html[data-dcc-compact-header="off"] .dcc-segmented {
   display: inline-flex;
   align-items: stretch;
   height: 24px;
+  /* 宿主给 headerUtilities 的 gap 是 8px；我们这层带 0.5px 描边和圆角，
+     视觉上边界内缩、显得比别的元素远一点，补 2px 回来 */
+  margin-right: -2px;
   padding: 0;
   border: 0.5px solid var(--dsw-alias-border-l4);
   border-radius: var(--dsw-radius-sm, 8px);
