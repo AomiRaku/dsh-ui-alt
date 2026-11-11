@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.67';
+    const VERSION = '0.2.68';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -604,6 +604,20 @@ html body [data-conversation-scroll],
 html body [data-conversation-scroll] * {
   user-select: text !important;
   -webkit-user-select: text !important;
+}
+/* 但消息区里的界面元件不算正文：按钮、操作栏、时间、改动卡片一律压回不可选 */
+html body [data-conversation-scroll] button,
+html body [data-conversation-scroll] button *,
+html body [data-conversation-scroll] [role="button"],
+html body [data-conversation-scroll] [role="button"] *,
+html body [data-conversation-scroll] [class*="_action"],
+html body [data-conversation-scroll] [class*="_action"] *,
+html body [data-conversation-scroll] [class*="_time"],
+html body [data-conversation-scroll] time,
+html body [data-conversation-scroll] [data-changed-files="true"],
+html body [data-conversation-scroll] [data-changed-files="true"] * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
 }
 /* 输入框那一片再压回不可选，否则整行（速率、余额、百分比）会被一起拖蓝 */
 html body [data-conversation-region="composer"],
