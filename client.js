@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.36';
+    const VERSION = '0.2.35';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -494,14 +494,6 @@ html[data-dcc-compact-header="off"] .dcc-segmented {
   background: transparent;
   color: var(--dsw-alias-state-business-primary);
   font-weight: 500;
-}
-
-/* ---------- 输入框下方状态区：只留上下文环，其余收进浮窗 ---------- */
-/* 速率和缓存命中是两个 _pill（图标分别是 gauge / database），先隐藏掉，
-   内容由脚本搬进上下文浮窗。用图标做锚点，不依赖哈希类名。 */
-[data-conversation-region="composer"] [class*="_pill"]:has([data-icon="dsw-icon-gauge-outline-regular"]),
-[data-conversation-region="composer"] [class*="_pill"]:has([data-icon="dsw-icon-database-outline-regular"]) {
-  display: none !important;
 }
 
 /* ---------- 已归档会话：标题画删除线 ---------- */
@@ -1122,55 +1114,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
     }
 
-    /**
-     * 把上下文占用环从输入框下方挪到「完全权限」右边。
-     * 环是 aria-haspopup="dialog" 的按钮，浮窗位置由它自身的 rect 计算，
-     * 所以挪过去之后弹窗也会跟着出现在新位置。
-     * React 重渲染可能把节点搬回原处，用 observer 兜底再挪一次。
-     */
-    function installContextRingMover() {
-      let observer = null;
-      let timer = null;
-
-      const findRing = () => document.querySelector('button[aria-haspopup="dialog"][aria-label*="上下文"], button[aria-haspopup="dialog"][aria-label*="context" i]');
-
-      const findPerm = () => {
-        const region = document.querySelector('[data-conversation-region="composer"]');
-        if (region === null) return null;
-        const buttons = Array.from(region.querySelectorAll('button'));
-        return buttons.find((b) => {
-          const text = (b.textContent || '').trim();
-          return text.includes('完全权限') || text.includes('Full access');
-        }) || null;
-      };
-
-      const place = () => {
-        const ring = findRing();
-        const perm = findPerm();
-        if (ring === null || perm === null) return;
-        if (perm.nextElementSibling === ring) return;
-        if (perm.parentElement === null) return;
-        perm.parentElement.insertBefore(ring, perm.nextSibling);
-      };
-
-      const schedule = () => {
-        if (timer !== null) return;
-        timer = window.setTimeout(() => {
-          timer = null;
-          place();
-        }, 300);
-      };
-
-      place();
-      observer = new MutationObserver(schedule);
-      observer.observe(document.body, { childList: true, subtree: true });
-
-      return () => {
-        observer.disconnect();
-        if (timer !== null) clearTimeout(timer);
-      };
-    }
-
     function Switch(props) {
       return h('label', { className: 'dcc-switch' },
         h('input', {
@@ -1312,7 +1255,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const removeRowActionFilter = installRowActionFilter();
           const removeHoverCardBlocker = installHoverCardBlocker();
           const removeViewSwitcher = installViewSwitcher();
-          const removeRingMover = installContextRingMover();
           return () => {
             removeCss();
             removeNewSessionRow();
@@ -1321,7 +1263,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             removeRowActionFilter();
             removeHoverCardBlocker();
             removeViewSwitcher();
-            removeRingMover();
             const root = document.documentElement;
             delete root.dataset.dccRadius;
             delete root.dataset.dccNew;
