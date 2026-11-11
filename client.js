@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.49';
+    const VERSION = '0.2.50';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1177,7 +1177,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           svg.setAttribute('height', '16');
           svg.setAttribute('fill', 'none');
           svg.setAttribute('stroke', 'currentColor');
-          svg.setAttribute('stroke-width', '1.2');
+          svg.setAttribute('stroke-width', '1');
           svg.setAttribute('aria-hidden', 'true');
           svg.innerHTML = '<rect x="1.5" y="4" width="13" height="9" rx="2.5"/>'
             + '<path d="M1.5 7.2h13"/>'
