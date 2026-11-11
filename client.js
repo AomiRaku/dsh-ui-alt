@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.73';
+    const VERSION = '0.2.74';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -526,17 +526,19 @@ html[data-dcc-stats="on"] [class*="_dock"] > [class*="_root"]:has(button[aria-ha
 
 /* 余额：用伪元素 + CSS 变量渲染，不往 React 的 DOM 里插任何节点。
    旁边的速率/缓存是 React 自己渲染的，更新时只改文本；外挂节点会在
-   React 重排子节点时被摘掉，于是每次刷新都闪一下——伪元素没有这个问题。 */
-html[data-dcc-balance="on"] [data-composer-stat="activity"]::after {
+   React 重排子节点时被摘掉，于是每次刷新都闪一下——伪元素没有这个问题。
+   注意 data-composer-stat="activity" 是「每个统计项各一个」，不是整组，
+   所以只在最后一个后面显示，否则会夹在速率和缓存之间。 */
+html[data-dcc-balance="on"] [data-composer-stat="activity"]:not(:has(~ [data-composer-stat="activity"]))::after {
   content: var(--dcc-balance-text, '');
-  margin-left: 12px;
+  margin-left: 16px;
   font-size: 12px;
   line-height: 1;
   color: var(--dsw-alias-label-tertiary);
   white-space: nowrap;
 }
 /* 低于阈值时整段变红 */
-html[data-dcc-balance="on"][data-dcc-balance-low="on"] [data-composer-stat="activity"]::after {
+html[data-dcc-balance="on"][data-dcc-balance-low="on"] [data-composer-stat="activity"]:not(:has(~ [data-composer-stat="activity"]))::after {
   color: var(--dsw-alias-state-error-primary);
 }
 /* 设置页的数值输入框 */
