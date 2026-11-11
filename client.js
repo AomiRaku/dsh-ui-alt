@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.37';
+    const VERSION = '0.2.38';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -497,15 +497,13 @@ html[data-dcc-compact-header="off"] .dcc-segmented {
 }
 
 /* ---------- 输入框下方状态行：速率/缓存靠左，上下文环推到最右 ---------- */
-/* 宿主把这一行做成 _dock（只 280px 宽、justify-content:center），
-   margin-left:auto 没有可吃的空间。所以先把 dock 撑满并改成左起，
-   环的 auto 才能把它顶到与输入框同宽的右边缘。 */
+/* 宿主的 _dock 只有 280px 宽且居中，里面是两个子项：左边的胶囊组和包着环的
+   A6Bq1a_root。撑满后改成两端对齐，就能把环压到与输入框同宽的右边缘。 */
 [class*="_dock"]:has(button[aria-haspopup="dialog"]) {
   width: 100% !important;
-  justify-content: flex-start !important;
+  justify-content: space-between !important;
 }
-[data-conversation-region="composer"] button[aria-haspopup="dialog"][aria-label*="上下文"],
-[data-conversation-region="composer"] button[aria-haspopup="dialog"][aria-label*="context" i] {
+[class*="_dock"]:has(button[aria-haspopup="dialog"]) > [class*="_root"]:has(button[aria-haspopup="dialog"]) {
   margin-left: auto !important;
 }
 
