@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.16';
+    const VERSION = '0.2.17';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -164,8 +164,12 @@ html[data-dcc-radius="on"] body {
   --dsw-shadow-lv2: 0 2px 6px rgba(0, 0, 0, .05) !important;
   --dsw-shadow-lv3: 0 8px 24px rgba(0, 0, 0, .10) !important;
 }
+/* 宿主只在 _preview / _media 这两个浮层上单独定义了这个变量，压住它们本身即可。
+   早先用 body * 给每个元素都写一遍，会把这套声明的失效范围放大到全文档，
+   悬停/滚动时样式重算明显变慢，已收窄。 */
 html[data-dcc-radius="on"] body,
-html[data-dcc-radius="on"] body * {
+html[data-dcc-radius="on"] [class*="_preview_"],
+html[data-dcc-radius="on"] [class*="_media_"] {
   --dsw-elevation-panel: var(--dsw-elevation-stroke), 0 2px 6px rgba(0, 0, 0, .04) !important;
 }
 
