@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.54';
+    const VERSION = '0.2.55';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1415,7 +1415,11 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
               className: 'dcc-number',
               value: prefs.balanceThreshold,
               'aria-label': zh ? '余额警告阈值' : 'Low balance threshold',
-              onChange: (event) => update('balanceThreshold')(Number(event.target.value)),
+              onChange: (event) => {
+                /* min 属性只是浏览器提示，拦不住手输负数或非法值，这里兜底归 0 */
+                const next = Number(event.target.value);
+                update('balanceThreshold')(Number.isFinite(next) && next >= 0 ? next : 0);
+              },
             }))),
         h('p', { className: 'dcc-meta' },
           /* 中文之间用一个全角空格（\u3000）分隔，比两个半角空格更稳 */

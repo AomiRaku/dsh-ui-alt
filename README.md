@@ -64,6 +64,10 @@ plugin_manager install_bundle  target=<本仓库绝对路径>
 | `data-dcc-font` | `on` / `off` |
 | `data-dcc-full` | `on` / `off` |
 | `data-dcc-hover` | `on` / `off` |
+| `data-dcc-row-buttons` | `on` / `off` |
+| `data-dcc-compact-header` | `on` / `off` |
+| `data-dcc-stats` | `on` / `off` |
+| `data-dcc-balance` | `on` / `off` |
 
 ## 目录结构
 
@@ -119,7 +123,9 @@ plugin_manager install_bundle target=<本仓库绝对路径>
 - 克隆出来的新会话行没有原按钮的 Tooltip 与快捷键提示（点击行为已转发，功能正常）。
 - 设置返回按钮依赖宿主的 `_navTitle` / `_close` 类名。
 - 「统一新会话按钮」关闭时，折叠导航的首位是隐藏的克隆行，计数偏移一项；显示效果正常。
-- 滚动时鼠标划过会话行会触发宿主的 HoverCard 预览，可能造成卡顿；这是宿主行为，插件侧没有干预。
+- 侧栏悬停与滚动的开销主要来自宿主自身的样式重算（实测渲染占 60% 以上，脚本仅 4%），插件已在事件层拦掉了悬停卡片，但无法消除宿主这一层的成本。
+- 余额取自宿主账户接口，未登录或接口不可用时该项不显示；余额每分钟刷新一次。
+- 余额警告阈值只接受非负数值，负数或非法输入会被归零。
 
 ## License
 
