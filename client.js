@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.44';
+    const VERSION = '0.2.45';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -509,6 +509,14 @@ html[data-dcc-compact-header="off"] .dcc-segmented {
 }
 [class*="_dock"]:has(button[aria-haspopup="dialog"]) > [class*="_root"]:has(button[aria-haspopup="dialog"]) {
   margin-left: auto !important;
+}
+
+/* 余额 pill：跟在状态行左组后面 */
+.dcc-balance {
+  font-size: 12px;
+  line-height: 1;
+  color: var(--dsw-alias-label-tertiary);
+  white-space: nowrap;
 }
 
 /* ---------- 已归档会话：标题画删除线 ---------- */
@@ -1129,6 +1137,74 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
     }
 
+    /**
+     * 在输入框下方的状态行里显示账户余额，走宿主的账户接口
+     * （ctx.remote.account.getBalance）。取不到就静默不显示，不影响其他功能。
+     */
+    function installBalancePill(ctx) {
+      let pill = null;
+      let observer = null;
+      let refresh = null;
+      let text = '';
+
+      const identity = () => ({
+        version: VERSION,
+        locale: navigator.language || 'zh-CN',
+        timezoneOffsetSeconds: -new Date().getTimezoneOffset() * 60,
+      });
+
+      const sync = () => {
+        if (text === '') return;
+        const dock = document.querySelector('[class*="_dock"]');
+        if (dock === null) {
+          if (pill !== null) { pill.remove(); pill = null; }
+          return;
+        }
+        if (pill === null || !pill.isConnected) {
+          pill = document.createElement('span');
+          pill.className = 'dcc-balance';
+          const ringRoot = dock.querySelector('[class*="_root"]:has(button[aria-haspopup="dialog"])');
+          dock.insertBefore(pill, ringRoot);
+        }
+        const label = `余额 ${text}`;
+        if (pill.textContent !== label) pill.textContent = label;
+      };
+
+      const load = async () => {
+        try {
+          const remote = ctx !== null && ctx.remote !== undefined ? ctx.remote : null;
+          const account = remote !== null && typeof remote === 'object' ? remote.account : undefined;
+          if (account === undefined || typeof account.getBalance !== 'function') return;
+          const res = await account.getBalance(identity());
+          if (!res || res.ok !== true) return;
+          const value = res.value;
+          if (!value || value.status !== 'ready') return;
+          const wallets = Array.isArray(value.value) ? value.value : [];
+          const wallet = wallets.find((w) => w.currency === 'CNY') || wallets[0];
+          if (!wallet || typeof wallet.balance !== 'string') return;
+          text = `${wallet.currency === 'CNY' ? '¥' : '$'}${wallet.balance}`;
+          sync();
+        } catch {
+          /* 未登录或接口不可用：不显示余额 */
+        }
+      };
+
+      const schedule = () => {
+        sync();
+      };
+
+      load();
+      refresh = window.setInterval(load, 60000);
+      observer = new MutationObserver(schedule);
+      observer.observe(document.body, { childList: true, subtree: true });
+
+      return () => {
+        observer.disconnect();
+        if (refresh !== null) window.clearInterval(refresh);
+        if (pill !== null) pill.remove();
+      };
+    }
+
     function Switch(props) {
       return h('label', { className: 'dcc-switch' },
         h('input', {
@@ -1270,6 +1346,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const removeRowActionFilter = installRowActionFilter();
           const removeHoverCardBlocker = installHoverCardBlocker();
           const removeViewSwitcher = installViewSwitcher();
+          const removeBalance = installBalancePill(ctx);
           return () => {
             removeCss();
             removeNewSessionRow();
@@ -1278,6 +1355,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             removeRowActionFilter();
             removeHoverCardBlocker();
             removeViewSwitcher();
+            removeBalance();
             const root = document.documentElement;
             delete root.dataset.dccRadius;
             delete root.dataset.dccNew;
