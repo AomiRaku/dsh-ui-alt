@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.65';
+    const VERSION = '0.2.66';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -608,6 +608,13 @@ html body [data-conversation-scroll] * {
 /* 输入框那一片再压回不可选，否则整行（速率、余额、百分比）会被一起拖蓝 */
 html body [data-conversation-region="composer"],
 html body [data-conversation-region="composer"] * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+/* 「本轮改动」卡片与消息时间属于界面元件，不是正文，一并压成不可选 */
+html body [data-changed-files="true"],
+html body [data-changed-files="true"] *,
+html body time {
   user-select: none !important;
   -webkit-user-select: none !important;
 }
