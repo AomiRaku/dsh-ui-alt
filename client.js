@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.84';
+    const VERSION = '0.2.85';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -603,8 +603,10 @@ html[data-dcc-pointer="on"] [role="link"],
 html[data-dcc-pointer="on"] [data-href] {
   cursor: pointer !important;
 }
-/* 「本轮改动」卡片：表头和文件行都是跳转性的（在侧边栏打开预览），保留手形 */
-html[data-dcc-pointer="on"] [data-changed-files="true"] button {
+/* 「本轮改动」卡片：表头和文件行都是跳转性的（在侧边栏打开预览），
+   整张卡片放行手形——只写 button 会漏掉行内的 path / counts 等子元素 */
+html[data-dcc-pointer="on"] [data-changed-files="true"],
+html[data-dcc-pointer="on"] [data-changed-files="true"] * {
   cursor: pointer !important;
 }
 /* 输入区保留文本光标 */
