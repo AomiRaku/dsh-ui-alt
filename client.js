@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.57';
+    const VERSION = '0.2.58';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1191,47 +1191,50 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         timezoneOffsetSeconds: -new Date().getTimezoneOffset() * 60,
       });
 
+      const build = () => {
+        const span = document.createElement('span');
+        span.className = 'dcc-balance';
+        /* 宿主没有钱包类图标，这里按同一套 outline 规格手绘一个：
+           16px 视框、1 描边、无填充。 */
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 16 16');
+        svg.setAttribute('width', '16');
+        svg.setAttribute('height', '16');
+        svg.setAttribute('fill', 'none');
+        svg.setAttribute('stroke', 'currentColor');
+        svg.setAttribute('stroke-width', '1');
+        svg.setAttribute('aria-hidden', 'true');
+        svg.innerHTML = '<rect x="1.5" y="4" width="13" height="9" rx="2.5"/>'
+          + '<path d="M1.5 7.2h13"/>'
+          + '<circle cx="11.6" cy="9.8" r="0.9" fill="currentColor" stroke="none"/>';
+        span.appendChild(svg);
+        const label = document.createElement('span');
+        label.className = 'dcc-balance-label';
+        label.textContent = '余额 ';
+        const amountEl = document.createElement('span');
+        amountEl.className = 'dcc-balance-amount';
+        label.appendChild(amountEl);
+        span.appendChild(label);
+        return span;
+      };
+
       const sync = () => {
         if (text === '') return;
         const dock = document.querySelector('[class*="_dock"]');
-        if (dock === null) {
-          if (pill !== null) { pill.remove(); pill = null; }
-          return;
-        }
-        if (pill === null || !pill.isConnected) {
-          /* 插件可能被重复安装/重载，两个闭包各插一个就会看到两个余额。
-             先找现成的复用，保证页面上永远只有一个。 */
+        if (dock === null) return;
+
+        if (pill === null) {
           const existing = dock.querySelector('.dcc-balance');
-          if (existing !== null) {
-            pill = existing;
-          } else {
-            pill = document.createElement('span');
-            pill.className = 'dcc-balance';
-            /* 宿主没有钱包类图标，这里按同一套 outline 规格手绘一个：
-               16px 视框、1 描边、无填充。 */
-            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            svg.setAttribute('viewBox', '0 0 16 16');
-            svg.setAttribute('width', '16');
-            svg.setAttribute('height', '16');
-            svg.setAttribute('fill', 'none');
-            svg.setAttribute('stroke', 'currentColor');
-            svg.setAttribute('stroke-width', '1');
-            svg.setAttribute('aria-hidden', 'true');
-            svg.innerHTML = '<rect x="1.5" y="4" width="13" height="9" rx="2.5"/>'
-              + '<path d="M1.5 7.2h13"/>'
-              + '<circle cx="11.6" cy="9.8" r="0.9" fill="currentColor" stroke="none"/>';
-            pill.appendChild(svg);
-            const label = document.createElement('span');
-            label.className = 'dcc-balance-label';
-            label.textContent = '余额 ';
-            const amountEl = document.createElement('span');
-            amountEl.className = 'dcc-balance-amount';
-            label.appendChild(amountEl);
-            pill.appendChild(label);
-            const ringRoot = dock.querySelector('[class*="_root"]:has(button[aria-haspopup="dialog"])');
-            dock.insertBefore(pill, ringRoot);
-          }
+          pill = existing !== null ? existing : build();
         }
+        /* 关键：节点只建一次。余额刷新时 React 可能把 dock 的子节点整体重排，
+           手里这个节点会短暂脱离文档——重新插回去即可，不要新建，
+           新建就会看到「消失一下再出现」的闪烁。 */
+        if (!pill.isConnected || pill.parentElement !== dock) {
+          const ringRoot = dock.querySelector('[class*="_root"]:has(button[aria-haspopup="dialog"])');
+          dock.insertBefore(pill, ringRoot);
+        }
+
         const amountEl = pill.querySelector('.dcc-balance-amount');
         if (amountEl === null) return;
         if (amountEl.textContent !== text) amountEl.textContent = text;
