@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.76';
+    const VERSION = '0.2.77';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -535,7 +535,7 @@ html[data-dcc-balance="on"] [data-composer-stat]:not(:has(~ [data-composer-stat]
   align-items: center;
   align-self: center;
   margin-left: 16px;
-  padding-left: 20px;
+  padding-left: 24px;
   min-height: 16px;
   font-size: 12px;
   line-height: 16px;
