@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.28';
+    const VERSION = '0.2.29';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -432,23 +432,16 @@ div:has(> [data-conversation-tabs]) {
   pointer-events: none !important;
 }
 /* 标签行虽然高度归零，但它还在 DOM 里，宿主的 :has(._tabs) 依然成立，
-   标题栏会死守 min-height:76px。这里直接按「没有标签行」的形态压平，
-   并把底部的硬边框换成一段向下淡出的羽化阴影。 */
+   标题栏会死守 min-height:76px。这里直接按「没有标签行」的形态压平。 */
 [class*="_header"]:has([data-conversation-tabs]) {
-  position: relative;
   min-height: 0 !important;
   padding-bottom: 10px !important;
   border-bottom: none !important;
 }
-[class*="_header"]:has([data-conversation-tabs])::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 4px;
-  background: linear-gradient(to bottom, var(--dsw-alias-border-l2), transparent);
-  pointer-events: none;
+/* 去掉硬分界线后，改用 mask 让内容顶部渐隐——滚动时文字淡入而不是被一条线切断。 */
+[data-conversation-scroll] {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 20px);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 20px);
 }
 [class*="_viewsMore"] {
   display: none !important;
