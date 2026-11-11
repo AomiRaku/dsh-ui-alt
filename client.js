@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.75';
+    const VERSION = '0.2.76';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -531,11 +531,22 @@ html[data-dcc-stats="on"] [class*="_dock"] > [class*="_root"]:has(button[aria-ha
    所以挂在「后面没有其他统计项」的那个上，也就是整排的最后一个。 */
 html[data-dcc-balance="on"] [data-composer-stat]:not(:has(~ [data-composer-stat]))::after {
   content: var(--dcc-balance-text, '');
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
   margin-left: 16px;
+  padding-left: 20px;
+  min-height: 16px;
   font-size: 12px;
-  line-height: 1;
+  line-height: 16px;
   color: var(--dsw-alias-label-tertiary);
   white-space: nowrap;
+  /* 钱包图标用 background 贴上去：伪元素里塞不进 SVG 元素，
+     图标颜色只能写死（中灰），深浅主题下都能看 */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%238a8a8a' stroke-width='1'%3E%3Crect x='1.5' y='4' width='13' height='9' rx='2.5'/%3E%3Cpath d='M1.5 7.2h13'/%3E%3Ccircle cx='11.6' cy='9.8' r='0.9' fill='%238a8a8a' stroke='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 16px 16px;
 }
 /* 低于阈值时整段变红 */
 html[data-dcc-balance="on"][data-dcc-balance-low="on"] [data-composer-stat]:not(:has(~ [data-composer-stat]))::after {
