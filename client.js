@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.77';
+    const VERSION = '0.2.78';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1343,11 +1343,9 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const wallets = Array.isArray(value.value) ? value.value : [];
           const wallet = wallets.find((w) => w.currency === 'CNY') || wallets[0];
           if (!wallet || typeof wallet.balance !== 'string') return;
-          /* 余额字符串可能带很长的小数尾，保留到小数点后 4 位并去掉多余的零 */
+          /* 余额统一显示到小数点后 4 位：接口有时只给两位，补零保持格式稳定 */
           const amount = Number(wallet.balance);
-          const shown = Number.isFinite(amount)
-            ? String(Math.round(amount * 10000) / 10000)
-            : wallet.balance;
+          const shown = Number.isFinite(amount) ? amount.toFixed(4) : wallet.balance;
           text = `${wallet.currency === 'CNY' ? '¥' : '$'}${shown}`;
           const limit = Number(readPrefs().balanceThreshold);
           const value2 = Number(String(text).replace(/[^\d.-]/g, ''));
