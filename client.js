@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.83';
+    const VERSION = '0.2.84';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1553,7 +1553,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           h('div', { className: 'dcc-row' },
             h('div', { className: 'dcc-row-text' },
               h('div', { className: 'dcc-row-title' }, zh ? '余额小数位数' : 'Balance decimal places'),
-              h('div', { className: 'dcc-row-desc' }, zh ? '余额显示的小数位数，可选 2 到 6 位。' : 'How many decimal places the balance shows, from 2 to 6.')),
+              h('div', { className: 'dcc-row-desc' }, zh ? '余额显示的小数位数。' : 'How many decimal places the balance shows.')),
             h('select', {
               className: 'dcc-select',
               value: String(prefs.balanceDecimals),
