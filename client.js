@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.25';
+    const VERSION = '0.2.26';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -462,7 +462,7 @@ div:has(> [data-conversation-tabs]) {
   font: inherit;
   font-size: 12px;
   line-height: 1;
-  padding: 0 10px;
+  padding: 0 8px;
   cursor: pointer;
   transition: background-color .12s, color .12s;
 }
