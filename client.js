@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.61';
+    const VERSION = '0.2.62';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -561,10 +561,12 @@ html[data-dcc-balance="off"] .dcc-balance {
 /* ---------- 指针样式规范化 ---------- */
 /* 桌面软件的惯例：只有可跳转的东西才给手形。Web UI 常把「可点击」和「可跳转」
    混为一谈，这里统一压回箭头，再单独放行链接和文本输入区。 */
+/* 用 auto 而不是 default：auto 会按元素类型给浏览器默认光标，
+   文本区仍是 I 型、输入框仍是文本光标；default 会把这些也压成箭头。 */
 html[data-dcc-pointer="on"] *,
 html[data-dcc-pointer="on"] *::before,
 html[data-dcc-pointer="on"] *::after {
-  cursor: default !important;
+  cursor: auto !important;
 }
 /* 跳转性元素保留手形 */
 html[data-dcc-pointer="on"] a[href],
