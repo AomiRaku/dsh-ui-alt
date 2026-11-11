@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.39';
+    const VERSION = '0.2.40';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -503,7 +503,7 @@ html[data-dcc-compact-header="off"] .dcc-segmented {
 [class*="_dock"]:has(button[aria-haspopup="dialog"]) {
   box-sizing: border-box !important;
   width: 100% !important;
-  padding-inline: var(--dsh-composer-side-clearance, 16px) !important;
+  padding-inline: 32px !important;
   justify-content: space-between !important;
 }
 [class*="_dock"]:has(button[aria-haspopup="dialog"]) > [class*="_root"]:has(button[aria-haspopup="dialog"]) {
