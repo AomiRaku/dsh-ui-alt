@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.35';
+    const VERSION = '0.2.36';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -494,6 +494,14 @@ html[data-dcc-compact-header="off"] .dcc-segmented {
   background: transparent;
   color: var(--dsw-alias-state-business-primary);
   font-weight: 500;
+}
+
+/* ---------- 输入框下方状态行：速率/缓存靠左，上下文环推到最右 ---------- */
+/* 环是 aria-haspopup="dialog" 的按钮；margin-left:auto 会让它吃掉行内剩余空间，
+   从而贴住与输入框同宽的右边缘。 */
+[data-conversation-region="composer"] button[aria-haspopup="dialog"][aria-label*="上下文"],
+[data-conversation-region="composer"] button[aria-haspopup="dialog"][aria-label*="context" i] {
+  margin-left: auto !important;
 }
 
 /* ---------- 已归档会话：标题画删除线 ---------- */
