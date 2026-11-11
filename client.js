@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.32';
+    const VERSION = '0.2.33';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -19,6 +19,7 @@ window.__ModuleLoader__.load({
       settingsFullscreen: true,
       hideHoverCard: true,
       hideRowButtons: true,
+      compactHeader: true,
     };
 
     const isZh = () => {
@@ -47,6 +48,7 @@ window.__ModuleLoader__.load({
       root.dataset.dccFull = prefs.settingsFullscreen ? 'on' : 'off';
       root.dataset.dccHover = prefs.hideHoverCard ? 'off' : 'on';
       root.dataset.dccRowButtons = prefs.hideRowButtons ? 'on' : 'off';
+      root.dataset.dccCompactHeader = prefs.compactHeader ? 'on' : 'off';
     }
 
     function savePrefs(prefs) {
@@ -414,11 +416,11 @@ html[data-dcc-row-buttons="on"] [class*="_sessionRow"] [class*="_rowActions"] bu
   display: none !important;
 }
 
-/* ---------- 会话视图切换：标签行并入顶部工具区 ---------- */
+/* ---------- 会话标题栏紧凑化：标签行并入顶部工具区 ---------- */
 /* 注意不能 display:none：宿主按标签行的 clientWidth 计算「能显示几个视图」，
    宽度变 0 会只剩一个「对话」。所以这里只把高度压到 0（不占布局），
    宽度和可见性照旧，量出来的数量才是对的。 */
-div:has(> [data-conversation-tabs]) {
+html[data-dcc-compact-header="on"] div:has(> [data-conversation-tabs]) {
   height: 0 !important;
   min-height: 0 !important;
   max-height: 0 !important;
@@ -433,17 +435,21 @@ div:has(> [data-conversation-tabs]) {
 }
 /* 标签行虽然高度归零，但它还在 DOM 里，宿主的 :has(._tabs) 依然成立，
    标题栏会死守 min-height:76px。这里直接按「没有标签行」的形态压平。 */
-[class*="_header"]:has([data-conversation-tabs]) {
+html[data-dcc-compact-header="on"] [class*="_header"]:has([data-conversation-tabs]) {
   min-height: 0 !important;
   padding-bottom: 10px !important;
   border-bottom: none !important;
 }
 /* 去掉硬分界线后，改用 mask 让内容顶部渐隐——滚动时文字淡入而不是被一条线切断。 */
-[data-conversation-scroll] {
+html[data-dcc-compact-header="on"] [data-conversation-scroll] {
   -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 20px);
   mask-image: linear-gradient(to bottom, transparent 0, #000 20px);
 }
-[class*="_viewsMore"] {
+html[data-dcc-compact-header="on"] [class*="_viewsMore"] {
+  display: none !important;
+}
+/* 开关关掉时，自绘的分段控件不出现，标签行恢复原样 */
+html[data-dcc-compact-header="off"] .dcc-segmented {
   display: none !important;
 }
 /* 分组按钮：与顶部官方按钮对齐——box-sizing 让 height 含边框，
@@ -1060,6 +1066,11 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
 
       const ensure = () => {
+        /* 开关关掉时把自绘控件撤掉，标签行由 CSS 恢复原样 */
+        if (document.documentElement.dataset.dccCompactHeader !== 'on') {
+          if (bar !== null) { bar.remove(); bar = null; }
+          return;
+        }
         const tabs = findTabs();
         const host = findHost();
         if (tabs === null || host === null) {
@@ -1154,6 +1165,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             desc: zh ? '缩小全局圆角、缩小侧栏部分字号、收紧间距，使界面更高效。' : 'Smaller global radii, smaller sidebar type and tighter spacing, for a more efficient interface.',
             checked: prefs.radiusDensity,
             onChange: update('radiusDensity'),
+          }),
+          h(Row, {
+            title: zh ? '会话标题栏紧凑化' : 'Compact session header',
+            desc: zh ? '紧凑化会话标题栏，使会话内容可视范围更大。' : 'Tighten the session header so more of the conversation is visible.',
+            checked: prefs.compactHeader,
+            onChange: update('compactHeader'),
           }),
           h(Row, {
             title: zh ? '统一新会话按钮样式' : 'Unified new-session button',
@@ -1252,6 +1269,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             delete root.dataset.dccFull;
             delete root.dataset.dccHover;
             delete root.dataset.dccRowButtons;
+            delete root.dataset.dccCompactHeader;
           };
         }, 'dsh-ui-alt: styles and preference attributes');
 
