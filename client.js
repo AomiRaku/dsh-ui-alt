@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.27';
+    const VERSION = '0.2.28';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -446,9 +446,8 @@ div:has(> [data-conversation-tabs]) {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 12px;
-  transform: translateY(100%);
-  background: linear-gradient(to bottom, var(--dsw-alias-border-l1), transparent);
+  height: 4px;
+  background: linear-gradient(to bottom, var(--dsw-alias-border-l2), transparent);
   pointer-events: none;
 }
 [class*="_viewsMore"] {
