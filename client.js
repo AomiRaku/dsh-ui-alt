@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.89';
+    const VERSION = '0.2.90';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -453,10 +453,15 @@ html[data-dcc-compact-header="on"] div:has(> [data-conversation-tabs]) {
 html[data-dcc-compact-header="on"] [class*="_header"]:has([data-conversation-tabs]) {
   min-height: 0 !important;
   padding-bottom: 10px !important;
+}
+/* 会话标题栏底部：始终去掉硬分割线，改用内容顶部的 mask 渐隐。
+   这一条不受「会话标题栏紧凑化」开关控制——用户关掉「轨迹」后标题栏本来就矮，
+   没有标签行可压，但那根线依然不该出现。用 headerUtilities 而不是 tabs 定位，
+   保证两种形态（有/无标签行）都能命中。 */
+[class*="_header"]:has([class*="_headerUtilities"]) {
   border-bottom: none !important;
 }
-/* 去掉硬分界线后，改用 mask 让内容顶部渐隐——滚动时文字淡入而不是被一条线切断。 */
-html[data-dcc-compact-header="on"] [data-conversation-scroll] {
+[data-conversation-scroll] {
   -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 20px);
   mask-image: linear-gradient(to bottom, transparent 0, #000 20px);
 }
