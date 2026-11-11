@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.48';
+    const VERSION = '0.2.49';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -511,12 +511,18 @@ html[data-dcc-compact-header="off"] .dcc-segmented {
   margin-left: auto !important;
 }
 
-/* 余额 pill：跟在状态行左组后面 */
+/* 余额 pill：图标 + 文字 */
 .dcc-balance {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 12px;
   line-height: 1;
   color: var(--dsw-alias-label-tertiary);
   white-space: nowrap;
+}
+.dcc-balance svg {
+  flex: none;
 }
 
 /* ---------- 已归档会话：标题画删除线 ---------- */
@@ -1163,11 +1169,29 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         if (pill === null || !pill.isConnected) {
           pill = document.createElement('span');
           pill.className = 'dcc-balance';
+          /* 宿主没有钱包类图标，这里按同一套 outline 规格手绘一个：
+             16px 视框、1.2 描边、无填充。 */
+          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svg.setAttribute('viewBox', '0 0 16 16');
+          svg.setAttribute('width', '16');
+          svg.setAttribute('height', '16');
+          svg.setAttribute('fill', 'none');
+          svg.setAttribute('stroke', 'currentColor');
+          svg.setAttribute('stroke-width', '1.2');
+          svg.setAttribute('aria-hidden', 'true');
+          svg.innerHTML = '<rect x="1.5" y="4" width="13" height="9" rx="2.5"/>'
+            + '<path d="M1.5 7.2h13"/>'
+            + '<circle cx="11.6" cy="9.8" r="0.9" fill="currentColor" stroke="none"/>';
+          pill.appendChild(svg);
+          const label = document.createElement('span');
+          label.className = 'dcc-balance-label';
+          pill.appendChild(label);
           const ringRoot = dock.querySelector('[class*="_root"]:has(button[aria-haspopup="dialog"])');
           dock.insertBefore(pill, ringRoot);
         }
-        const label = `余额 ${text}`;
-        if (pill.textContent !== label) pill.textContent = label;
+        const label = pill.querySelector('.dcc-balance-label');
+        const text2 = `余额 ${text}`;
+        if (label !== null && label.textContent !== text2) label.textContent = text2;
       };
 
       const load = async () => {
