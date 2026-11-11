@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.14';
+    const VERSION = '0.2.15';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -863,8 +863,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
      * 认人：菜单按钮带前者，置顶按钮的 aria-label 里是「置顶会话 / 取消置顶 / pin」。
      */
     function installRowActionFilter() {
-      let observer = null;
-      let timer = null;
       let lastRow = null;
 
       const isPinButton = (btn) => /置顶|pin/i.test(btn.getAttribute('aria-label') || '');
@@ -887,6 +885,9 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         }
       };
 
+      /* 只在这里处理：指针进入哪一行就标记哪一行。
+         早先还挂了一个 MutationObserver 定期全量扫描，滚动时虚拟列表频繁改 DOM，
+         每 400ms 扫一遍所有会话行，反而成了新的卡顿源，已移除。 */
       const onPointer = (event) => {
         if (document.documentElement.dataset.dccRowButtons !== 'on') return;
         const target = event.target;
@@ -897,41 +898,13 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         filterRow(row);
       };
 
-      /* 兜底：行是复用的，按钮可能在后来的渲染里才挂上去，定期把没扫过的行补一遍 */
-      const sweep = () => {
-        if (document.documentElement.dataset.dccRowButtons !== 'on') return;
-        const rows = document.querySelectorAll('[class*="_sessionRow"]:not([data-dcc-scanned])');
-        for (const row of rows) {
-          filterRow(row);
-          row.setAttribute('data-dcc-scanned', '');
-        }
-      };
-
-      const schedule = () => {
-        if (timer !== null) return;
-        timer = window.setTimeout(() => {
-          timer = null;
-          lastRow = null;
-          sweep();
-        }, 400);
-      };
-
       document.addEventListener('pointerover', onPointer, true);
       document.addEventListener('focusin', onPointer, true);
-      sweep();
-      observer = new MutationObserver(schedule);
-      observer.observe(document.body, { childList: true, subtree: true });
-
       return () => {
         document.removeEventListener('pointerover', onPointer, true);
         document.removeEventListener('focusin', onPointer, true);
-        observer.disconnect();
-        if (timer !== null) clearTimeout(timer);
-        const marked = document.querySelectorAll('[data-dcc-hidden], [data-dcc-scanned]');
-        for (const el of marked) {
-          el.removeAttribute('data-dcc-hidden');
-          el.removeAttribute('data-dcc-scanned');
-        }
+        const marked = document.querySelectorAll('[data-dcc-hidden]');
+        for (const el of marked) el.removeAttribute('data-dcc-hidden');
       };
     }
 
