@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.47';
+    const VERSION = '0.2.48';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1184,7 +1184,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const wallets = Array.isArray(value.value) ? value.value : [];
           const wallet = wallets.find((w) => w.currency === 'CNY') || wallets[0];
           if (!wallet || typeof wallet.balance !== 'string') return;
-          text = `${wallet.currency === 'CNY' ? '¥' : '$'}${wallet.balance}`;
+          /* 余额字符串可能带很长的小数尾，保留到小数点后 4 位并去掉多余的零 */
+          const amount = Number(wallet.balance);
+          const shown = Number.isFinite(amount)
+            ? String(Math.round(amount * 10000) / 10000)
+            : wallet.balance;
+          text = `${wallet.currency === 'CNY' ? '¥' : '$'}${shown}`;
           sync();
         } catch {
           /* 未登录或接口不可用：不显示余额 */
