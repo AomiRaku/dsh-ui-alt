@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.72';
+    const VERSION = '0.2.73';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -524,26 +524,20 @@ html[data-dcc-stats="on"] [class*="_dock"] > [class*="_root"]:has(button[aria-ha
   margin-left: auto !important;
 }
 
-/* 余额 pill：图标 + 文字 */
-.dcc-balance {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+/* 余额：用伪元素 + CSS 变量渲染，不往 React 的 DOM 里插任何节点。
+   旁边的速率/缓存是 React 自己渲染的，更新时只改文本；外挂节点会在
+   React 重排子节点时被摘掉，于是每次刷新都闪一下——伪元素没有这个问题。 */
+html[data-dcc-balance="on"] [data-composer-stat="activity"]::after {
+  content: var(--dcc-balance-text, '');
+  margin-left: 12px;
   font-size: 12px;
   line-height: 1;
   color: var(--dsw-alias-label-tertiary);
   white-space: nowrap;
 }
-.dcc-balance svg {
-  flex: none;
-}
-/* 「显示余额」关掉时整个 pill 不出现 */
-html[data-dcc-balance="off"] .dcc-balance {
-  display: none !important;
-}
-/* 余额低于阈值时，只有金额数字变红 */
-.dcc-balance-low {
-  color: var(--dsw-alias-state-error-primary) !important;
+/* 低于阈值时整段变红 */
+html[data-dcc-balance="on"][data-dcc-balance-low="on"] [data-composer-stat="activity"]::after {
+  color: var(--dsw-alias-state-error-primary);
 }
 /* 设置页的数值输入框 */
 .dcc-number {
@@ -1299,10 +1293,9 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
      * （ctx.remote.account.getBalance）。取不到就静默不显示，不影响其他功能。
      */
     function installBalancePill(ctx) {
-      let pill = null;
-      let observer = null;
       let refresh = null;
       let text = '';
+      let low = false;
 
       const identity = () => ({
         version: VERSION,
@@ -1310,61 +1303,17 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         timezoneOffsetSeconds: -new Date().getTimezoneOffset() * 60,
       });
 
-      const build = () => {
-        const span = document.createElement('span');
-        span.className = 'dcc-balance';
-        /* 宿主没有钱包类图标，这里按同一套 outline 规格手绘一个：
-           16px 视框、1 描边、无填充。 */
-        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('viewBox', '0 0 16 16');
-        svg.setAttribute('width', '16');
-        svg.setAttribute('height', '16');
-        svg.setAttribute('fill', 'none');
-        svg.setAttribute('stroke', 'currentColor');
-        svg.setAttribute('stroke-width', '1');
-        svg.setAttribute('aria-hidden', 'true');
-        svg.innerHTML = '<rect x="1.5" y="4" width="13" height="9" rx="2.5"/>'
-          + '<path d="M1.5 7.2h13"/>'
-          + '<circle cx="11.6" cy="9.8" r="0.9" fill="currentColor" stroke="none"/>';
-        span.appendChild(svg);
-        const label = document.createElement('span');
-        label.className = 'dcc-balance-label';
-        label.textContent = '余额 ';
-        const amountEl = document.createElement('span');
-        amountEl.className = 'dcc-balance-amount';
-        label.appendChild(amountEl);
-        span.appendChild(label);
-        return span;
-      };
-
+      /* 只写 CSS 变量和 html 上的标记位，不碰 React 的节点树。
+         伪元素没有「被 React 摘掉再补回」这一步，所以刷新时不会闪。 */
       const sync = () => {
         if (text === '') return;
-        const dock = document.querySelector('[class*="_dock"]');
-        if (dock === null) return;
-
-        if (pill === null) {
-          const existing = dock.querySelector('.dcc-balance');
-          pill = existing !== null ? existing : build();
+        const root = document.documentElement;
+        const next = JSON.stringify(`余额 ${text}`);
+        if (root.style.getPropertyValue('--dcc-balance-text') !== next) {
+          root.style.setProperty('--dcc-balance-text', next);
         }
-        /* 只有在真的脱离文档时才补回去。
-           之前用 parentElement !== dock 判断，一旦 React 重建了 dock，
-           这个条件恒成立，就会把节点从旧 dock 搬到新 dock——
-           移动 DOM 节点本身要重绘，于是每刷新一次就闪一下。 */
-        if (!pill.isConnected) {
-          const ringRoot = dock.querySelector('[class*="_root"]:has(button[aria-haspopup="dialog"])');
-          dock.insertBefore(pill, ringRoot);
-        }
-
-        const amountEl = pill.querySelector('.dcc-balance-amount');
-        if (amountEl === null) return;
-        if (amountEl.textContent !== text) amountEl.textContent = text;
-        /* 低于阈值时只让金额数字变红，前面的「余额」两个字保持弱色 */
-        const limit = Number(readPrefs().balanceThreshold);
-        const value = Number(String(text).replace(/[^\d.-]/g, ''));
-        const low = Number.isFinite(limit) && Number.isFinite(value) && value < limit;
-        if (amountEl.classList.contains('dcc-balance-low') !== low) {
-          amountEl.classList.toggle('dcc-balance-low', low);
-        }
+        const flag = low ? 'on' : 'off';
+        if (root.dataset.dccBalanceLow !== flag) root.dataset.dccBalanceLow = flag;
       };
 
       const load = async () => {
@@ -1387,25 +1336,22 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             ? String(Math.round(amount * 10000) / 10000)
             : wallet.balance;
           text = `${wallet.currency === 'CNY' ? '¥' : '$'}${shown}`;
+          const limit = Number(readPrefs().balanceThreshold);
+          const value2 = Number(String(text).replace(/[^\d.-]/g, ''));
+          low = Number.isFinite(limit) && Number.isFinite(value2) && value2 < limit;
           sync();
         } catch {
           /* 未登录或接口不可用：不显示余额 */
         }
       };
 
-      const schedule = () => {
-        sync();
-      };
-
       load();
       refresh = window.setInterval(load, 60000);
-      observer = new MutationObserver(schedule);
-      observer.observe(document.body, { childList: true, subtree: true });
 
       return () => {
-        observer.disconnect();
         if (refresh !== null) window.clearInterval(refresh);
-        if (pill !== null) pill.remove();
+        document.documentElement.style.removeProperty('--dcc-balance-text');
+        delete document.documentElement.dataset.dccBalanceLow;
       };
     }
 
