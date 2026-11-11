@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.18';
+    const VERSION = '0.2.17';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -411,20 +411,6 @@ html[data-dcc-hover="off"] [class*="_bridge_bgejw"] {
    分不出谁是谁，所以保留哪几个由脚本按 data-context-menu-trigger / aria-label 判定，
    再打上 data-dcc-hidden，这里只负责隐藏。 */
 html[data-dcc-row-buttons="on"] [class*="_sessionRow"] [class*="_rowActions"] button[data-dcc-hidden] {
-  display: none !important;
-}
-
-/* ---------- 过程标签：工具调用 / 思考 / 编辑等 ---------- */
-/* 结构是 [data-disclosure-row] > ... > span[_title_] + span[_sep] + span[_summary]，
-   _sep 是个空的装饰 span（CSS 画的点），去掉它标题和摘要自然靠拢。
-   标题加一个小圆角矩形衬底，和后面的摘要区分开。 */
-[data-disclosure-row="true"] [class*="_title_"] {
-  padding: 0 6px;
-  border-radius: var(--dsw-radius-sm, 4px);
-  background: var(--dsw-alias-bg-layer-2);
-  margin-right: 2px;
-}
-[data-disclosure-row="true"] [class*="_sep"][aria-hidden="true"] {
   display: none !important;
 }
 
