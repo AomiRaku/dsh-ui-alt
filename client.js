@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.56';
+    const VERSION = '0.2.57';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -620,6 +620,7 @@ html[data-dcc-full="on"] [class*="_overlay"]:has([class*="_navTitle"]) [class*="
   display: none !important;
 }
 html[data-dcc-full="on"] [class*="_overlay"]:has([class*="_navTitle"]) [class*="_navTitle"] {
+  position: relative;
   padding-left: 52px !important;
   /* 手型由脚本按文字实际矩形设置，见 installSettingsBackButton */
 }
@@ -632,8 +633,9 @@ html [class*="_overlay"]:has([class*="_navTitle"]) [class*="_navCell"] {
 }
 .dcc-settings-back {
   position: absolute;
-  top: 20px;
+  top: 50%;
   left: 14px;
+  transform: translateY(-50%);
   z-index: 2;
   display: inline-flex;
   align-items: center;
@@ -869,10 +871,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       let timer = null;
       let rafId = 0;
 
-      const findPanel = () => {
-        const title = document.querySelector('[class*="_navTitle"]');
-        return title === null ? null : title.parentElement;
-      };
+      const findTitle = () => document.querySelector('[class*="_navTitle"]');
 
       const closePanel = (panel) => {
         const close = panel.querySelector('[class*="_header"] [class*="_close"]');
@@ -880,13 +879,15 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
 
       const ensure = () => {
-        const panel = findPanel();
-        if (panel === null) {
+        /* 按钮挂在标题元素内部、垂直居中，这样和文字的中心线天然一致；
+           早先挂在面板上做绝对定位，两边各算各的 top，怎么调都差一截。 */
+        const title = findTitle();
+        if (title === null || title.parentElement === null) {
           if (btn !== null) btn.remove();
           btn = null;
           return;
         }
-        if (btn !== null && btn.isConnected && btn.parentElement === panel) return;
+        if (btn !== null && btn.isConnected && btn.parentElement === title) return;
         if (btn !== null) btn.remove();
         btn = document.createElement('button');
         btn.type = 'button';
@@ -896,8 +897,8 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         btn.innerHTML = '<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">'
           + '<path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.6"'
           + ' stroke-linecap="round" stroke-linejoin="round"/></svg>';
-        btn.addEventListener('click', () => closePanel(panel));
-        panel.appendChild(btn);
+        btn.addEventListener('click', () => closePanel(title.parentElement));
+        title.appendChild(btn);
       };
 
       const insertSoon = () => {
