@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.66';
+    const VERSION = '0.2.67';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -622,6 +622,15 @@ html body time {
 html body input,
 html body textarea,
 html body [contenteditable="true"] {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+/* 会话标题（面包屑那一段）可选中，方便复制标题；
+   只放行标题区，右侧的按钮组仍是不可选 */
+html body [class*="_titleRow"],
+html body [class*="_titleCluster"],
+html body [class*="_crumb"],
+html body [class*="_crumb"] * {
   user-select: text !important;
   -webkit-user-select: text !important;
 }
