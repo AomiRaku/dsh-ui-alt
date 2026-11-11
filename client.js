@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.81';
+    const VERSION = '0.2.82';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1338,6 +1338,18 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         if (root.dataset.dccBalanceLow !== flag) root.dataset.dccBalanceLow = flag;
       };
 
+      /* 只根据已拿到的余额重算「是否低于阈值」。
+         设置页改阈值时立即调用，否则要等下一分钟拉余额才生效。 */
+      const recalc = () => {
+        if (text === '') return;
+        const limit = Number(readPrefs().balanceThreshold);
+        const amount = Number(String(text).replace(/[^\d.-]/g, ''));
+        low = Number.isFinite(limit) && Number.isFinite(amount) && amount < limit;
+        sync();
+      };
+
+      const onThreshold = () => recalc();
+
       const load = async () => {
         try {
           /* 必须用 ctx.get('remote')：点号访问 ctx.remote.* 会被 trace，
@@ -1356,19 +1368,18 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const amount = Number(wallet.balance);
           const shown = Number.isFinite(amount) ? amount.toFixed(4) : wallet.balance;
           text = `${wallet.currency === 'CNY' ? '¥' : '$'}${shown}`;
-          const limit = Number(readPrefs().balanceThreshold);
-          const value2 = Number(String(text).replace(/[^\d.-]/g, ''));
-          low = Number.isFinite(limit) && Number.isFinite(value2) && value2 < limit;
-          sync();
+          recalc();
         } catch {
           /* 未登录或接口不可用：不显示余额 */
         }
       };
 
+      window.addEventListener('dcc-balance-threshold', onThreshold);
       load();
       refresh = window.setInterval(load, 60000);
 
       return () => {
+        window.removeEventListener('dcc-balance-threshold', onThreshold);
         if (refresh !== null) window.clearInterval(refresh);
         document.documentElement.style.removeProperty('--dcc-balance-text');
         delete document.documentElement.dataset.dccBalanceLow;
@@ -1405,6 +1416,10 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           savePrefs(next);
           return next;
         });
+        /* 阈值变了要立刻重算红色状态，通知余额模块重算一次 */
+        if (key === 'balanceThreshold' && typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('dcc-balance-threshold'));
+        }
       };
       return h('div', { className: 'dcc-page' },
         h('div', { className: 'dcc-title' }, zh ? 'UI 改进' : 'UI improvements'),
