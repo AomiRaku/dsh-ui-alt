@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.34';
+    const VERSION = '0.2.35';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -149,9 +149,14 @@ html[data-dcc-radius="on"] [class*="_trailing"] > [class*="_primary"] svg {
   width: 16px !important;
   height: 16px !important;
 }
-/* 输入框左下角的「+」：宿主是 999px 圆形，同样收成小圆角方形 */
+/* 输入框左下角的「+」：宿主是 999px 圆形，同样收成小圆角方形；
+   底色也去掉，只在悬停时给出来（宿主的原始底色就是这一档）。 */
 html[data-dcc-radius="on"] button[class*="_add"] {
   border-radius: var(--dsw-radius-md) !important;
+  background: transparent !important;
+}
+html[data-dcc-radius="on"] button[class*="_add"]:hover {
+  background: var(--dsw-specific-selector) !important;
 }
 
 /* 主内容区左上角的大圆角（Windows 标题栏） */
