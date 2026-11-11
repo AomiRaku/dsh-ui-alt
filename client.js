@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.82';
+    const VERSION = '0.2.83';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -23,6 +23,7 @@ window.__ModuleLoader__.load({
       optimizeStatsLayout: true,
       showBalance: true,
       balanceThreshold: 3,
+      balanceDecimals: 2,
       pointerNormalize: true,
       textSelectLimit: true,
     };
@@ -566,6 +567,22 @@ html[data-dcc-balance="on"][data-dcc-balance-low="on"] [data-composer-stat]:not(
   text-align: right;
 }
 .dcc-number:focus {
+  outline: 2px solid var(--dsw-alias-brand-primary);
+  outline-offset: 1px;
+}
+/* 设置页的下拉选择框 */
+.dcc-select {
+  flex: none;
+  padding: 4px 6px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: var(--dsw-radius-sm, 4px);
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  font-size: 13px;
+  cursor: default;
+}
+.dcc-select:focus {
   outline: 2px solid var(--dsw-alias-brand-primary);
   outline-offset: 1px;
 }
@@ -1318,6 +1335,10 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       let refresh = null;
       let text = '';
       let low = false;
+      /* 原始金额与币种单独留着：改小数位或阈值时要能重新格式化，
+         只存格式化后的字符串就回不去了。 */
+      let rawAmount = null;
+      let symbol = '¥';
 
       const identity = () => ({
         version: VERSION,
@@ -1338,13 +1359,16 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         if (root.dataset.dccBalanceLow !== flag) root.dataset.dccBalanceLow = flag;
       };
 
-      /* 只根据已拿到的余额重算「是否低于阈值」。
-         设置页改阈值时立即调用，否则要等下一分钟拉余额才生效。 */
+      /* 只根据已拿到的余额重算显示与「是否低于阈值」。
+         设置页改阈值或小数位时立即调用，否则要等下一分钟拉余额才生效。 */
       const recalc = () => {
-        if (text === '') return;
-        const limit = Number(readPrefs().balanceThreshold);
-        const amount = Number(String(text).replace(/[^\d.-]/g, ''));
-        low = Number.isFinite(limit) && Number.isFinite(amount) && amount < limit;
+        if (rawAmount === null) return;
+        const prefs = readPrefs();
+        const digits = Number(prefs.balanceDecimals);
+        const decimals = Number.isFinite(digits) && digits >= 2 && digits <= 6 ? Math.round(digits) : 2;
+        text = `${symbol}${rawAmount.toFixed(decimals)}`;
+        const limit = Number(prefs.balanceThreshold);
+        low = Number.isFinite(limit) && rawAmount < limit;
         sync();
       };
 
@@ -1364,10 +1388,10 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const wallets = Array.isArray(value.value) ? value.value : [];
           const wallet = wallets.find((w) => w.currency === 'CNY') || wallets[0];
           if (!wallet || typeof wallet.balance !== 'string') return;
-          /* 余额统一显示到小数点后 4 位：接口有时只给两位，补零保持格式稳定 */
           const amount = Number(wallet.balance);
-          const shown = Number.isFinite(amount) ? amount.toFixed(4) : wallet.balance;
-          text = `${wallet.currency === 'CNY' ? '¥' : '$'}${shown}`;
+          if (!Number.isFinite(amount)) return;
+          rawAmount = amount;
+          symbol = wallet.currency === 'CNY' ? '¥' : '$';
           recalc();
         } catch {
           /* 未登录或接口不可用：不显示余额 */
@@ -1416,8 +1440,8 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           savePrefs(next);
           return next;
         });
-        /* 阈值变了要立刻重算红色状态，通知余额模块重算一次 */
-        if (key === 'balanceThreshold' && typeof window !== 'undefined') {
+        /* 阈值或小数位变了要立刻重算显示，通知余额模块重算一次 */
+        if ((key === 'balanceThreshold' || key === 'balanceDecimals') && typeof window !== 'undefined') {
           window.dispatchEvent(new Event('dcc-balance-threshold'));
         }
       };
@@ -1525,7 +1549,17 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
                 const next = Number(event.target.value);
                 update('balanceThreshold')(Number.isFinite(next) && next >= 0 ? next : 0);
               },
-            }))),
+            })),
+          h('div', { className: 'dcc-row' },
+            h('div', { className: 'dcc-row-text' },
+              h('div', { className: 'dcc-row-title' }, zh ? '余额小数位数' : 'Balance decimal places'),
+              h('div', { className: 'dcc-row-desc' }, zh ? '余额显示的小数位数，可选 2 到 6 位。' : 'How many decimal places the balance shows, from 2 to 6.')),
+            h('select', {
+              className: 'dcc-select',
+              value: String(prefs.balanceDecimals),
+              'aria-label': zh ? '余额小数位数' : 'Balance decimal places',
+              onChange: (event) => update('balanceDecimals')(Number(event.target.value)),
+            }, [2, 3, 4, 5, 6].map((n) => h('option', { key: n, value: String(n) }, `${n} 位`))))),
         h('div', { className: 'dcc-group' },
           h('div', { className: 'dcc-group-title' }, zh ? '规范化' : 'Normalization'),
           h(Row, {
