@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.17';
+    const VERSION = '0.2.18';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -412,6 +412,44 @@ html[data-dcc-hover="off"] [class*="_bridge_bgejw"] {
    再打上 data-dcc-hidden，这里只负责隐藏。 */
 html[data-dcc-row-buttons="on"] [class*="_sessionRow"] [class*="_rowActions"] button[data-dcc-hidden] {
   display: none !important;
+}
+
+/* ---------- 会话视图切换：标签行并入顶部工具区 ---------- */
+/* 原标签行（对话 / 轨迹 / …）整行隐藏；它的按钮仍留在 DOM 里，
+   顶部那个分段控件点击时转发给对应的原按钮。 */
+div:has(> [data-conversation-tabs]) {
+  display: none !important;
+}
+[class*="_viewsMore"] {
+  display: none !important;
+}
+.dcc-segmented {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--dsw-radius-md, 6px);
+  background: var(--dsw-alias-bg-layer-2);
+}
+.dcc-seg {
+  border: 0;
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  font: inherit;
+  font-size: 12px;
+  line-height: 18px;
+  padding: 2px 8px;
+  border-radius: var(--dsw-radius-sm, 4px);
+  cursor: pointer;
+  transition: background-color .12s, color .12s;
+}
+.dcc-seg:hover {
+  color: var(--dsw-alias-label-primary);
+}
+.dcc-seg[data-active="true"] {
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-primary);
+  box-shadow: var(--dsw-shadow-lv1);
 }
 
 /* ---------- 已归档会话：标题画删除线 ---------- */
@@ -940,6 +978,93 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       return () => window.removeEventListener('pointerover', onOver, true);
     }
 
+    /**
+     * 会话视图切换（对话 / 轨迹）从标签行搬到顶部工具区，做成一个分段控件。
+     * 原标签行只是被 CSS 隐藏，按钮仍在 DOM 里——点击自绘按钮时转发给它，
+     * 选中态则跟着原按钮的 aria-selected 走，所以和宿主的真实状态永远一致。
+     */
+    function installViewSwitcher() {
+      let bar = null;
+      let observer = null;
+      let timer = null;
+
+      const findTabs = () => document.querySelector('[data-conversation-tabs]');
+      const findHost = () => document.querySelector('[class*="_headerUtilities"]');
+
+      const syncActive = () => {
+        if (bar === null) return;
+        const tabs = findTabs();
+        if (tabs === null) return;
+        const sources = Array.from(tabs.querySelectorAll('button[role="tab"]'));
+        const items = Array.from(bar.querySelectorAll('.dcc-seg'));
+        for (let i = 0; i < items.length; i += 1) {
+          const on = sources[i] !== undefined && sources[i].getAttribute('aria-selected') === 'true';
+          if (on) items[i].setAttribute('data-active', 'true');
+          else items[i].removeAttribute('data-active');
+        }
+      };
+
+      const build = (tabs, host) => {
+        if (bar !== null) bar.remove();
+        bar = document.createElement('div');
+        bar.className = 'dcc-segmented';
+        const sources = Array.from(tabs.querySelectorAll('button[role="tab"]'));
+        sources.forEach((source, index) => {
+          const item = document.createElement('button');
+          item.type = 'button';
+          item.className = 'dcc-seg';
+          item.textContent = (source.textContent || '').trim();
+          item.addEventListener('click', () => {
+            const current = findTabs();
+            if (current === null) return;
+            const target = current.querySelectorAll('button[role="tab"]')[index];
+            if (target !== undefined) target.click();
+          });
+          bar.appendChild(item);
+        });
+        host.insertBefore(bar, host.firstChild);
+        syncActive();
+      };
+
+      const ensure = () => {
+        const tabs = findTabs();
+        const host = findHost();
+        if (tabs === null || host === null) {
+          if (bar !== null) { bar.remove(); bar = null; }
+          return;
+        }
+        const count = tabs.querySelectorAll('button[role="tab"]').length;
+        if (bar === null || !bar.isConnected || bar.parentElement !== host || bar.children.length !== count) {
+          build(tabs, host);
+          return;
+        }
+        syncActive();
+      };
+
+      const schedule = () => {
+        if (timer !== null) return;
+        timer = window.setTimeout(() => {
+          timer = null;
+          ensure();
+        }, 350);
+      };
+
+      ensure();
+      observer = new MutationObserver(schedule);
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['aria-selected'],
+      });
+
+      return () => {
+        observer.disconnect();
+        if (timer !== null) clearTimeout(timer);
+        if (bar !== null) bar.remove();
+      };
+    }
+
     function Switch(props) {
       return h('label', { className: 'dcc-switch' },
         h('input', {
@@ -1074,6 +1199,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const removeSettingsBack = installSettingsBackButton();
           const removeRowActionFilter = installRowActionFilter();
           const removeHoverCardBlocker = installHoverCardBlocker();
+          const removeViewSwitcher = installViewSwitcher();
           return () => {
             removeCss();
             removeNewSessionRow();
@@ -1081,6 +1207,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             removeSettingsBack();
             removeRowActionFilter();
             removeHoverCardBlocker();
+            removeViewSwitcher();
             const root = document.documentElement;
             delete root.dataset.dccRadius;
             delete root.dataset.dccNew;
