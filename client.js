@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.46';
+    const VERSION = '0.2.47';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1328,7 +1328,9 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
 
     return {
       name: 'dsh-ui-alt',
-      inject: ['slots'],
+      /* remote.account 是独立服务 key，和不声明就等于没有；
+         只在 inject 里写上，ctx.get('remote').account 才可用。 */
+      inject: ['slots', 'remote', 'remote.account'],
       apply(ctx) {
         ctx.effect(() => {
           applyPrefs(readPrefs());
