@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.38';
+    const VERSION = '0.2.39';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -498,9 +498,12 @@ html[data-dcc-compact-header="off"] .dcc-segmented {
 
 /* ---------- 输入框下方状态行：速率/缓存靠左，上下文环推到最右 ---------- */
 /* 宿主的 _dock 只有 280px 宽且居中，里面是两个子项：左边的胶囊组和包着环的
-   A6Bq1a_root。撑满后改成两端对齐，就能把环压到与输入框同宽的右边缘。 */
+   A6Bq1a_root。撑满后改成两端对齐，把环压到右边缘；左右补上与输入框相同的
+   side clearance，否则会顶到内容区外缘、吃掉页面内边距。 */
 [class*="_dock"]:has(button[aria-haspopup="dialog"]) {
+  box-sizing: border-box !important;
   width: 100% !important;
+  padding-inline: var(--dsh-composer-side-clearance, 16px) !important;
   justify-content: space-between !important;
 }
 [class*="_dock"]:has(button[aria-haspopup="dialog"]) > [class*="_root"]:has(button[aria-haspopup="dialog"]) {
