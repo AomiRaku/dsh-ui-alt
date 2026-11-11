@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.52';
+    const VERSION = '0.2.53';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -510,7 +510,11 @@ html[data-dcc-stats="on"] [class*="_dock"]:has(button[aria-haspopup="dialog"]) {
   width: calc(var(--dsh-chat-content-width, 100%) + 24px) !important;
   max-width: calc(var(--dsh-chat-content-width, 100%) + 24px) !important;
   margin-inline: auto !important;
-  justify-content: space-between !important;
+  justify-content: flex-start !important;
+}
+/* 速率/缓存/余额成组留在左边，包着环的那个 root 吃掉剩余空间，被顶到最右 */
+html[data-dcc-stats="on"] [class*="_dock"] > [class*="_root"]:has(button[aria-haspopup="dialog"]) {
+  margin-left: auto !important;
 }
 
 /* 余额 pill：图标 + 文字 */
