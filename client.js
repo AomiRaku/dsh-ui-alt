@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.51';
+    const VERSION = '0.2.52';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -20,6 +20,9 @@ window.__ModuleLoader__.load({
       hideHoverCard: true,
       hideRowButtons: true,
       compactHeader: true,
+      optimizeStatsLayout: true,
+      showBalance: true,
+      balanceThreshold: 3,
     };
 
     const isZh = () => {
@@ -49,6 +52,8 @@ window.__ModuleLoader__.load({
       root.dataset.dccHover = prefs.hideHoverCard ? 'off' : 'on';
       root.dataset.dccRowButtons = prefs.hideRowButtons ? 'on' : 'off';
       root.dataset.dccCompactHeader = prefs.compactHeader ? 'on' : 'off';
+      root.dataset.dccStats = prefs.optimizeStatsLayout ? 'on' : 'off';
+      root.dataset.dccBalance = prefs.showBalance ? 'on' : 'off';
     }
 
     function savePrefs(prefs) {
@@ -500,15 +505,12 @@ html[data-dcc-compact-header="off"] .dcc-segmented {
 /* 宿主的 _dock 只有 280px 宽且居中，里面是两个子项：左边的胶囊组和包着环的
    A6Bq1a_root。这里不撑满容器，而是套用聊天内容区的宽度变量并居中——
    这样它会跟着「页面边距」一起走，不会顶到内容区外面。 */
-[class*="_dock"]:has(button[aria-haspopup="dialog"]) {
+html[data-dcc-stats="on"] [class*="_dock"]:has(button[aria-haspopup="dialog"]) {
   box-sizing: border-box !important;
   width: calc(var(--dsh-chat-content-width, 100%) + 24px) !important;
   max-width: calc(var(--dsh-chat-content-width, 100%) + 24px) !important;
   margin-inline: auto !important;
   justify-content: space-between !important;
-}
-[class*="_dock"]:has(button[aria-haspopup="dialog"]) > [class*="_root"]:has(button[aria-haspopup="dialog"]) {
-  margin-left: auto !important;
 }
 
 /* 余额 pill：图标 + 文字 */
@@ -523,6 +525,31 @@ html[data-dcc-compact-header="off"] .dcc-segmented {
 }
 .dcc-balance svg {
   flex: none;
+}
+/* 「显示余额」关掉时整个 pill 不出现 */
+html[data-dcc-balance="off"] .dcc-balance {
+  display: none !important;
+}
+/* 余额低于阈值时，只有金额数字变红 */
+.dcc-balance-low {
+  color: var(--dsw-alias-state-error-primary) !important;
+}
+/* 设置页的数值输入框 */
+.dcc-number {
+  width: 72px;
+  flex: none;
+  padding: 4px 8px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: var(--dsw-radius-sm, 4px);
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  font-size: 13px;
+  text-align: right;
+}
+.dcc-number:focus {
+  outline: 2px solid var(--dsw-alias-brand-primary);
+  outline-offset: 1px;
 }
 
 /* ---------- 已归档会话：标题画删除线 ---------- */
@@ -1191,14 +1218,25 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             pill.appendChild(svg);
             const label = document.createElement('span');
             label.className = 'dcc-balance-label';
+            label.textContent = '余额 ';
+            const amountEl = document.createElement('span');
+            amountEl.className = 'dcc-balance-amount';
+            label.appendChild(amountEl);
             pill.appendChild(label);
             const ringRoot = dock.querySelector('[class*="_root"]:has(button[aria-haspopup="dialog"])');
             dock.insertBefore(pill, ringRoot);
           }
         }
-        const label = pill.querySelector('.dcc-balance-label');
-        const text2 = `余额 ${text}`;
-        if (label !== null && label.textContent !== text2) label.textContent = text2;
+        const amountEl = pill.querySelector('.dcc-balance-amount');
+        if (amountEl === null) return;
+        if (amountEl.textContent !== text) amountEl.textContent = text;
+        /* 低于阈值时只让金额数字变红，前面的「余额」两个字保持弱色 */
+        const limit = Number(readPrefs().balanceThreshold);
+        const value = Number(String(text).replace(/[^\d.-]/g, ''));
+        const low = Number.isFinite(limit) && Number.isFinite(value) && value < limit;
+        if (amountEl.classList.contains('dcc-balance-low') !== low) {
+          amountEl.classList.toggle('dcc-balance-low', low);
+        }
       };
 
       const load = async () => {
@@ -1348,6 +1386,33 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             checked: prefs.settingsFullscreen,
             onChange: update('settingsFullscreen'),
           })),
+        h('div', { className: 'dcc-group' },
+          h('div', { className: 'dcc-group-title' }, zh ? '性能与用量信息' : 'Performance and usage'),
+          h(Row, {
+            title: zh ? '优化布局' : 'Optimize layout',
+            desc: zh ? '优化输入框下方性能与用量布局。' : 'Improve the layout of the performance and usage row under the composer.',
+            checked: prefs.optimizeStatsLayout,
+            onChange: update('optimizeStatsLayout'),
+          }),
+          h(Row, {
+            title: zh ? '显示余额' : 'Show balance',
+            desc: zh ? '在输入框下方性能与用量中显示余额。' : 'Show the account balance in the performance and usage row.',
+            checked: prefs.showBalance,
+            onChange: update('showBalance'),
+          }),
+          h('div', { className: 'dcc-row' },
+            h('div', { className: 'dcc-row-text' },
+              h('div', { className: 'dcc-row-title' }, zh ? '余额警告阈值' : 'Low balance threshold'),
+              h('div', { className: 'dcc-row-desc' }, zh ? '余额低于此值将变为红色。' : 'The balance turns red below this value.')),
+            h('input', {
+              type: 'number',
+              min: '0',
+              step: '1',
+              className: 'dcc-number',
+              value: prefs.balanceThreshold,
+              'aria-label': zh ? '余额警告阈值' : 'Low balance threshold',
+              onChange: (event) => update('balanceThreshold')(Number(event.target.value)),
+            }))),
         h('p', { className: 'dcc-meta' },
           /* 中文之间用一个全角空格（\u3000）分隔，比两个半角空格更稳 */
           zh ? `版本：${VERSION}\u3000更新日期：${UPDATED}` : `Version: ${VERSION}  Updated: ${UPDATED}`));
@@ -1408,6 +1473,8 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             delete root.dataset.dccHover;
             delete root.dataset.dccRowButtons;
             delete root.dataset.dccCompactHeader;
+            delete root.dataset.dccStats;
+            delete root.dataset.dccBalance;
           };
         }, 'dsh-ui-alt: styles and preference attributes');
 
