@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.15';
+    const VERSION = '0.2.16';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -916,11 +916,13 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
      * 行内元素之间的移动照常放行，所以按钮的 Tooltip 不受影响。
      */
     function installHoverCardBlocker() {
+      const ROW = '[class*="_sessionRow"], [class*="_projectRow"], [class*="_searchResultRow"]';
+
       const onOver = (event) => {
         if (document.documentElement.dataset.dccHover !== 'off') return;
         const target = event.target;
         if (!(target instanceof Element)) return;
-        const row = target.closest('[class*="_sessionRow"], [class*="_projectRow"]');
+        const row = target.closest(ROW);
         if (row === null) return;
         /* 已经在行内移动，不是「进入」，放行给宿主 */
         const related = event.relatedTarget;
@@ -928,8 +930,10 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         event.stopPropagation();
       };
 
-      document.addEventListener('pointerover', onOver, true);
-      return () => document.removeEventListener('pointerover', onOver, true);
+      /* 放在 window 捕获阶段：这是事件流最早的位置，先于 React 挂在 root 容器上的
+         onPointerOverCapture，才能保证宿主那一层完全收不到「进入行」这件事。 */
+      window.addEventListener('pointerover', onOver, true);
+      return () => window.removeEventListener('pointerover', onOver, true);
     }
 
     function Switch(props) {
