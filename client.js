@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.91';
+    const VERSION = '0.2.92';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1296,6 +1296,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           item.className = 'dcc-seg';
           item.textContent = (source.textContent || '').trim();
           item.addEventListener('click', () => {
+            /* 先乐观更新选中态，让蓝色在点击瞬间就到位；
+               否则要等 observer 同步 aria-selected（有 350ms 防抖），中间会空一下。 */
+            const segs = bar.querySelectorAll('.dcc-seg');
+            for (let i = 0; i < segs.length; i += 1) {
+              segs[i].dataset.active = i === index ? 'true' : 'false';
+            }
             const current = findTabs();
             if (current === null) return;
             const target = current.querySelectorAll('button[role="tab"]')[index];
