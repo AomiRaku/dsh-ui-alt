@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.114';
+    const VERSION = '0.2.115';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -299,6 +299,11 @@ html[data-dcc-nav="expanded"] nav[class*="_panelList"] {
    用 :has(nav) 限定成「包含面板列表的那个根」，避免误伤其他 _root。 */
 html[data-dcc-nav] [class*="_root"]:has(nav[class*="_panelList"]) {
   --dsh-sidebar-inline-padding: 12px !important;
+}
+/* 右边缘再多留一点：宿主的 scrollArea 第三列是 inline-padding - 2px，
+   扣掉滚动条后文字几乎贴边，这里给工作区区域补 4px。 */
+html[data-dcc-nav] [data-sidebar-scrollport] > [class*="_regionArea"] {
+  padding-right: 4px;
 }
 
 /* 折叠箭头：整行可点，高亮只画在中间那一小块 */
