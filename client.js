@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.122';
+    const VERSION = '0.2.123';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -242,9 +242,9 @@ html[data-dcc-logo="shown"] [class*="_logoRow"] {
   padding-bottom: 2px !important;
 }
 
-/* 新会话按钮固定在顶部：无论它是宿主原按钮，还是「统一新会话按钮样式」
-   克隆进 nav 的那一行，滚动时都不该被工作区顶走。 */
-[class*="_newSession"],
+/* 克隆出来的新会话行在 nav 里，滚动时要固定；
+   原按钮不在这里处理——它在 nav 外面本来就固定，加 sticky 和背景
+   反而会让关闭开关后的外观和宿主原版不一样。 */
 [data-dcc-newrow] {
   position: sticky;
   top: 0;
