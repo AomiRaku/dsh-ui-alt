@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.112';
+    const VERSION = '0.2.113';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -294,6 +294,13 @@ html[data-dcc-nav="collapsed"] nav[class*="_panelList"] {
 html[data-dcc-nav="expanded"] nav[class*="_panelList"] {
   max-height: var(--dcc-nav-expanded-height, 1200px);
 }
+/* 整个侧栏的左右内边距：宿主根上用 --dsh-sidebar-inline-padding（默认 8px），
+   调大它，导航、工作区、会话列表会一起内缩，不用逐类去改 padding。
+   用 :has(nav) 限定成「包含面板列表的那个根」，避免误伤其他 _root。 */
+html[data-dcc-nav] [class*="_root"]:has(nav[class*="_panelList"]) {
+  --dsh-sidebar-inline-padding: 12px !important;
+}
+
 /* 导航项左右再松一点。宿主用的是 padding: 5px calc(行内边距 - 绘制内缩)，
    这里直接给固定值，避免那两个变量在当前层级取不到、整条 calc 失效。 */
 html[data-dcc-nav] nav[class*="_panelList"] [class*="_panelRow"] {
