@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.123';
+    const VERSION = '0.2.124';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1433,15 +1433,18 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         btn.style.display = items.length > 2 ? '' : 'none';
         if (items.length > 0) {
           const gap = parseFloat(window.getComputedStyle(nav).rowGap) || 0;
+          /* 有克隆行时保留「新会话 + 插件」两项；
+             用原版新会话时（nav 里没有克隆行）只保留「插件」一项。 */
+          const keep = nav.querySelector('[data-dcc-newrow]') !== null ? 2 : 1;
           let collapsed = 0;
           let full = 0;
           for (let i = 0; i < items.length; i += 1) {
             const h = items[i].getBoundingClientRect().height;
             full += h;
-            if (i < 2) collapsed += h;
+            if (i < keep) collapsed += h;
           }
           full += gap * Math.max(0, items.length - 1);
-          if (items.length > 1) collapsed += gap;
+          if (items.length > 1) collapsed += gap * keep;
           nav.style.setProperty('--dcc-nav-collapsed-height', `${Math.ceil(collapsed)}px`);
           nav.style.setProperty('--dcc-nav-expanded-height', `${Math.ceil(full)}px`);
         }
