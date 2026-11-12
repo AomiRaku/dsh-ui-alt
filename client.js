@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.120';
+    const VERSION = '0.2.121';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -352,12 +352,13 @@ html[data-dcc-nav="collapsed"] .dcc-nav-toggle svg {
 }
 
 /* 工作区与会话行之间再紧一点：行高是固定的 32px，没有独立的行间距，
-   靠上下各 1px 的负外边距把相邻行拉近。分组之间也收一收。 */
-[class*="_sessionRow"],
-[class*="_projectRow"] {
+   靠上下各 1px 的负外边距把相邻行拉近。分组之间也收一收。
+   归到「减小圆角与间距」开关下，关掉就恢复宿主原始行距。 */
+html[data-dcc-radius="on"] [class*="_sessionRow"],
+html[data-dcc-radius="on"] [class*="_projectRow"] {
   margin-block: -1px !important;
 }
-[class*="_groupSection"] {
+html[data-dcc-radius="on"] [class*="_groupSection"] {
   margin-top: 2px !important;
 }
 
