@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.98';
+    const VERSION = '0.2.99';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -914,13 +914,19 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       let timer = null;
       let boundNav = null;
 
-      const findMore = (nav) => {
-        if (nav === null) return null;
-        const buttons = Array.from(nav.querySelectorAll('button'));
-        return buttons.find((b) => {
-          const text = (b.textContent || '').trim();
-          return text === '更多' || text === 'More';
-        }) || null;
+      /* 「更多」的真实锚点是 `button[aria-haspopup="menu"]`
+         （PanelMoreMenu 里的 Menu 锚点，aria-label 就是「更多」）。
+         用它比文本匹配或 lastElementChild 都可靠：宿主改动文案不影响。
+         标记要打在 nav 的直接子元素上，因为折叠规则用的是 `nav > *`。 */
+      const findMoreButton = (nav) => (nav === null ? null : nav.querySelector('button[aria-haspopup="menu"]'));
+
+      const markMore = (nav) => {
+        const btn = findMoreButton(nav);
+        if (btn === null) return null;
+        let host = btn;
+        while (host !== null && host.parentElement !== nav) host = host.parentElement;
+        if (host !== null) host.setAttribute('data-dcc-more', '');
+        return btn;
       };
 
       const toggle = () => {
@@ -935,7 +941,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       const onClick = (event) => {
         const nav = boundNav;
         if (nav === null) return;
-        const more = findMore(nav);
+        const more = findMoreButton(nav);
         if (more === null || !more.contains(event.target)) return;
         /* 接管这次点击：宿主原本会在这里弹出面板菜单 */
         event.preventDefault();
@@ -946,10 +952,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       const ensure = () => {
         const nav = findNav();
         if (nav === null) return;
-        const more = findMore(nav);
-        if (more !== null && !more.hasAttribute('data-dcc-more')) {
-          more.setAttribute('data-dcc-more', '');
-        }
+        markMore(nav);
         if (boundNav !== nav) {
           if (boundNav !== null) boundNav.removeEventListener('click', onClick, true);
           nav.addEventListener('click', onClick, true);
@@ -972,9 +975,15 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       return () => {
         observer.disconnect();
         if (timer !== null) clearTimeout(timer);
-        if (boundNav !== null) boundNav.removeEventListener('click', onClick, true);
-        const more = findMore(findNav());
-        if (more !== null) more.removeAttribute('data-dcc-more');
+        if (boundNav !== null) {
+          boundNav.removeEventListener('click', onClick, true);
+          const btn = findMoreButton(boundNav);
+          if (btn !== null) {
+            let host = btn;
+            while (host !== null && host.parentElement !== boundNav) host = host.parentElement;
+            if (host !== null) host.removeAttribute('data-dcc-more');
+          }
+        }
       };
     }
 
