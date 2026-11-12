@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.104';
+    const VERSION = '0.2.105';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1383,6 +1383,18 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         }
       };
 
+      /* 宿主图标是 React 内联 SVG（不是 sprite 的 <use>），所以直接克隆
+         已经渲染出来的那一个：图钉抄其他行的 _panelUnpin，插件图标抄本行。 */
+      const clonePinSvg = () => {
+        const svg = document.querySelector('[class*="_panelUnpin"] svg');
+        return svg === null ? null : svg.outerHTML;
+      };
+
+      const cloneGlyphSvg = (row) => {
+        const svg = row.querySelector('[class*="_panelGlyph"] svg');
+        return svg === null ? null : svg.outerHTML;
+      };
+
       const build = (row) => {
         let pin = row.querySelector('.dcc-pin');
         if (pin === null) {
@@ -1390,11 +1402,14 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           pin.type = 'button';
           pin.className = 'dcc-pin';
           pin.setAttribute('aria-label', isZh() ? '固定或收起插件入口' : 'Pin or hide the plugins entry');
-          pin.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true">'
-            + '<path d="M9.5 2.5 13.5 6.5 11 7.5 8.5 10 8 13 3 8 6 7.5 8.5 5z"'
-            + ' fill="currentColor" stroke="none"/>'
-            + '<path d="M3 13 6.5 9.5" fill="none" stroke="currentColor" stroke-width="1.2"'
-            + ' stroke-linecap="round"/></svg>';
+          const svg = clonePinSvg();
+          if (svg !== null) {
+            pin.innerHTML = svg;
+          } else {
+            pin.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true">'
+              + '<path d="M9.5 2.5 13.5 6.5 11 7.5 8.5 10 8 13 3 8 6 7.5 8.5 5z"'
+              + ' fill="currentColor" stroke="none"/></svg>';
+          }
           pin.addEventListener('click', (event) => {
             event.preventDefault();
             event.stopPropagation();
@@ -1403,6 +1418,9 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           row.appendChild(pin);
         }
         row.setAttribute('data-dcc-plugin-entry', '');
+        /* 把插件图标存起来，收起后菜单里补的那项要用 */
+        const glyph = cloneGlyphSvg(row);
+        if (glyph !== null) row.setAttribute('data-dcc-plugin-glyph', glyph);
         if (boundRow !== row) boundRow = row;
       };
 
@@ -1465,6 +1483,13 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
 
         const item = template.cloneNode(true);
         item.setAttribute('data-dcc-plugins-entry', '');
+        /* 图标换成插件自己的（收起前存在行上的 data-dcc-plugin-glyph） */
+        const pluginRow = document.querySelector('[data-dcc-plugin-entry]');
+        const pluginGlyph = pluginRow === null ? null : pluginRow.getAttribute('data-dcc-plugin-glyph');
+        const glyphBox = item.querySelector('[class*="_panelGlyph"]');
+        if (glyphBox !== null && pluginGlyph !== null && pluginGlyph !== '') {
+          glyphBox.innerHTML = pluginGlyph;
+        }
         /* 把克隆项里的文字换成「插件」，其余结构（图标、间距）保持不变 */
         const walker = document.createTreeWalker(item, NodeFilter.SHOW_TEXT);
         let wrote = false;
