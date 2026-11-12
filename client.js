@@ -6,11 +6,12 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.3.1';
+    const VERSION = '0.3.2';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
       invertNewSession: true,
+      collapseNav: true,
       dimSessions: true,
       hideLogo: false,
       winFont: false,
@@ -45,6 +46,7 @@ window.__ModuleLoader__.load({
       const root = document.documentElement;
       root.dataset.dccRadius = prefs.radiusDensity ? 'on' : 'off';
       root.dataset.dccNew = prefs.invertNewSession ? 'on' : 'off';
+      root.dataset.dccNav = prefs.collapseNav ? 'collapsed' : 'expanded';
       root.dataset.dccDim = prefs.dimSessions ? 'on' : 'off';
       root.dataset.dccLogo = prefs.hideLogo ? 'hidden' : 'shown';
       root.dataset.dccDot = prefs.sessionDot ? 'on' : 'off';
@@ -243,14 +245,76 @@ html[data-dcc-logo="shown"] [class*="_logoRow"] {
   padding-bottom: 0 !important;
 }
 
-/* 新会话按钮固定在顶部：无论它是宿主原按钮，还是「统一新会话按钮样式」
-   克隆进 nav 的那一行，滚动时都不该被工作区顶走。 */
-[class*="_newSession"],
-[data-dcc-newrow] {
-  position: sticky;
-  top: 0;
-  z-index: 3;
-  background: var(--dsw-specific-sidebar-fill, var(--dsw-alias-bg-layer-1));
+/* 导航行之间的间距统一收紧 */
+html[data-dcc-nav] nav[class*="_panelList"] {
+  gap: 2px !important;
+  margin-bottom: 2px !important;
+}
+/* 清掉导航子项（包括「更多」等控件）自带的上下外边距 */
+html[data-dcc-nav] nav[class*="_panelList"] > * + * {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+/* 折叠箭头自己就有上下内边距，紧随其后的分组标题不再额外留白 */
+html[data-dcc-nav] [class*="_sectionHeader"] {
+  margin-top: 0 !important;
+}
+
+/* ---------- 侧栏导航：默认只留前两项；悬停时工作区平移、其余按钮只做渐显 ---------- */
+/* 导航行左右内边距与图标/文字间距稍微放宽（折叠窄栏由宿主规则覆盖） */
+html[data-dcc-nav]:not(:has([data-sidebar-collapsed="true"])) nav[class*="_panelList"] [class*="_panelRow"] {
+  padding-left: calc(var(--dsh-sidebar-row-padding) - var(--dsh-sidebar-paint-inset) + 3px);
+  padding-right: calc(var(--dsh-sidebar-row-padding) - var(--dsh-sidebar-paint-inset) + 3px);
+  gap: calc(var(--dsh-sidebar-label-gap) + 2px);
+}
+/* 收起态：只保留前两项。用 max-height 过渡让列表能平滑展开/收起；
+   折叠高度与展开高度都由脚本按实测行高写进 CSS 变量，过渡速度才是均匀的。 */
+html[data-dcc-nav] nav[class*="_panelList"] {
+  overflow: hidden;
+  transition: max-height .15s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
+}
+/* 滚动只发生在工作区/会话列表：滚动容器改成纵向布局，面板列表和底部固定，
+   中间的工作区区域占满剩余高度并在内部滚动。宽屏才有 data-sidebar-scrollport，
+   收成细轨时这条不生效。 */
+[data-sidebar-scrollport] {
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+[data-sidebar-scrollport] > nav[class*="_panelList"] {
+  flex: none;
+}
+[data-sidebar-scrollport] > [class*="_regionArea"] {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+/* 「更多」固定排在第二位（新会话之后），展开时不会被推回列表底部。
+   用 flex order 排位，配合下面的 max-height 裁剪即可。 */
+html[data-dcc-nav] nav[class*="_panelList"] > [data-dcc-newrow] {
+  order: -2;
+}
+html[data-dcc-nav] nav[class*="_panelList"] > [data-dcc-more] {
+  order: -1;
+}
+/* 折叠：用 max-height 过渡裁剪，和原版工作区文件夹的展开/收起同一套做法。
+   折叠高度 = 前两项（新会话 + 更多）实测高度，展开高度 = 全部高度，
+   两个值都由脚本写进 CSS 变量，过渡速度才是均匀的。 */
+html[data-dcc-nav] nav[class*="_panelList"] {
+  overflow: hidden;
+  transition: max-height .15s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
+}
+html[data-dcc-nav="collapsed"] nav[class*="_panelList"] {
+  max-height: var(--dcc-nav-collapsed-height, 70px);
+}
+html[data-dcc-nav="expanded"] nav[class*="_panelList"] {
+  max-height: var(--dcc-nav-expanded-height, 1200px);
+}
+/* 折叠后「更多」右侧的小箭头翻上来，表示再点一下就展开 */
+html[data-dcc-nav="collapsed"] [data-dcc-more] svg {
+  transform: rotate(180deg);
 }
 
 /* ---------- 工作区名称更明显，「展开其余」更淡 ---------- */
@@ -855,6 +919,109 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
     }
 
+    /**
+     * 导航折叠：把宿主底部的「更多」按钮接管成展开/收起开关。
+     * 点击它不再弹面板菜单，而是折叠 nav 内的项——只留「更多」自己。
+     * 「新会话」在 nav 外面，本来就一直露着，不需要处理。
+     */
+    function installNavToggle() {
+      const findNav = () => document.querySelector('nav[class*="_panelList"]');
+      let observer = null;
+      let timer = null;
+      let boundNav = null;
+
+      /* 「更多」的真实锚点是 `button[aria-haspopup="menu"]`
+         （PanelMoreMenu 里的 Menu 锚点，aria-label 就是「更多」）。
+         用它比文本匹配或 lastElementChild 都可靠：宿主改动文案不影响。
+         标记要打在 nav 的直接子元素上，因为折叠规则用的是 `nav > *`。 */
+      const findMoreButton = (nav) => (nav === null ? null : nav.querySelector('button[aria-haspopup="menu"]'));
+
+      const markMore = (nav) => {
+        const btn = findMoreButton(nav);
+        if (btn === null) return null;
+        let host = btn;
+        while (host !== null && host.parentElement !== nav) host = host.parentElement;
+        if (host !== null) host.setAttribute('data-dcc-more', '');
+        return btn;
+      };
+
+      const toggle = () => {
+        const root = document.documentElement;
+        const next = root.dataset.dccNav === 'collapsed' ? 'expanded' : 'collapsed';
+        root.dataset.dccNav = next;
+        const prefs = readPrefs();
+        prefs.collapseNav = next === 'collapsed';
+        savePrefs(prefs);
+      };
+
+      const onClick = (event) => {
+        const nav = boundNav;
+        if (nav === null) return;
+        const more = findMoreButton(nav);
+        if (more === null || !more.contains(event.target)) return;
+        /* 接管这次点击：宿主原本会在这里弹出面板菜单 */
+        event.preventDefault();
+        event.stopPropagation();
+        toggle();
+      };
+
+      /* 折叠高度按「视觉上的前两项」算：新会话克隆行 + 更多。
+         它们靠 flex order 排到最前，DOM 顺序里却分散在首尾，
+         所以不能简单取 children[0..1]。 */
+      const syncHeights = (nav) => {
+        const items = Array.from(nav.children);
+        if (items.length === 0) return;
+        const gap = parseFloat(window.getComputedStyle(nav).rowGap) || 0;
+        const newRow = nav.querySelector('[data-dcc-newrow]');
+        const more = nav.querySelector('[data-dcc-more]');
+        let collapsed = 0;
+        if (newRow !== null) collapsed += newRow.getBoundingClientRect().height + gap;
+        if (more !== null) collapsed += more.getBoundingClientRect().height + gap;
+        let full = 0;
+        for (let i = 0; i < items.length; i += 1) full += items[i].getBoundingClientRect().height;
+        full += gap * Math.max(0, items.length - 1);
+        nav.style.setProperty('--dcc-nav-collapsed-height', `${Math.ceil(collapsed)}px`);
+        nav.style.setProperty('--dcc-nav-expanded-height', `${Math.ceil(full)}px`);
+      };
+
+      const ensure = () => {
+        const nav = findNav();
+        if (nav === null) return;
+        markMore(nav);
+        syncHeights(nav);
+        if (boundNav !== nav) {
+          if (boundNav !== null) boundNav.removeEventListener('click', onClick, true);
+          nav.addEventListener('click', onClick, true);
+          boundNav = nav;
+        }
+      };
+
+      const schedule = () => {
+        if (timer !== null) return;
+        timer = window.setTimeout(() => {
+          timer = null;
+          ensure();
+        }, 400);
+      };
+
+      ensure();
+      observer = new MutationObserver(schedule);
+      observer.observe(document.body, { childList: true, subtree: true });
+
+      return () => {
+        observer.disconnect();
+        if (timer !== null) clearTimeout(timer);
+        if (boundNav !== null) {
+          boundNav.removeEventListener('click', onClick, true);
+          const btn = findMoreButton(boundNav);
+          if (btn !== null) {
+            let host = btn;
+            while (host !== null && host.parentElement !== boundNav) host = host.parentElement;
+            if (host !== null) host.removeAttribute('data-dcc-more');
+          }
+        }
+      };
+    }
 
     /**
      * 设置面板左上角的返回按钮：点击触发原关闭按钮，保留原关闭逻辑。
@@ -1357,6 +1524,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             onChange: update('invertNewSession'),
           }),
           h(Row, {
+            title: zh ? '折叠侧栏导航功能' : 'Collapsible sidebar navigation',
+            desc: zh ? '折叠侧栏导航功能，可点击箭头展开收起。' : 'Collapse the sidebar navigation; click the arrow to expand or collapse it.',
+            checked: prefs.collapseNav,
+            onChange: update('collapseNav'),
+          }),
+          h(Row, {
             title: zh ? '弱化工作区名称' : 'Dim workspace names',
             desc: zh ? '工作区名称弱化，使工作区和会话更易区分。' : 'Dim workspace names so workspaces and sessions are easier to tell apart.',
             checked: prefs.dimSessions,
@@ -1474,6 +1647,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             removeCss = () => tag.remove();
           }
           const removeNewSessionRow = installNewSessionRow();
+          const removeNavToggle = installNavToggle();
           const removeSettingsBack = installSettingsBackButton();
           const removeRowActionFilter = installRowActionFilter();
           const removeHoverCardBlocker = installHoverCardBlocker();
@@ -1482,6 +1656,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           return () => {
             removeCss();
             removeNewSessionRow();
+            removeNavToggle();
             removeSettingsBack();
             removeRowActionFilter();
             removeHoverCardBlocker();
@@ -1490,6 +1665,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             const root = document.documentElement;
             delete root.dataset.dccRadius;
             delete root.dataset.dccNew;
+            delete root.dataset.dccNav;
             delete root.dataset.dccDim;
             delete root.dataset.dccLogo;
             delete root.dataset.dccDot;
