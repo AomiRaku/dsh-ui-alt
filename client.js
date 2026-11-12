@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.109';
+    const VERSION = '0.2.110';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -232,15 +232,14 @@ html[data-dcc-new="on"] button[data-dcc-newrow] {
 }
 /* 显示 logo 时，给导航区留出与上方接近的下边距 */
 html[data-dcc-logo="shown"] nav[class*="_panelList"] {
-  margin-top: 2px;
+  margin-top: 4px;
 }
-/* Logo 下留白收一收：logoRow 的下边距归零、列表只留 2px；
-   上方 topStrip 保持宿主原样。 */
+/* Logo 上下留白：高度略放大，底下留一点空隙，别贴着导航 */
 html[data-dcc-logo="shown"] [class*="_logoRow"] {
-  height: 28px !important;
-  margin-bottom: 0 !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
+  height: 32px !important;
+  margin-bottom: 6px !important;
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
 }
 
 /* 新会话按钮固定在顶部：无论它是宿主原按钮，还是「统一新会话按钮样式」
@@ -283,6 +282,11 @@ html[data-dcc-logo="shown"] [class*="_logoRow"] {
 html[data-dcc-nav] nav[class*="_panelList"] {
   overflow: hidden;
   transition: max-height .15s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
+}
+/* 导航项之间放松一点，行与行不再挨得那么紧 */
+html[data-dcc-nav] nav[class*="_panelList"] {
+  gap: 4px !important;
+  margin-bottom: 4px !important;
 }
 html[data-dcc-nav="collapsed"] nav[class*="_panelList"] {
   max-height: var(--dcc-nav-collapsed-height, 70px);
