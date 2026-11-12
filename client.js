@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.106';
+    const VERSION = '0.2.107';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1383,13 +1383,13 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         }
       };
 
-      /* 宿主图标是 React 内联 SVG（不是 sprite 的 <use>），所以直接克隆
-         已经渲染出来的那一个：图钉抄其他行的 _panelUnpin，插件图标抄本行。 */
-      const clonePinSvg = () => {
-        const svg = document.querySelector('[class*="_panelUnpin"] svg');
-        return svg === null ? null : svg.outerHTML;
-      };
+      /* 宿主图标都由 M(name, size) 生成，落到 DOM 就是
+         `<svg data-icon="dsw-icon-pin-fill-regular"><use href="#…"/></svg>`。
+         直接照这个结构引用 sprite，得到的和宿主完全同一个图形。 */
+      const pinSvg = '<svg width="16" height="16" data-icon="dsw-icon-pin-fill-regular" aria-hidden="true">'
+        + '<use href="#dsw-icon-pin-fill-regular"/></svg>';
 
+      /* 插件行自己的图标（内联 svg），收起后菜单补项时复用 */
       const cloneGlyphSvg = (row) => {
         const svg = row.querySelector('[class*="_panelGlyph"] svg');
         return svg === null ? null : svg.outerHTML;
@@ -1402,14 +1402,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           pin.type = 'button';
           pin.className = 'dcc-pin';
           pin.setAttribute('aria-label', isZh() ? '固定或收起插件入口' : 'Pin or hide the plugins entry');
-          const svg = clonePinSvg();
-          if (svg !== null) {
-            pin.innerHTML = svg;
-          } else {
-            pin.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true">'
-              + '<path d="M9.5 2.5 13.5 6.5 11 7.5 8.5 10 8 13 3 8 6 7.5 8.5 5z"'
-              + ' fill="currentColor" stroke="none"/></svg>';
-          }
+          pin.innerHTML = pinSvg;
           pin.addEventListener('click', (event) => {
             event.preventDefault();
             event.stopPropagation();
@@ -1515,12 +1508,16 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         item.addEventListener('click', (event) => {
           event.preventDefault();
           event.stopImmediatePropagation();
+          /* 先还原显示，让插件行回到 DOM 可点，再触发它自己的切换逻辑 */
           document.documentElement.dataset.dccPlugins = 'shown';
           try {
             window.localStorage.setItem('dsh-ui-alt:plugins-hidden:v1', '0');
           } catch {
             /* 忽略 */
           }
+          const row = document.querySelector('[data-dcc-plugin-entry]');
+          const target = row === null ? null : row.querySelector('button[aria-label]');
+          if (target !== null) target.click();
           document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
         }, true);
         menu.insertBefore(item, menu.firstElementChild);
