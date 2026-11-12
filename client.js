@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.128';
+    const VERSION = '0.2.129';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -14,6 +14,7 @@ window.__ModuleLoader__.load({
       dimSessions: true,
       hideLogo: false,
       winFont: false,
+      softenDarkText: true,
       sessionDot: false,
       settingsFullscreen: true,
       hideHoverCard: true,
@@ -50,6 +51,7 @@ window.__ModuleLoader__.load({
       root.dataset.dccLogo = prefs.hideLogo ? 'hidden' : 'shown';
       root.dataset.dccDot = prefs.sessionDot ? 'on' : 'off';
       root.dataset.dccFont = prefs.winFont ? 'on' : 'off';
+      root.dataset.dccTextDim = prefs.softenDarkText ? 'on' : 'off';
       root.dataset.dccFull = prefs.settingsFullscreen ? 'on' : 'off';
       root.dataset.dccHover = prefs.hideHoverCard ? 'off' : 'on';
       root.dataset.dccRowButtons = prefs.hideRowButtons ? 'on' : 'off';
@@ -364,9 +366,9 @@ html[data-dcc-radius="on"] [class*="_groupSection"] {
   margin-top: 2px !important;
 }
 
-/* 深色模式下正文不再用纯白：整体压到 92% 白，长时间看不刺眼。
+/* 深色模式下正文不再用纯白：整体压到 80% 白，长时间看不刺眼。
    改 token 而不是逐个元素设色，图标、输入框、菜单都会一起跟上。 */
-body[data-ds-dark-theme] {
+html[data-dcc-textdim="on"] body[data-ds-dark-theme] {
   --dsw-alias-label-primary: rgba(255, 255, 255, .8) !important;
 }
 
@@ -1590,6 +1592,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             desc: zh ? '将 Windows 端默认字体改为微软雅黑。微软雅黑带有 hinting，使文字在显示设置低于 200% 缩放比例下，更加锐利清晰。若手动设置了字体，或使用 macOS 端，则不受影响。' : 'Use Microsoft YaHei as the default Windows font. It carries hinting, which keeps text sharp below 200% display scaling. Has no effect if you set a font manually, or on macOS.',
             checked: prefs.winFont,
             onChange: update('winFont'),
+          }),
+          h(Row, {
+            title: zh ? '降低深色模式文字亮度' : 'Soften dark-mode text',
+            desc: zh ? '略微降低深色模式文字亮度，避免纯白文字过于刺眼。' : 'Slightly dims text in dark mode so pure white is less harsh.',
+            checked: prefs.softenDarkText,
+            onChange: update('softenDarkText'),
           })),
         h('div', { className: 'dcc-group' },
           h('div', { className: 'dcc-group-title' }, zh ? '布局' : 'Layout'),
@@ -1757,6 +1765,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             delete root.dataset.dccLogo;
             delete root.dataset.dccDot;
             delete root.dataset.dccFont;
+            delete root.dataset.dccTextDim;
             delete root.dataset.dccFull;
             delete root.dataset.dccHover;
             delete root.dataset.dccRowButtons;
