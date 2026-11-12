@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.125';
+    const VERSION = '0.2.126';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -899,7 +899,16 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         clone = document.createElement('button');
         clone.type = 'button';
         clone.setAttribute('data-dcc-newrow', '');
-        clone.className = [...row.classList].filter((name) => !name.includes('_panelActive')).join(' ') + ' dcc-newrow';
+        /* 宿主的悬停底色画在 _panelEntry 上、行本身是透明的。
+           克隆行是裸 button，少了这层包裹，悬停就会比别的导航行浅一档，
+           所以把父级的 panelEntry 类一并复制过来。 */
+        const entry = row.parentElement;
+        const entryClasses = entry === null
+          ? []
+          : [...entry.classList].filter((name) => name.includes('_panelEntry'));
+        clone.className = [...row.classList].filter((name) => !name.includes('_panelActive')).join(' ')
+          + ' dcc-newrow'
+          + (entryClasses.length > 0 ? ' ' + entryClasses.join(' ') : '');
         const aria = orig.getAttribute('aria-label');
         if (aria !== null) clone.setAttribute('aria-label', aria);
         const content = document.createElement('span');
