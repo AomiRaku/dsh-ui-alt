@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.3.5';
+    const VERSION = '0.3.6';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -251,6 +251,31 @@ html[data-dcc-logo="shown"] [class*="_logoRow"] {
   top: 0;
   z-index: 3;
   background: var(--dsw-specific-sidebar-fill, var(--dsw-alias-bg-layer-1));
+}
+
+/* 侧栏滚动下放：整块滚动容器不再滚动，改成纵向布局；
+   Logo / 面板列表 / 工作区标题全部固定，只有工作区列表自己滚。
+   宽屏才有 data-sidebar-scrollport，收成细轨时这些规则不生效。 */
+[data-sidebar-scrollport] {
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+[data-sidebar-scrollport] > nav[class*="_panelList"] {
+  flex: none;
+}
+[data-sidebar-scrollport] > [class*="_regionArea"] {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+/* 工作区标题保持不动，列表区成为唯一的滚动容器。
+   宿主给 listArea 写的是 overflow-y:hidden，这里放开。 */
+[data-sidebar-scrollport] [class*="_listArea"] {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
 }
 
 /* ---------- 工作区名称更明显，「展开其余」更淡 ---------- */
