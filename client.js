@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.102';
+    const VERSION = '0.2.103';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -276,6 +276,44 @@ html[data-dcc-logo="shown"] [class*="_logoRow"] {
 [data-sidebar-scrollport] [class*="_listArea"] {
   overflow-y: auto !important;
   overflow-x: hidden !important;
+}
+
+/* 插件入口的图钉：hover 才显现，和宿主其他图钉同一位置 */
+.dcc-pin {
+  position: absolute;
+  top: 2px;
+  right: 0;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--dsw-radius-sm, 4px);
+  background: transparent;
+  color: var(--dsw-alias-label-caption);
+  opacity: 0;
+  cursor: default;
+  transition: opacity .15s, color .15s;
+}
+.dcc-pin svg {
+  width: 14px;
+  height: 14px;
+}
+[data-dcc-plugin-entry] {
+  position: relative;
+}
+[data-dcc-plugin-entry]:hover .dcc-pin {
+  opacity: 1;
+}
+.dcc-pin:hover {
+  color: var(--dsw-alias-label-primary);
+}
+/* 收起时整行隐藏 */
+html[data-dcc-plugins="hidden"] [data-dcc-plugin-entry] {
+  display: none !important;
 }
 
 /* ---------- 工作区名称更明显，「展开其余」更淡 ---------- */
@@ -1308,6 +1346,108 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
     }
 
+    /**
+     * 给「插件」入口补一个图钉。宿主的 canUnpin 写死了 id !== 'plugins'，
+     * 所以它没有固定按钮。这里补一个自己的：点击切换显示/隐藏，状态存本地。
+     * 收起只能是「隐藏」——宿主不会把 plugins 渲染进「更多」菜单，插不进去。
+     */
+    function installPluginPin() {
+      const KEY = 'dsh-ui-alt:plugins-hidden:v1';
+      let observer = null;
+      let timer = null;
+      let boundRow = null;
+
+      const findNav = () => document.querySelector('nav[class*="_panelList"]');
+
+      const findPluginRow = (nav) => {
+        if (nav === null) return null;
+        const rows = nav.querySelectorAll('[class*="_panelEntry"]');
+        for (let i = 0; i < rows.length; i += 1) {
+          const btn = rows[i].querySelector('button[aria-label]');
+          if (btn === null) continue;
+          const label = (btn.getAttribute('aria-label') || '').trim();
+          /* 精确匹配，别把「插件市场」也算进来 */
+          if (label === '插件' || label === 'Plugins') return rows[i];
+        }
+        return null;
+      };
+
+      const toggle = () => {
+        const root = document.documentElement;
+        const next = root.dataset.dccPlugins === 'hidden' ? 'shown' : 'hidden';
+        root.dataset.dccPlugins = next;
+        try {
+          window.localStorage.setItem(KEY, next === 'hidden' ? '1' : '0');
+        } catch {
+          /* 存不了就算了，本次会话内仍然有效 */
+        }
+      };
+
+      const build = (row) => {
+        let pin = row.querySelector('.dcc-pin');
+        if (pin === null) {
+          pin = document.createElement('button');
+          pin.type = 'button';
+          pin.className = 'dcc-pin';
+          pin.setAttribute('aria-label', isZh() ? '固定或收起插件入口' : 'Pin or hide the plugins entry');
+          pin.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true">'
+            + '<path d="M9.5 2.5 13.5 6.5 11 7.5 8.5 10 8 13 3 8 6 7.5 8.5 5z"'
+            + ' fill="currentColor" stroke="none"/>'
+            + '<path d="M3 13 6.5 9.5" fill="none" stroke="currentColor" stroke-width="1.2"'
+            + ' stroke-linecap="round"/></svg>';
+          pin.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            toggle();
+          });
+          row.appendChild(pin);
+        }
+        row.setAttribute('data-dcc-plugin-entry', '');
+        if (boundRow !== row) boundRow = row;
+      };
+
+      const ensure = () => {
+        const nav = findNav();
+        const row = findPluginRow(nav);
+        if (row === null) return;
+        build(row);
+      };
+
+      const schedule = () => {
+        if (timer !== null) return;
+        timer = window.setTimeout(() => {
+          timer = null;
+          ensure();
+        }, 400);
+      };
+
+      /* 恢复上次的选择 */
+      try {
+        if (window.localStorage.getItem(KEY) === '1') {
+          document.documentElement.dataset.dccPlugins = 'hidden';
+        } else if (document.documentElement.dataset.dccPlugins === undefined) {
+          document.documentElement.dataset.dccPlugins = 'shown';
+        }
+      } catch {
+        document.documentElement.dataset.dccPlugins = 'shown';
+      }
+
+      ensure();
+      observer = new MutationObserver(schedule);
+      observer.observe(document.body, { childList: true, subtree: true });
+
+      return () => {
+        observer.disconnect();
+        if (timer !== null) clearTimeout(timer);
+        delete document.documentElement.dataset.dccPlugins;
+        if (boundRow !== null) {
+          boundRow.removeAttribute('data-dcc-plugin-entry');
+          const pin = boundRow.querySelector('.dcc-pin');
+          if (pin !== null) pin.remove();
+        }
+      };
+    }
+
     function Switch(props) {
       return h('label', { className: 'dcc-switch' },
         h('input', {
@@ -1504,6 +1644,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const removeHoverCardBlocker = installHoverCardBlocker();
           const removeViewSwitcher = installViewSwitcher();
           const removeBalance = installBalancePill(ctx);
+          const removePluginPin = installPluginPin();
           return () => {
             removeCss();
             removeNewSessionRow();
@@ -1512,6 +1653,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             removeHoverCardBlocker();
             removeViewSwitcher();
             removeBalance();
+            removePluginPin();
             const root = document.documentElement;
             delete root.dataset.dccRadius;
             delete root.dataset.dccNew;
