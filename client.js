@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.117';
+    const VERSION = '0.2.118';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1467,8 +1467,10 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         }, 400);
       };
 
+      /* 默认收起，且不写任何持久化存储：每次加载都从收起态开始，
+         用户当次会话里展开只影响当前页面。 */
       if (document.documentElement.dataset.dccNav === undefined) {
-        document.documentElement.dataset.dccNav = 'expanded';
+        document.documentElement.dataset.dccNav = 'collapsed';
       }
       ensure();
       observer = new MutationObserver(schedule);
