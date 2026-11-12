@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.3.2';
+    const VERSION = '0.3.3';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -312,7 +312,24 @@ html[data-dcc-nav="collapsed"] nav[class*="_panelList"] {
 html[data-dcc-nav="expanded"] nav[class*="_panelList"] {
   max-height: var(--dcc-nav-expanded-height, 1200px);
 }
-/* 折叠后「更多」右侧的小箭头翻上来，表示再点一下就展开 */
+/* 「更多」左侧图标换成折叠箭头：隐藏宿主那个「网格加号」，
+   用 mask 画一个 chevron。折叠态朝下（提示可展开），展开态转 180° 朝上。 */
+html[data-dcc-nav] [data-dcc-more] [class*="_panelGlyph"] svg {
+  display: none !important;
+}
+html[data-dcc-nav] [data-dcc-more] [class*="_panelGlyph"]::before {
+  content: "";
+  display: block;
+  width: 16px;
+  height: 16px;
+  background-color: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E") center / 16px 16px no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E") center / 16px 16px no-repeat;
+  transition: transform .15s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
+}
+html[data-dcc-nav="expanded"] [data-dcc-more] [class*="_panelGlyph"]::before {
+  transform: rotate(180deg);
+}
 html[data-dcc-nav="collapsed"] [data-dcc-more] svg {
   transform: rotate(180deg);
 }
