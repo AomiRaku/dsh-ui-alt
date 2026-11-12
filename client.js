@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.97';
+    const VERSION = '0.2.98';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -291,59 +291,13 @@ html[data-dcc-nav] nav[class*="_panelList"] {
   display: flex;
   flex-direction: column;
 }
-html[data-dcc-nav="collapsed"] nav[class*="_panelList"] {
-  max-height: var(--dcc-nav-collapsed-height, 70px);
+/* 折叠：只留「更多」自己，其余导航项隐藏。
+   「新会话」在 nav 外面，不受影响，始终露着。 */
+html[data-dcc-nav="collapsed"] nav[class*="_panelList"] > *:not([data-dcc-more]) {
+  display: none !important;
 }
-html[data-dcc-nav="expanded"] nav[class*="_panelList"] {
-  max-height: var(--dcc-nav-expanded-height, 1200px);
-}
-
-/* 导航底部的展开/收起箭头 */
-/* 整行都能点（点击区不变），但高亮只画在图标那一小块上：背景交给中心伪元素，
-   按钮本身保持透明，所以整行悬停时也只有中间那个矩形亮起来。 */
-.dcc-nav-toggle {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: calc(100% - 8px);
-  margin: 0 4px;
-  padding: 2px 0;
-  border: 0;
-  border-radius: var(--dsw-radius-md, 6px);
-  background: transparent;
-  color: var(--dsw-alias-label-tertiary);
-  cursor: pointer;
-  transition: color .15s;
-}
-.dcc-nav-toggle::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 26px;
-  height: 20px;
-  margin: -10px 0 0 -13px;
-  border-radius: var(--dsw-radius-md, 6px);
-  background: transparent;
-  transition: background-color .15s;
-  pointer-events: none;
-}
-.dcc-nav-toggle:hover {
-  background: transparent;
-  color: var(--dsw-alias-label-secondary);
-}
-.dcc-nav-toggle:hover::before {
-  background: var(--dsw-alias-interactive-bg-hover);
-}
-.dcc-nav-toggle svg {
-  display: block;
-  width: 14px;
-  height: 14px;
-  /* 与宿主工作区折叠箭头同一套曲线：.15s + var(--ds-ease-in-out) */
-  transition: transform .15s var(--ds-ease-in-out);
-}
-html[data-dcc-nav="collapsed"] .dcc-nav-toggle svg {
+/* 折叠后「更多」右侧的小箭头翻上来，表示再点一下就展开 */
+html[data-dcc-nav="collapsed"] [data-dcc-more] svg {
   transform: rotate(180deg);
 }
 
@@ -950,74 +904,57 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
     }
 
     /**
-     * 导航底部的展开/收起箭头。
-     * 点击切换 html[data-dcc-nav]，并写回偏好，让下一次启动保持同样的折叠状态。
-     * 导航项超过两项时箭头可见。
+     * 导航折叠：把宿主底部的「更多」按钮接管成展开/收起开关。
+     * 点击它不再弹面板菜单，而是折叠 nav 内的项——只留「更多」自己。
+     * 「新会话」在 nav 外面，本来就一直露着，不需要处理。
      */
     function installNavToggle() {
       const findNav = () => document.querySelector('nav[class*="_panelList"]');
-      let btn = null;
       let observer = null;
       let timer = null;
+      let boundNav = null;
 
-      const sync = () => {
-        if (btn === null) return;
-        const nav = findNav();
-        const count = nav === null ? 0 : nav.children.length;
-        btn.style.display = count > 2 ? '' : 'none';
-        /* 折叠高度 = 前两项实测高度 + 一项行距；展开高度 = 全部实测高度。
-           写进变量后，max-height 的过渡是匀速的，不会「弹一下再停」。 */
-        if (nav !== null) {
-          const items = Array.from(nav.children);
-          const gap = parseFloat(window.getComputedStyle(nav).rowGap) || 0;
-          let collapsedHeight = 0;
-          let full = 0;
-          for (let i = 0; i < items.length; i += 1) {
-            const h = items[i].getBoundingClientRect().height;
-            full += h;
-            if (i < 2) collapsedHeight += h;
-          }
-          full += Math.max(0, items.length - 1) * gap;
-          if (items.length > 1) collapsedHeight += gap;
-          nav.style.setProperty('--dcc-nav-collapsed-height', `${Math.ceil(collapsedHeight)}px`);
-          nav.style.setProperty('--dcc-nav-expanded-height', `${Math.ceil(full)}px`);
-        }
-        const collapsed = document.documentElement.dataset.dccNav === 'collapsed';
-        const label = collapsed ? (isZh() ? '展开导航' : 'Expand navigation') : (isZh() ? '收起导航' : 'Collapse navigation');
-        btn.setAttribute('aria-label', label);
-        btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-        btn.title = label;
+      const findMore = (nav) => {
+        if (nav === null) return null;
+        const buttons = Array.from(nav.querySelectorAll('button'));
+        return buttons.find((b) => {
+          const text = (b.textContent || '').trim();
+          return text === '更多' || text === 'More';
+        }) || null;
       };
 
-      const build = (nav) => {
-        if (btn !== null) btn.remove();
-        btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'dcc-nav-toggle';
-        btn.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true">'
-          + '<path d="M4 10l4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.6"'
-          + ' stroke-linecap="round" stroke-linejoin="round"/></svg>';
-        btn.addEventListener('click', () => {
-          const root = document.documentElement;
-          const next = root.dataset.dccNav === 'collapsed' ? 'expanded' : 'collapsed';
-          root.dataset.dccNav = next;
-          const nextPrefs = readPrefs();
-          nextPrefs.collapseNav = next === 'collapsed';
-          savePrefs(nextPrefs);
-          sync();
-        });
-        nav.parentElement.insertBefore(btn, nav.nextSibling);
-        sync();
+      const toggle = () => {
+        const root = document.documentElement;
+        const next = root.dataset.dccNav === 'collapsed' ? 'expanded' : 'collapsed';
+        root.dataset.dccNav = next;
+        const prefs = readPrefs();
+        prefs.collapseNav = next === 'collapsed';
+        savePrefs(prefs);
+      };
+
+      const onClick = (event) => {
+        const nav = boundNav;
+        if (nav === null) return;
+        const more = findMore(nav);
+        if (more === null || !more.contains(event.target)) return;
+        /* 接管这次点击：宿主原本会在这里弹出面板菜单 */
+        event.preventDefault();
+        event.stopPropagation();
+        toggle();
       };
 
       const ensure = () => {
         const nav = findNav();
-        if (nav === null || nav.parentElement === null) return;
-        if (btn !== null && btn.isConnected && btn.previousElementSibling === nav) {
-          sync();
-          return;
+        if (nav === null) return;
+        const more = findMore(nav);
+        if (more !== null && !more.hasAttribute('data-dcc-more')) {
+          more.setAttribute('data-dcc-more', '');
         }
-        build(nav);
+        if (boundNav !== nav) {
+          if (boundNav !== null) boundNav.removeEventListener('click', onClick, true);
+          nav.addEventListener('click', onClick, true);
+          boundNav = nav;
+        }
       };
 
       const schedule = () => {
@@ -1035,7 +972,9 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       return () => {
         observer.disconnect();
         if (timer !== null) clearTimeout(timer);
-        if (btn !== null) btn.remove();
+        if (boundNav !== null) boundNav.removeEventListener('click', onClick, true);
+        const more = findMore(findNav());
+        if (more !== null) more.removeAttribute('data-dcc-more');
       };
     }
 
