@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.3.1';
+    const VERSION = '0.3.0';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -241,16 +241,6 @@ html[data-dcc-logo="shown"] [class*="_logoRow"] {
   margin-bottom: 0 !important;
   padding-top: 0 !important;
   padding-bottom: 0 !important;
-}
-
-/* 新会话按钮固定在顶部：无论它是宿主原按钮，还是「统一新会话按钮样式」
-   克隆进 nav 的那一行，滚动时都不该被工作区顶走。 */
-[class*="_newSession"],
-[data-dcc-newrow] {
-  position: sticky;
-  top: 0;
-  z-index: 3;
-  background: var(--dsw-specific-sidebar-fill, var(--dsw-alias-bg-layer-1));
 }
 
 /* ---------- 工作区名称更明显，「展开其余」更淡 ---------- */
