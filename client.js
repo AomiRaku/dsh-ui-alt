@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.93';
+    const VERSION = '0.2.94';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -264,11 +264,24 @@ html[data-dcc-nav]:not(:has([data-sidebar-collapsed="true"])) nav[class*="_panel
 html[data-dcc-nav] nav[class*="_panelList"] {
   overflow: hidden;
   transition: max-height .15s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
-  /* 向上滚动时面板列表不再被顶出去：贴住滚动容器顶部，并用侧栏底色挡住下面的内容 */
-  position: sticky;
-  top: 0;
-  z-index: 3;
-  background: var(--dsw-alias-bg-base, var(--dsw-alias-bg-layer-1));
+}
+/* 滚动只发生在工作区/会话列表：滚动容器改成纵向布局，面板列表和底部固定，
+   中间的工作区区域占满剩余高度并在内部滚动。宽屏才有 data-sidebar-scrollport，
+   收成细轨时这条不生效。 */
+[data-sidebar-scrollport] {
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+[data-sidebar-scrollport] > nav[class*="_panelList"] {
+  flex: none;
+}
+[data-sidebar-scrollport] > [class*="_regionArea"] {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 html[data-dcc-nav="collapsed"] nav[class*="_panelList"] {
   max-height: var(--dcc-nav-collapsed-height, 70px);
@@ -281,10 +294,7 @@ html[data-dcc-nav="expanded"] nav[class*="_panelList"] {
 /* 整行都能点（点击区不变），但高亮只画在图标那一小块上：背景交给中心伪元素，
    按钮本身保持透明，所以整行悬停时也只有中间那个矩形亮起来。 */
 .dcc-nav-toggle {
-  position: sticky;
-  /* 紧贴面板列表下沿；这个变量由 sync() 按 nav 实测高度写入 */
-  top: var(--dcc-nav-sticky-top, 0px);
-  z-index: 3;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -293,7 +303,7 @@ html[data-dcc-nav="expanded"] nav[class*="_panelList"] {
   padding: 2px 0;
   border: 0;
   border-radius: var(--dsw-radius-md, 6px);
-  background: var(--dsw-alias-bg-base, var(--dsw-alias-bg-layer-1));
+  background: transparent;
   color: var(--dsw-alias-label-tertiary);
   cursor: pointer;
   transition: color .15s;
@@ -963,11 +973,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           if (items.length > 1) collapsedHeight += gap;
           nav.style.setProperty('--dcc-nav-collapsed-height', `${Math.ceil(collapsedHeight)}px`);
           nav.style.setProperty('--dcc-nav-expanded-height', `${Math.ceil(full)}px`);
-          /* 折叠箭头也是 sticky 的，要贴在列表下沿，所以这里把它的 top 值
-             设到 html 上（按钮是 nav 的兄弟，继承不到 nav 上的变量）。 */
-          const nowCollapsed = document.documentElement.dataset.dccNav === 'collapsed';
-          const stickyTop = nowCollapsed ? collapsedHeight : full;
-          document.documentElement.style.setProperty('--dcc-nav-sticky-top', `${Math.ceil(stickyTop)}px`);
         }
         const collapsed = document.documentElement.dataset.dccNav === 'collapsed';
         const label = collapsed ? (isZh() ? '展开导航' : 'Expand navigation') : (isZh() ? '收起导航' : 'Collapse navigation');
