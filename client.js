@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.134';
+    const VERSION = '0.2.135';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -854,7 +854,9 @@ html[data-dcc-full="on"] .dcc-settings-back {
   cursor: pointer;
   transition: background-color .15s;
 }
-.dcc-settings-back:hover {
+/* hover 也带上同样的前缀：基础规则现在是 html[data-dcc-full="on"] .dcc-settings-back
+   （0,2,1），比裸的 .dcc-settings-back:hover（0,2,0）高，不加前缀底色会被压回去。 */
+html[data-dcc-full="on"] .dcc-settings-back:hover {
   background: var(--dsw-alias-interactive-bg-hover);
 }
 /* 悬停「设置」标题时，左侧箭头一起高亮。
