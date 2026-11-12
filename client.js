@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.105';
+    const VERSION = '0.2.106';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1483,12 +1483,19 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
 
         const item = template.cloneNode(true);
         item.setAttribute('data-dcc-plugins-entry', '');
-        /* 图标换成插件自己的（收起前存在行上的 data-dcc-plugin-glyph） */
+        /* 克隆带来的 data-* 身份要清掉，否则菜单容器会按原来那一项分发点击 */
+        for (const attr of Array.from(item.attributes)) {
+          if (attr.name.indexOf('data-') === 0 && attr.name !== 'data-dcc-plugins-entry') {
+            item.removeAttribute(attr.name);
+          }
+        }
+        /* 图标：把克隆来的第一个 svg 直接换成插件自己的 */
         const pluginRow = document.querySelector('[data-dcc-plugin-entry]');
         const pluginGlyph = pluginRow === null ? null : pluginRow.getAttribute('data-dcc-plugin-glyph');
-        const glyphBox = item.querySelector('[class*="_panelGlyph"]');
-        if (glyphBox !== null && pluginGlyph !== null && pluginGlyph !== '') {
-          glyphBox.innerHTML = pluginGlyph;
+        const hostSvg = item.querySelector('svg');
+        if (hostSvg !== null) {
+          if (pluginGlyph !== null && pluginGlyph !== '') hostSvg.outerHTML = pluginGlyph;
+          else hostSvg.remove();
         }
         /* 把克隆项里的文字换成「插件」，其余结构（图标、间距）保持不变 */
         const walker = document.createTreeWalker(item, NodeFilter.SHOW_TEXT);
@@ -1507,7 +1514,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         }
         item.addEventListener('click', (event) => {
           event.preventDefault();
-          event.stopPropagation();
+          event.stopImmediatePropagation();
           document.documentElement.dataset.dccPlugins = 'shown';
           try {
             window.localStorage.setItem('dsh-ui-alt:plugins-hidden:v1', '0');
@@ -1515,7 +1522,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             /* 忽略 */
           }
           document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-        });
+        }, true);
         menu.insertBefore(item, menu.firstElementChild);
       });
       observer.observe(document.body, { childList: true, subtree: true });
