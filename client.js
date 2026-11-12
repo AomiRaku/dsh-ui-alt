@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.95';
+    const VERSION = '0.2.96';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -234,17 +234,17 @@ html[data-dcc-new="on"] button[data-dcc-newrow] {
 }
 /* 显示 logo 时，给导航区留出与上方接近的下边距 */
 html[data-dcc-logo="shown"] nav[class*="_panelList"] {
-  margin-top: 6px;
+  margin-top: 2px;
 }
 /* Logo 上下留白收一收：宿主是 topStrip 52px + logoRow 36px + 下边距 12px，
-   整体偏松，压缩后给下面的列表腾出空间。 */
+   整体偏松，压缩后给下面的列表腾出空间。下边距归零，列表只留 2px。 */
 html[data-dcc-logo="shown"] [class*="_topStrip"] {
   height: 42px !important;
   margin-top: 0 !important;
 }
 html[data-dcc-logo="shown"] [class*="_logoRow"] {
   height: 28px !important;
-  margin-bottom: 6px !important;
+  margin-bottom: 0 !important;
   padding-top: 0 !important;
   padding-bottom: 0 !important;
 }
