@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.132';
+    const VERSION = '0.2.133';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1621,7 +1621,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           }),
           h(Row, {
             title: zh ? '导航折叠' : 'Collapsible navigation',
-            desc: zh ? '在导航下方显示折叠箭头，收起后只保留新会话与插件。每次加载都从收起开始。' : 'Show a collapse arrow under the navigation; collapsed leaves only New session and Plugins. Starts collapsed on every load.',
+            desc: zh ? '在导航下方显示折叠箭头，可展开和收起。' : 'Show a collapse arrow under the navigation to expand and collapse it.',
             checked: prefs.navCollapse,
             onChange: update('navCollapse'),
           }),
