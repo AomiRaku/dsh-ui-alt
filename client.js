@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.99';
+    const VERSION = '0.2.100';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -291,9 +291,11 @@ html[data-dcc-nav] nav[class*="_panelList"] {
   display: flex;
   flex-direction: column;
 }
-/* 折叠：只留「更多」自己，其余导航项隐藏。
-   「新会话」在 nav 外面，不受影响，始终露着。 */
-html[data-dcc-nav="collapsed"] nav[class*="_panelList"] > *:not([data-dcc-more]) {
+/* 折叠：只留「更多」，外加克隆出来的新会话行。
+   「统一新会话按钮样式」会把原按钮隐藏、克隆一个插进 nav 首位，
+   所以折叠时必须把它一起放行，否则新会话会跟着一起消失。
+   原版新会话（未克隆时）本来就在 nav 外面，不受影响。 */
+html[data-dcc-nav="collapsed"] nav[class*="_panelList"] > *:not([data-dcc-more]):not([data-dcc-newrow]) {
   display: none !important;
 }
 /* 折叠后「更多」右侧的小箭头翻上来，表示再点一下就展开 */
