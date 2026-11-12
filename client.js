@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.103';
+    const VERSION = '0.2.104';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1448,6 +1448,55 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
     }
 
+    /**
+     * 插件入口收起后，在「更多」菜单里补一项，让它还能被找到。
+     * 菜单内容是 portal 动态渲染的，所以只在菜单出现时插入一次；
+     * 点击这一项 = 取消收起（宿主的面板切换逻辑我们够不到，直接还原显示）。
+     */
+    function installPluginMenuEntry() {
+      const observer = new MutationObserver(() => {
+        const root = document.documentElement;
+        if (root.dataset.dccPlugins !== 'hidden') return;
+        const menu = document.querySelector('[class*="_moreMenu"]');
+        if (menu === null) return;
+        if (menu.querySelector('[data-dcc-plugins-entry]') !== null) return;
+        const template = menu.querySelector('button') || menu.firstElementChild;
+        if (template === null) return;
+
+        const item = template.cloneNode(true);
+        item.setAttribute('data-dcc-plugins-entry', '');
+        /* 把克隆项里的文字换成「插件」，其余结构（图标、间距）保持不变 */
+        const walker = document.createTreeWalker(item, NodeFilter.SHOW_TEXT);
+        let wrote = false;
+        let node = walker.nextNode();
+        while (node !== null) {
+          if ((node.textContent || '').trim() !== '') {
+            if (!wrote) {
+              node.textContent = isZh() ? '插件' : 'Plugins';
+              wrote = true;
+            } else {
+              node.textContent = '';
+            }
+          }
+          node = walker.nextNode();
+        }
+        item.addEventListener('click', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          document.documentElement.dataset.dccPlugins = 'shown';
+          try {
+            window.localStorage.setItem('dsh-ui-alt:plugins-hidden:v1', '0');
+          } catch {
+            /* 忽略 */
+          }
+          document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+        });
+        menu.insertBefore(item, menu.firstElementChild);
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+      return () => observer.disconnect();
+    }
+
     function Switch(props) {
       return h('label', { className: 'dcc-switch' },
         h('input', {
@@ -1645,6 +1694,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const removeViewSwitcher = installViewSwitcher();
           const removeBalance = installBalancePill(ctx);
           const removePluginPin = installPluginPin();
+          const removePluginMenuEntry = installPluginMenuEntry();
           return () => {
             removeCss();
             removeNewSessionRow();
@@ -1654,6 +1704,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             removeViewSwitcher();
             removeBalance();
             removePluginPin();
+            removePluginMenuEntry();
             const root = document.documentElement;
             delete root.dataset.dccRadius;
             delete root.dataset.dccNew;
