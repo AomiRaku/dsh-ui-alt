@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.110';
+    const VERSION = '0.2.111';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -294,6 +294,13 @@ html[data-dcc-nav="collapsed"] nav[class*="_panelList"] {
 html[data-dcc-nav="expanded"] nav[class*="_panelList"] {
   max-height: var(--dcc-nav-expanded-height, 1200px);
 }
+/* 导航项左右再松一点：宿主给的是 row-padding - paint-inset，这里各加 4px，
+   图标和文字不会贴着侧栏边缘。收成细轨时（collapsed）不套这条。 */
+html[data-dcc-nav]:not(:has([data-sidebar-collapsed="true"])) nav[class*="_panelList"] [class*="_panelRow"] {
+  padding-left: calc(var(--dsh-sidebar-row-padding) - var(--dsh-sidebar-paint-inset) + 4px) !important;
+  padding-right: calc(var(--dsh-sidebar-row-padding) - var(--dsh-sidebar-paint-inset) + 4px) !important;
+}
+
 /* 折叠箭头：整行可点，高亮只画在中间那一小块 */
 .dcc-nav-toggle {
   position: relative;
