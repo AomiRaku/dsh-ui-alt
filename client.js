@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.115';
+    const VERSION = '0.2.116';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -349,6 +349,16 @@ html[data-dcc-nav] [data-sidebar-scrollport] > [class*="_regionArea"] {
 }
 html[data-dcc-nav="collapsed"] .dcc-nav-toggle svg {
   transform: rotate(180deg);
+}
+
+/* 工作区与会话行之间再紧一点：行高是固定的 32px，没有独立的行间距，
+   靠上下各 1px 的负外边距把相邻行拉近。分组之间也收一收。 */
+[class*="_sessionRow"],
+[class*="_projectRow"] {
+  margin-block: -1px !important;
+}
+[class*="_groupSection"] {
+  margin-top: 2px !important;
 }
 
 /* ---------- 工作区名称更明显，「展开其余」更淡 ---------- */
