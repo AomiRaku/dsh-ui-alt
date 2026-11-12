@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.131';
+    const VERSION = '0.2.132';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -364,13 +364,6 @@ html[data-dcc-radius="on"] [class*="_projectRow"] {
 }
 html[data-dcc-radius="on"] [class*="_groupSection"] {
   margin-top: 2px !important;
-}
-
-/* 深色背景上，半透明白字加上次像素渲染会显得比实际粗一档。
-   关掉次像素抗锯齿改用灰度抗锯齿，笔画会细回来，和浅色主题观感一致。 */
-body {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 /* 深色模式下正文不再用纯白：整体压到 80% 白，长时间看不刺眼。
