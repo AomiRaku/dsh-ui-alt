@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.100';
+    const VERSION = '0.2.101';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -291,12 +291,26 @@ html[data-dcc-nav] nav[class*="_panelList"] {
   display: flex;
   flex-direction: column;
 }
-/* 折叠：只留「更多」，外加克隆出来的新会话行。
-   「统一新会话按钮样式」会把原按钮隐藏、克隆一个插进 nav 首位，
-   所以折叠时必须把它一起放行，否则新会话会跟着一起消失。
-   原版新会话（未克隆时）本来就在 nav 外面，不受影响。 */
-html[data-dcc-nav="collapsed"] nav[class*="_panelList"] > *:not([data-dcc-more]):not([data-dcc-newrow]) {
-  display: none !important;
+/* 「更多」固定排在第二位（新会话之后），展开时不会被推回列表底部。
+   用 flex order 排位，配合下面的 max-height 裁剪即可。 */
+html[data-dcc-nav] nav[class*="_panelList"] > [data-dcc-newrow] {
+  order: -2;
+}
+html[data-dcc-nav] nav[class*="_panelList"] > [data-dcc-more] {
+  order: -1;
+}
+/* 折叠：用 max-height 过渡裁剪，和原版工作区文件夹的展开/收起同一套做法。
+   折叠高度 = 前两项（新会话 + 更多）实测高度，展开高度 = 全部高度，
+   两个值都由脚本写进 CSS 变量，过渡速度才是均匀的。 */
+html[data-dcc-nav] nav[class*="_panelList"] {
+  overflow: hidden;
+  transition: max-height .15s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
+}
+html[data-dcc-nav="collapsed"] nav[class*="_panelList"] {
+  max-height: var(--dcc-nav-collapsed-height, 70px);
+}
+html[data-dcc-nav="expanded"] nav[class*="_panelList"] {
+  max-height: var(--dcc-nav-expanded-height, 1200px);
 }
 /* 折叠后「更多」右侧的小箭头翻上来，表示再点一下就展开 */
 html[data-dcc-nav="collapsed"] [data-dcc-more] svg {
@@ -951,10 +965,30 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         toggle();
       };
 
+      /* 折叠高度按「视觉上的前两项」算：新会话克隆行 + 更多。
+         它们靠 flex order 排到最前，DOM 顺序里却分散在首尾，
+         所以不能简单取 children[0..1]。 */
+      const syncHeights = (nav) => {
+        const items = Array.from(nav.children);
+        if (items.length === 0) return;
+        const gap = parseFloat(window.getComputedStyle(nav).rowGap) || 0;
+        const newRow = nav.querySelector('[data-dcc-newrow]');
+        const more = nav.querySelector('[data-dcc-more]');
+        let collapsed = 0;
+        if (newRow !== null) collapsed += newRow.getBoundingClientRect().height + gap;
+        if (more !== null) collapsed += more.getBoundingClientRect().height + gap;
+        let full = 0;
+        for (let i = 0; i < items.length; i += 1) full += items[i].getBoundingClientRect().height;
+        full += gap * Math.max(0, items.length - 1);
+        nav.style.setProperty('--dcc-nav-collapsed-height', `${Math.ceil(collapsed)}px`);
+        nav.style.setProperty('--dcc-nav-expanded-height', `${Math.ceil(full)}px`);
+      };
+
       const ensure = () => {
         const nav = findNav();
         if (nav === null) return;
         markMore(nav);
+        syncHeights(nav);
         if (boundNav !== nav) {
           if (boundNav !== null) boundNav.removeEventListener('click', onClick, true);
           nav.addEventListener('click', onClick, true);
