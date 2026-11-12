@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.108';
+    const VERSION = '0.2.109';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -276,6 +276,63 @@ html[data-dcc-logo="shown"] [class*="_logoRow"] {
 [data-sidebar-scrollport] [class*="_listArea"] {
   overflow-y: auto !important;
   overflow-x: hidden !important;
+}
+
+/* 导航折叠：收起时用 max-height 裁到前两项（新会话 + 插件），
+   过渡曲线与工作区文件夹展开/收起一致。 */
+html[data-dcc-nav] nav[class*="_panelList"] {
+  overflow: hidden;
+  transition: max-height .15s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
+}
+html[data-dcc-nav="collapsed"] nav[class*="_panelList"] {
+  max-height: var(--dcc-nav-collapsed-height, 70px);
+}
+html[data-dcc-nav="expanded"] nav[class*="_panelList"] {
+  max-height: var(--dcc-nav-expanded-height, 1200px);
+}
+/* 折叠箭头：整行可点，高亮只画在中间那一小块 */
+.dcc-nav-toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(100% - 8px);
+  margin: 0 4px;
+  padding: 2px 0;
+  border: 0;
+  border-radius: var(--dsw-radius-md, 6px);
+  background: transparent;
+  color: var(--dsw-alias-label-tertiary);
+  cursor: default;
+  transition: color .15s;
+}
+.dcc-nav-toggle::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 26px;
+  height: 20px;
+  margin: -10px 0 0 -13px;
+  border-radius: var(--dsw-radius-md, 6px);
+  background: transparent;
+  transition: background-color .15s;
+  pointer-events: none;
+}
+.dcc-nav-toggle:hover {
+  color: var(--dsw-alias-label-secondary);
+}
+.dcc-nav-toggle:hover::before {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+.dcc-nav-toggle svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+  transition: transform .15s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
+}
+html[data-dcc-nav="collapsed"] .dcc-nav-toggle svg {
+  transform: rotate(180deg);
 }
 
 /* ---------- 工作区名称更明显，「展开其余」更淡 ---------- */
@@ -1310,6 +1367,95 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
 
 
 
+    /**
+     * 导航折叠：在面板列表下方放一个自绘箭头，点击切换展开/收起。
+     * 收起时只保留前两项——克隆出来的「新会话」和「插件」，
+     * 其余面板项用 max-height 裁掉，过渡曲线与工作区文件夹一致。
+     */
+    function installNavToggle() {
+      const findNav = () => document.querySelector('nav[class*="_panelList"]');
+      let btn = null;
+      let observer = null;
+      let timer = null;
+
+      const sync = () => {
+        if (btn === null) return;
+        const nav = findNav();
+        if (nav === null) return;
+        const items = Array.from(nav.children);
+        btn.style.display = items.length > 2 ? '' : 'none';
+        if (items.length > 0) {
+          const gap = parseFloat(window.getComputedStyle(nav).rowGap) || 0;
+          let collapsed = 0;
+          let full = 0;
+          for (let i = 0; i < items.length; i += 1) {
+            const h = items[i].getBoundingClientRect().height;
+            full += h;
+            if (i < 2) collapsed += h;
+          }
+          full += gap * Math.max(0, items.length - 1);
+          if (items.length > 1) collapsed += gap;
+          nav.style.setProperty('--dcc-nav-collapsed-height', `${Math.ceil(collapsed)}px`);
+          nav.style.setProperty('--dcc-nav-expanded-height', `${Math.ceil(full)}px`);
+        }
+        const isCollapsed = document.documentElement.dataset.dccNav === 'collapsed';
+        const label = isCollapsed ? (isZh() ? '展开导航' : 'Expand navigation') : (isZh() ? '收起导航' : 'Collapse navigation');
+        btn.setAttribute('aria-label', label);
+        btn.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+        btn.title = label;
+      };
+
+      const build = (nav) => {
+        if (btn !== null) btn.remove();
+        btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'dcc-nav-toggle';
+        btn.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true">'
+          + '<path d="M4 10l4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.6"'
+          + ' stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        btn.addEventListener('click', () => {
+          const root = document.documentElement;
+          const next = root.dataset.dccNav === 'collapsed' ? 'expanded' : 'collapsed';
+          root.dataset.dccNav = next;
+          sync();
+        });
+        nav.parentElement.insertBefore(btn, nav.nextSibling);
+        sync();
+      };
+
+      const ensure = () => {
+        const nav = findNav();
+        if (nav === null || nav.parentElement === null) return;
+        if (btn !== null && btn.isConnected && btn.previousElementSibling === nav) {
+          sync();
+          return;
+        }
+        build(nav);
+      };
+
+      const schedule = () => {
+        if (timer !== null) return;
+        timer = window.setTimeout(() => {
+          timer = null;
+          ensure();
+        }, 400);
+      };
+
+      if (document.documentElement.dataset.dccNav === undefined) {
+        document.documentElement.dataset.dccNav = 'expanded';
+      }
+      ensure();
+      observer = new MutationObserver(schedule);
+      observer.observe(document.body, { childList: true, subtree: true });
+
+      return () => {
+        observer.disconnect();
+        if (timer !== null) clearTimeout(timer);
+        if (btn !== null) btn.remove();
+        delete document.documentElement.dataset.dccNav;
+      };
+    }
+
     function Switch(props) {
       return h('label', { className: 'dcc-switch' },
         h('input', {
@@ -1506,6 +1652,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const removeHoverCardBlocker = installHoverCardBlocker();
           const removeViewSwitcher = installViewSwitcher();
           const removeBalance = installBalancePill(ctx);
+          const removePluginPin = installNavToggle();
           return () => {
             removeCss();
             removeNewSessionRow();
@@ -1514,6 +1661,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             removeHoverCardBlocker();
             removeViewSwitcher();
             removeBalance();
+            removePluginPin();
             const root = document.documentElement;
             delete root.dataset.dccRadius;
             delete root.dataset.dccNew;
