@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.3.6';
+    const VERSION = '0.2.102';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
