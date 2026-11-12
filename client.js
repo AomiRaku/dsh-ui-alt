@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.121';
+    const VERSION = '0.2.122';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -923,6 +923,16 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         const nav = findNav();
         const orig = findOriginal();
         if (nav === null || orig === null) return false;
+        /* 开关关掉时彻底还原：移除克隆行、去掉原按钮上的标记，
+           让它回到宿主本来的样子，而不是仅靠 CSS 隐藏 */
+        if (document.documentElement.dataset.dccNew !== 'on') {
+          if (clone !== null) {
+            clone.remove();
+            clone = null;
+          }
+          if (orig.getAttribute('data-dcc-original') !== null) orig.removeAttribute('data-dcc-original');
+          return false;
+        }
         if (orig.getAttribute('data-dcc-original') === null) orig.setAttribute('data-dcc-original', '');
         if (clone === null || !clone.isConnected) return build(nav, orig);
         if (!nav.contains(clone)) nav.insertBefore(clone, nav.firstElementChild);
@@ -959,9 +969,13 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       start();
       observer = new MutationObserver(schedule);
       observer.observe(document.body, { childList: true, subtree: true });
+      /* 设置页关掉开关时立刻跑一遍 ensure，把克隆行和标记拆掉 */
+      const onPref = () => ensure();
+      window.addEventListener('dcc-newsession-pref', onPref);
 
       return () => {
         observer.disconnect();
+        window.removeEventListener('dcc-newsession-pref', onPref);
         if (timer !== null) clearTimeout(timer);
         if (rafId !== 0) window.cancelAnimationFrame(rafId);
         if (clone !== null) clone.remove();
@@ -1524,6 +1538,10 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         /* 阈值或小数位变了要立刻重算显示，通知余额模块重算一次 */
         if ((key === 'balanceThreshold' || key === 'balanceDecimals') && typeof window !== 'undefined') {
           window.dispatchEvent(new Event('dcc-balance-threshold'));
+        }
+        /* 「统一新会话按钮样式」关掉时要立刻拆掉克隆行并还原原按钮 */
+        if (key === 'invertNewSession' && typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('dcc-newsession-pref'));
         }
       };
       return h('div', { className: 'dcc-page' },
