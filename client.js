@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.124';
+    const VERSION = '0.2.125';
     const UPDATED = '2026-11-11';
     const DEFAULTS = {
       radiusDensity: true,
@@ -19,6 +19,7 @@ window.__ModuleLoader__.load({
       hideHoverCard: true,
       hideRowButtons: true,
       compactHeader: true,
+      navCollapse: true,
       optimizeStatsLayout: true,
       showBalance: true,
       balanceThreshold: 3,
@@ -53,6 +54,7 @@ window.__ModuleLoader__.load({
       root.dataset.dccHover = prefs.hideHoverCard ? 'off' : 'on';
       root.dataset.dccRowButtons = prefs.hideRowButtons ? 'on' : 'off';
       root.dataset.dccCompactHeader = prefs.compactHeader ? 'on' : 'off';
+      root.dataset.dccCollapse = prefs.navCollapse ? 'on' : 'off';
       root.dataset.dccStats = prefs.optimizeStatsLayout ? 'on' : 'off';
       root.dataset.dccBalance = prefs.showBalance ? 'on' : 'off';
       root.dataset.dccPointer = prefs.pointerNormalize ? 'on' : 'off';
@@ -825,14 +827,14 @@ html[data-dcc-full="on"] [class*="_overlay"]:has([class*="_navTitle"]) [class*="
   padding-left: 52px !important;
   /* 手型由脚本按文字实际矩形设置，见 installSettingsBackButton */
 }
-/* 设置导航项：略矮一点（与全屏与否无关，始终生效） */
-html [class*="_overlay"]:has([class*="_navTitle"]) [class*="_navCell"] {
+/* 设置导航项：略矮一点，归「减小圆角与间距」管 */
+html[data-dcc-radius="on"] [class*="_overlay"]:has([class*="_navTitle"]) [class*="_navCell"] {
   position: relative;
   height: 38px !important;
   padding-top: 8px !important;
   padding-bottom: 8px !important;
 }
-.dcc-settings-back {
+html[data-dcc-full="on"] .dcc-settings-back {
   position: absolute;
   left: 14px;
   top: 0;
@@ -1427,6 +1429,13 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
 
       const sync = () => {
         if (btn === null) return;
+        /* 开关关掉时撤掉箭头并强制展开，导航回到宿主原样 */
+        if (document.documentElement.dataset.dccCollapse !== 'on') {
+          btn.remove();
+          btn = null;
+          document.documentElement.dataset.dccNav = 'expanded';
+          return;
+        }
         const nav = findNav();
         if (nav === null) return;
         const items = Array.from(nav.children);
@@ -1474,6 +1483,14 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
 
       const ensure = () => {
+        if (document.documentElement.dataset.dccCollapse !== 'on') {
+          if (btn !== null) {
+            btn.remove();
+            btn = null;
+          }
+          document.documentElement.dataset.dccNav = 'expanded';
+          return;
+        }
         const nav = findNav();
         if (nav === null || nav.parentElement === null) return;
         if (btn !== null && btn.isConnected && btn.previousElementSibling === nav) {
@@ -1584,6 +1601,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             desc: zh ? '将新会话按钮样式改为与导航按钮一致的样式。' : 'Style the new-session button the same as the navigation buttons.',
             checked: prefs.invertNewSession,
             onChange: update('invertNewSession'),
+          }),
+          h(Row, {
+            title: zh ? '导航折叠' : 'Collapsible navigation',
+            desc: zh ? '在导航下方显示折叠箭头，收起后只保留新会话与插件。每次加载都从收起开始。' : 'Show a collapse arrow under the navigation; collapsed leaves only New session and Plugins. Starts collapsed on every load.',
+            checked: prefs.navCollapse,
+            onChange: update('navCollapse'),
           }),
           h(Row, {
             title: zh ? '弱化工作区名称' : 'Dim workspace names',
@@ -1729,6 +1752,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             delete root.dataset.dccHover;
             delete root.dataset.dccRowButtons;
             delete root.dataset.dccCompactHeader;
+            delete root.dataset.dccCollapse;
             delete root.dataset.dccStats;
             delete root.dataset.dccBalance;
             delete root.dataset.dccPointer;
