@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.207';
+    const VERSION = '0.2.208';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1444,9 +1444,18 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         filterRow(row);
       };
 
+      /* 开关切换后立刻撤掉/重建标记，不必等鼠标再划过去 */
+      const onPrefs = (event) => {
+        if (!event.detail || event.detail.key !== 'hideRowButtons') return;
+        const marked = document.querySelectorAll('[data-dcc-hidden]');
+        for (const el of marked) el.removeAttribute('data-dcc-hidden');
+        lastRow = null;
+      };
+      window.addEventListener('dcc-prefs-changed', onPrefs);
       document.addEventListener('pointerover', onPointer, true);
       document.addEventListener('focusin', onPointer, true);
       return () => {
+        window.removeEventListener('dcc-prefs-changed', onPrefs);
         document.removeEventListener('pointerover', onPointer, true);
         document.removeEventListener('focusin', onPointer, true);
         const marked = document.querySelectorAll('[data-dcc-hidden]');
