@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.193';
+    const VERSION = '0.2.194';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -962,6 +962,22 @@ html[data-dcc-new="on"] body[data-ds-dark-theme] nav[class*="_panelList"] [class
 html[data-dcc-new="on"] body[data-ds-dark-theme] nav[class*="_panelList"] [class*="_panelRow"][class*="_panelActive"] {
   background-color: var(--dsw-alias-interactive-bg-hover) !important;
   box-shadow: inset 0 0 0 999px rgba(255, 255, 255, .1) !important;
+}
+
+/* 导航行：悬停弱、选中强。
+   宿主的激活标记不在行类名上，而是按钮的 aria-current="page"，
+   所以悬停作用在 :hover、选中作用在 [aria-current="page"]，两者叠出来才有层次。 */
+body[data-ds-dark-theme] nav[class*="_panelList"] [class*="_panelRow"]:hover {
+  box-shadow: inset 0 0 0 999px rgba(255, 255, 255, .05) !important;
+}
+body[data-ds-dark-theme] nav[class*="_panelList"] [class*="_panelRow"][aria-current="page"] {
+  box-shadow: inset 0 0 0 999px rgba(255, 255, 255, .16) !important;
+}
+body:not([data-ds-dark-theme]) nav[class*="_panelList"] [class*="_panelRow"]:hover {
+  box-shadow: inset 0 0 0 999px rgba(0, 0, 0, .025) !important;
+}
+body:not([data-ds-dark-theme]) nav[class*="_panelList"] [class*="_panelRow"][aria-current="page"] {
+  box-shadow: inset 0 0 0 999px rgba(0, 0, 0, .07) !important;
 }
 
 /* ---------- 设置面板：全屏（避开 Electron 标题栏）+ 标题左侧返回按钮 ---------- */
