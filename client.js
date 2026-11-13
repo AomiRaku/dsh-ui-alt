@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.198';
+    const VERSION = '0.2.199';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1975,15 +1975,21 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           if (disposed) return;
           cover = document.createElement('div');
           cover.className = 'dcc-boot-cover';
-          /* 主题标记可能比遮罩晚落地，这里直接读一次并按变化实时跟 */
+          /* 主题标记可能比遮罩晚落地，这里直接读一次并按变化实时跟。
+             body 和 html 两处都看——宿主不同版本把它挂在不同的元素上。 */
           const applyTheme = () => {
             if (cover === null) return;
-            const dark = document.body.hasAttribute('data-ds-dark-theme');
+            const dark = document.body.hasAttribute('data-ds-dark-theme')
+              || document.documentElement.hasAttribute('data-ds-dark-theme');
             cover.style.backgroundColor = dark ? '#16161a' : '#ffffff';
           };
           applyTheme();
           themeObserver = new MutationObserver(applyTheme);
           themeObserver.observe(document.body, {
+            attributes: true,
+            attributeFilter: ['data-ds-dark-theme', 'class'],
+          });
+          themeObserver.observe(document.documentElement, {
             attributes: true,
             attributeFilter: ['data-ds-dark-theme', 'class'],
           });
