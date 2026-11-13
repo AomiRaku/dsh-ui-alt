@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.191';
+    const VERSION = '0.2.192';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -296,15 +296,6 @@ html[data-dcc-logo="shown"] [class*="_logoRow"] {
    宽屏才有 data-sidebar-scrollport，收成细轨时这些规则不生效。 */
 /* 这套固定布局只在「导航折叠」开启时生效；关掉后侧栏回到宿主原本的整块滚动。 */
 html[data-dcc-collapse="on"] [data-sidebar-scrollport] {
-  overflow: hidden !important;
-  display: flex !important;
-  flex-direction: column !important;
-}
-/* scrollRegion 是 scrollArea 的父级。改成 flex 列之后它不会自己收着，
-   会把列表撑到 footArea 底下，最后一行就被底栏盖住。 */
-html[data-dcc-collapse="on"] [class*="_scrollRegion"]:has(> [data-sidebar-scrollport]) {
-  flex: 1 1 auto !important;
-  min-height: 0 !important;
   overflow: hidden !important;
   display: flex !important;
   flex-direction: column !important;
