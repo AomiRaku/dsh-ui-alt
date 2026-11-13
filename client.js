@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.203';
+    const VERSION = '0.2.204';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -2140,6 +2140,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         h('div', { className: 'dcc-group' },
           h('div', { className: 'dcc-group-title' }, zh ? '外观' : 'Appearance'),
           h(Row, {
+            title: zh ? '减小圆角与间距' : 'Smaller radii and spacing',
+            desc: zh ? '缩小全局圆角、缩小侧栏部分字号、收紧间距，使界面更高效。' : 'Smaller global radii, smaller sidebar type and tighter spacing, for a more efficient interface.',
+            checked: prefs.radiusDensity,
+            onChange: update('radiusDensity'),
+          }),
+          h(Row, {
             title: zh ? 'Windows 默认微软雅黑字体' : 'Microsoft YaHei on Windows',
             desc: zh ? '将 Windows 端默认字体改为微软雅黑。微软雅黑带有 hinting，使文字在显示设置低于 200% 缩放比例下，更加锐利清晰。\n若手动设置了字体，或使用 macOS 端，则不受影响。' : 'Use Microsoft YaHei as the default Windows font. It carries hinting, which keeps text sharp below 200% display scaling.\nHas no effect if you set a font manually, or on macOS.',
             checked: prefs.winFont,
@@ -2215,12 +2221,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           })),
         h('div', { className: 'dcc-group' },
           h('div', { className: 'dcc-group-title' }, zh ? '会话标题栏' : 'Session header'),
-          h(Row, {
-            title: zh ? '减小圆角与间距' : 'Smaller radii and spacing',
-            desc: zh ? '缩小全局圆角、缩小侧栏部分字号、收紧间距，使界面更高效。' : 'Smaller global radii, smaller sidebar type and tighter spacing, for a more efficient interface.',
-            checked: prefs.radiusDensity,
-            onChange: update('radiusDensity'),
-          }),
           h(Row, {
             title: zh ? '会话标题栏紧凑化' : 'Compact session header',
             desc: zh ? '紧凑化会话标题栏，将视图切换标签移到工具按钮处，使会话内容可视范围更大。' : 'Tighten the session header by moving the view tabs next to the toolbar buttons, so more of the conversation is visible.',
