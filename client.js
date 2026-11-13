@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.257';
+    const VERSION = '0.2.260';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -835,8 +835,9 @@ html:has([data-conversation-tabs] [role="tab"]:first-child[aria-selected="true"]
   -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 20px);
   mask-image: linear-gradient(to bottom, transparent 0, #000 20px);
 }
-/* 宿主自带的「更多」按钮在紧凑化后由自绘控件取代，直接隐藏 */
-html[data-dcc-compact-header="on"] [class*="_viewsMoreAnchor"] {
+/* 宿主自带的「更多」按钮始终隐藏：标签行已被本插件的分段控件取代，
+   它的下拉菜单也不再需要（当前可见的视图都能直接点）。 */
+html [class*="_viewsMoreAnchor"] {
   display: none !important;
 }
 /* 开关关掉时，自绘的分段控件不出现，标签行恢复原样 */
@@ -1709,10 +1710,15 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         return count < maxTabCount;
       };
       let segMenu = null;
+      let segMenuGuard = null;
       const closeSegMenu = () => {
         if (segMenu !== null) {
           segMenu.remove();
           segMenu = null;
+        }
+        if (segMenuGuard !== null) {
+          document.removeEventListener('pointerdown', segMenuGuard, true);
+          segMenuGuard = null;
         }
       };
 
@@ -1845,9 +1851,9 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
                 if (segMenu !== menu) return;
                 if (menu.contains(ev.target) || more.contains(ev.target)) return;
                 closeSegMenu();
-                document.removeEventListener('pointerdown', onDown, true);
               };
               document.addEventListener('pointerdown', onDown, true);
+              segMenuGuard = onDown;
             }, 0);
           });
           bar.appendChild(more);
@@ -1931,6 +1937,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       return () => {
         observer.disconnect();
         if (timer !== null) clearTimeout(timer);
+        closeSegMenu();
         if (bar !== null) bar.remove();
         for (const ghost of ghosts) ghost.remove();
         ghosts.clear();
