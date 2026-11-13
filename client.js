@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.219';
+    const VERSION = '0.2.220';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -259,7 +259,7 @@ html[data-dcc-enabled="off"] .dcc-page .dcc-group:not(.dcc-primary) {
   pointer-events: none;
 }
 .dcc-row-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
-.dcc-row-title { font-size: 14px; line-height: 20px; color: var(--dsw-alias-label-primary); }
+.dcc-row-title { font-size: 15px; line-height: 22px; color: var(--dsw-alias-label-primary); }
 .dcc-row-desc {
   white-space: pre-line; font-size: 12px; line-height: 17px; color: var(--dsw-alias-label-secondary); }
 .dcc-switch { position: relative; display: inline-flex; width: 36px; height: 20px; flex: none; cursor: pointer; }
