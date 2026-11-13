@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.145';
+    const VERSION = '0.2.146';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -374,38 +374,45 @@ html[data-dcc-text-dim="on"] body[data-ds-dark-theme] {
   --dsw-alias-label-primary: rgba(255, 255, 255, .8) !important;
 }
 
-/* 菜单出现/消失：从点击处裁切展开。不用 transform——它会隔离背景采样层，
-   让同元素的 backdrop-filter（毛玻璃）当场失效，动画期间就透明了。
-   clip-path 只裁剪可见区域，背景层仍在原位被采样。 */
+/* 菜单出现/消失：整体从点击处缩放。
+   transform 会让同元素的 backdrop-filter 在动画期间失效，所以动画期间
+   用一层近似底色的背景兜住，避免那 130ms 出现「透明」的观感。 */
 html[data-dcc-menu-anim="on"] [data-menu-material][data-menu-phase="enter"] {
-  animation: dcc-menu-in .14s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
+  transform-origin: var(--dcc-menu-origin, 50% 50%);
+  animation: dcc-menu-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
 }
 html[data-dcc-menu-anim="on"] [data-menu-material][data-menu-phase="dismiss"] {
+  transform-origin: var(--dcc-menu-origin, 50% 50%);
   animation: dcc-menu-out .12s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) forwards;
 }
 /* 子菜单没有 data-menu-phase，用 role="menu" 单独命中 */
 html[data-dcc-menu-anim="on"] [role="menu"]:not([data-menu-phase]) {
-  animation: dcc-menu-in .14s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
+  transform-origin: var(--dcc-menu-origin, left center);
+  animation: dcc-menu-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
 }
 
 @keyframes dcc-menu-in {
   from {
-    clip-path: circle(0% at var(--dcc-menu-origin, 50% 50%));
     opacity: 0;
+    transform: scale(.94);
+    background-color: var(--dsw-specific-menu-fallback, var(--dsw-alias-bg-layer-1));
   }
   to {
-    clip-path: circle(150% at var(--dcc-menu-origin, 50% 50%));
     opacity: 1;
+    transform: none;
+    background-color: transparent;
   }
 }
 @keyframes dcc-menu-out {
   from {
-    clip-path: circle(150% at var(--dcc-menu-origin, 50% 50%));
     opacity: 1;
+    transform: none;
+    background-color: transparent;
   }
   to {
-    clip-path: circle(0% at var(--dcc-menu-origin, 50% 50%));
     opacity: 0;
+    transform: scale(.96);
+    background-color: var(--dsw-specific-menu-fallback, var(--dsw-alias-bg-layer-1));
   }
 }
 
