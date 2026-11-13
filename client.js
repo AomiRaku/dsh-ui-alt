@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.251';
+    const VERSION = '0.2.252';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1698,10 +1698,23 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
 
       const findTabs = () => document.querySelector('[data-conversation-tabs]');
       const findHost = () => document.querySelector('[class*="_headerUtilities"]');
-      /* 宿主在放不下时会渲染一个「更多」按钮（我们把它隐藏了，但节点还在）。
-         它的存在就是「当前处于溢出状态」的信号。 */
-      const isOverflowing = () => document.querySelector('[class*="_viewsMore"]') !== null;
+      /* _viewsMore 在 DOM 里常驻（只是被我们 display:none 了），不能拿它当溢出信号。
+         改成自己量：控件全量时的宽度 vs 标题栏里剩下的可用宽度。 */
       let compact = false;
+      let fullWidth = 0;
+      const availableWidth = (host) => {
+        const rect = host.getBoundingClientRect();
+        const style = window.getComputedStyle(host);
+        const gap = parseFloat(style.columnGap || style.gap) || 0;
+        let used = 0;
+        let siblings = 0;
+        for (const child of host.children) {
+          if (child === bar) continue;
+          used += child.getBoundingClientRect().width;
+          siblings += 1;
+        }
+        return rect.width - used - gap * siblings;
+      };
       let segMenu = null;
       const closeSegMenu = () => {
         if (segMenu !== null) {
@@ -1856,6 +1869,8 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         window.requestAnimationFrame(() => {
           if (bar !== null) bar.style.opacity = '';
         });
+        /* 非紧凑形态下记下自然宽度，供下次判断是否放得下 */
+        if (!compact) fullWidth = bar.offsetWidth;
         syncActive();
       };
 
@@ -1884,8 +1899,8 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         if (bar !== null && bar.isConnected && bar.parentElement !== host) {
           host.insertBefore(bar, host.firstChild);
         }
-        /* 宿主是否在溢出：变了就切换形态（全量 ⇄ 激活项 + ⋯） */
-        const wantCompact = isOverflowing() && count > 1;
+        /* 是否放不下：变了就切换形态（全量 ⇄ 激活项 + ⋯） */
+        const wantCompact = count > 1 && fullWidth > 0 && fullWidth > availableWidth(host);
         if (wantCompact !== compact) {
           compact = wantCompact;
           build(tabs, host);
