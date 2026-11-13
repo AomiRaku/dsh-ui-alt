@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.175';
+    const VERSION = '0.2.176';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -114,6 +114,8 @@ html[data-dcc-font="on"][data-windows-titlebar] body {
 .dcc-group-title { padding: 14px 2px 4px; font-size: 13px; line-height: 20px; font-weight: 600; color: var(--dsw-alias-label-primary); }
 .dcc-row { display: flex; align-items: center; gap: 16px; padding: 14px 2px; border-top: 1px solid var(--dsw-alias-border-l1); }
 .dcc-group-title + .dcc-row { border-top: none; }
+/* 无组名的组（总开关那一块）没有标题，首行同样不该有分隔线 */
+.dcc-group > .dcc-row:first-child { border-top: none; }
 .dcc-action {
   flex: none;
   height: 28px;
