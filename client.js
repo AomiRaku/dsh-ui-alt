@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.196';
+    const VERSION = '0.2.197';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -116,18 +116,20 @@ html[data-dcc-font="on"][data-windows-titlebar] body {
 .dcc-group-title + .dcc-row { border-top: none; }
 /* 无组名的组（总开关那一块）没有标题，首行同样不该有分隔线 */
 .dcc-group > .dcc-row:first-child { border-top: none; }
-/* 启动遮罩：先盖住，等样式稳定后淡出。底色跟随深浅主题 */
+/* 启动遮罩：先盖住，等样式稳定后淡出。底色跟随深浅主题。
+   这两个值不能依赖 --dsw-alias-bg-base：它在深色主题下仍是白的，
+   所以这里直接按主题写死，和宿主两种模式的页面底色对齐。 */
 .dcc-boot-cover {
   position: fixed;
   inset: 0;
   z-index: 2147483000;
-  background-color: var(--dsw-alias-bg-base, #ffffff);
+  background-color: #ffffff;
   opacity: 1;
   transition: opacity .3s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
   pointer-events: none;
 }
 body[data-ds-dark-theme] .dcc-boot-cover {
-  background-color: var(--dsw-alias-bg-base, #16161a);
+  background-color: #16161a;
 }
 .dcc-boot-cover-out { opacity: 0; }
 .dcc-action {
