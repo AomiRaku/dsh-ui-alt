@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.155';
+    const VERSION = '0.2.156';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -377,13 +377,13 @@ html[data-dcc-text-dim="on"] body[data-ds-dark-theme] {
 /* 兜底色：动画期间顶替失效的毛玻璃。各弹层的实际背景不一样，
    统一一个 token 会对不齐，所以按「浅色/深色 × 是否带毛玻璃」分档微调。 */
 body:not([data-ds-dark-theme]) {
-  --dcc-menu-fallback: color-mix(in oklab, var(--dsw-alias-bg-layer-1) 94%, #000);
+  --dcc-menu-fallback: color-mix(in oklab, var(--dsw-alias-bg-layer-1) 88%, #000);
 }
 body[data-ds-dark-theme] [data-menu-material] {
-  --dcc-menu-fallback: color-mix(in oklab, var(--dsw-alias-bg-layer-1) 94%, #000);
+  --dcc-menu-fallback: color-mix(in oklab, var(--dsw-alias-bg-layer-1) 88%, #000);
 }
 body[data-ds-dark-theme] :where([role="dialog"], [role="listbox"], [role="menu"]):not([data-menu-material]) {
-  --dcc-menu-fallback: color-mix(in oklab, var(--dsw-alias-bg-layer-1) 90%, #fff);
+  --dcc-menu-fallback: color-mix(in oklab, var(--dsw-alias-bg-layer-1) 82%, #fff);
 }
 
 /* 菜单出现/消失：整体从点击处缩放。
