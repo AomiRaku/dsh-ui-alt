@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.228';
+    const VERSION = '0.2.229';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -2046,16 +2046,20 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         if (document.documentElement.dataset.dccTransition !== 'on') return;
         /* 快照自己也是 role="dialog"，不排除的话它的移除会再触发一轮快照，无限循环 */
         if (dialog.hasAttribute('data-dcc-dialog-clone')) return;
-        const rect = rects.get(dialog);
-        if (rect === undefined) return;
-        const clone = dialog.cloneNode(true);
+        if (!rects.has(dialog)) return;
+        /* 克隆整个遮罩层而不是对话框卡片：卡片本身是靠外层 flex 居中的，
+           单独提出来做 fixed 会丢掉那层上下文，内部内容就跟着重新排版下沉。 */
+        const overlay = dialog.closest('[class*="_root"]') || dialog.parentElement;
+        const source = overlay !== null && overlay !== document.body ? overlay : dialog;
+        if (source.hasAttribute('data-dcc-dialog-clone')) return;
+        const clone = source.cloneNode(true);
         clone.removeAttribute('data-dcc-menu-seq');
         clone.setAttribute('data-dcc-dialog-clone', '');
         clone.style.position = 'fixed';
-        clone.style.left = `${rect.left}px`;
-        clone.style.top = `${rect.top}px`;
-        clone.style.width = `${rect.width}px`;
-        clone.style.height = `${rect.height}px`;
+        clone.style.left = '0';
+        clone.style.top = '0';
+        clone.style.width = '100vw';
+        clone.style.height = '100vh';
         clone.style.margin = '0';
         clone.style.zIndex = '2147483000';
         clone.style.pointerEvents = 'none';
