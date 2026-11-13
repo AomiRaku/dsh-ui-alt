@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.241';
+    const VERSION = '0.2.242';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1710,10 +1710,14 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         }
         const tabs = findTabs();
         const host = findHost();
-        if (tabs === null || host === null) {
+        /* 切换工作区时 tabs 会短暂消失再回来。这时别急着删控件——
+           等它回来时不一定还有新的 DOM 变化来触发重建，控件就永久丢了。
+           只有 host 真的没了才清掉。 */
+        if (host === null) {
           if (bar !== null) { bar.remove(); bar = null; }
           return;
         }
+        if (tabs === null) return;
         const count = tabs.querySelectorAll('button[role="tab"]').length;
         if (bar === null || !bar.isConnected || bar.parentElement !== host || bar.children.length !== count) {
           build(tabs, host);
