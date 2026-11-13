@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.226';
+    const VERSION = '0.2.227';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -402,9 +402,6 @@ html[data-dcc-new="on"] button[data-dcc-newrow] {
   color: inherit;
 }
 /* 左右内边距加到 12px 后，Logo 行整体右移了 4px，这里抵消回原位 */
-html[data-dcc-collapse="on"][data-dcc-logo="shown"] [class*="_logoRow"] {
-  margin-left: -4px !important;
-}
 /* 显示 logo 时，给导航区留出与上方接近的下边距（同样只在折叠开启时） */
 html[data-dcc-collapse="on"][data-dcc-logo="shown"] nav[class*="_panelList"] {
   margin-top: 4px;
@@ -417,6 +414,8 @@ html[data-dcc-collapse="on"][data-dcc-new="on"] [class*="_logoRow"] {
    只在「导航折叠」开启时生效——关掉后侧栏回到整块滚动，
    这圈额外留白就成了多余的空白，交给宿主原本的排布。 */
 html[data-dcc-collapse="on"][data-dcc-logo="shown"] [class*="_logoRow"] {
+  /* 左右内边距加到 12px 后 Logo 会右移 4px，这里抵消回原位 */
+  margin-left: -4px !important;
   height: 32px !important;
   margin-bottom: 6px !important;
   padding-top: 2px !important;
@@ -451,6 +450,8 @@ html[data-dcc-collapse="on"] [data-sidebar-scrollport] > [class*="_regionArea"] 
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  /* 宿主 scrollArea 的右侧列比左侧少 2px，再补 4px 免得文字贴边 */
+  padding-right: 4px;
 }
 /* 工作区标题保持不动，列表区成为唯一的滚动容器。
    宿主给 listArea 写的是 overflow-y:hidden，这里放开。 */
@@ -484,9 +485,6 @@ html[data-dcc-collapse="on"] [class*="_root"]:has(nav[class*="_panelList"]) {
 }
 /* 右边缘再多留一点：宿主的 scrollArea 第三列是 inline-padding - 2px，
    扣掉滚动条后文字几乎贴边，这里给工作区区域补 4px。 */
-html[data-dcc-collapse="on"] [data-sidebar-scrollport] > [class*="_regionArea"] {
-  padding-right: 4px;
-}
 
 /* 折叠箭头：整行可点，高亮只画在中间那一小块 */
 .dcc-nav-toggle {
