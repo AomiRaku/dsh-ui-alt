@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.260';
+    const VERSION = '0.2.261';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1700,15 +1700,9 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
 
       const findTabs = () => document.querySelector('[data-conversation-tabs]');
       const findHost = () => document.querySelector('[class*="_headerUtilities"]');
-      /* 宿主的「更多」按钮是常驻渲染的，不能当溢出信号。
-         改用启发式：宿主放不下时会裁掉标签，所以「当前标签数 < 历史最大数」
-         就说明正在压缩。窗口变宽、标签恢复时它会自己退出去。 */
-      let compact = false;
-      let maxTabCount = 0;
-      const isShrinking = (count) => {
-        if (count > maxTabCount) maxTabCount = count;
-        return count < maxTabCount;
-      };
+      /* 视图控件始终折叠：只显示「当前激活」+「⋯」，其余收进菜单。
+         不再依赖任何溢出测量，任何窗口宽度下表现一致。 */
+      let compact = true;
       let segMenu = null;
       let segMenuGuard = null;
       const closeSegMenu = () => {
@@ -1897,7 +1891,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           host.insertBefore(bar, host.firstChild);
         }
         /* 是否放不下：变了就切换形态（全量 ⇄ 激活项 + ⋯） */
-        const wantCompact = count > 1 && isShrinking(count);
+        const wantCompact = count > 1;
         if (wantCompact !== compact) {
           compact = wantCompact;
           build(tabs, host);
