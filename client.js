@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.271';
+    const VERSION = '0.2.272';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -906,32 +906,35 @@ html[data-dcc-compact-header="off"] .dcc-segmented {
   font-size: 13px;
   letter-spacing: 0;
 }
-/* 溢出菜单 */
+/* 溢出菜单：对齐宿主菜单的尺寸与层级（圆角 12、内距 6、项高 32、项圆角 8） */
 .dcc-seg-menu {
   position: fixed;
   z-index: 2147483000;
-  min-width: 120px;
-  padding: 4px;
-  border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: var(--dsw-radius-sm, 8px);
+  min-width: 140px;
+  padding: 6px;
+  border-radius: var(--dsw-radius-md, 12px);
   background: var(--dsw-alias-bg-layer-1);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, .28);
+  box-shadow:
+    0 0 0 1px var(--dsw-alias-border-l2),
+    0 10px 32px rgba(0, 0, 0, .24);
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 .dcc-seg-menu-item {
-  height: 28px;
-  padding: 0 10px;
+  height: 32px;
+  padding: 0 12px;
   border: 0;
-  border-radius: 4px;
+  border-radius: var(--dsw-radius-sm, 8px);
   background: transparent;
   color: var(--dsw-alias-label-primary);
   font: inherit;
   font-size: 13px;
+  line-height: 32px;
   text-align: left;
   white-space: nowrap;
   cursor: pointer;
+  transition: background-color .12s;
 }
 .dcc-seg-menu-item:hover {
   background: var(--dsw-alias-interactive-bg-hover);
