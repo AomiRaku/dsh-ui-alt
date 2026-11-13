@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.200';
+    const VERSION = '0.2.193';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -116,17 +116,6 @@ html[data-dcc-font="on"][data-windows-titlebar] body {
 .dcc-group-title + .dcc-row { border-top: none; }
 /* 无组名的组（总开关那一块）没有标题，首行同样不该有分隔线 */
 .dcc-group > .dcc-row:first-child { border-top: none; }
-/* 启动遮罩：先盖住，等样式稳定后淡出 */
-.dcc-boot-cover {
-  position: fixed;
-  inset: 0;
-  z-index: 2147483000;
-  background: var(--dsw-alias-bg-base, #1b1b1c);
-  opacity: 1;
-  transition: opacity .3s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
-  pointer-events: none;
-}
-.dcc-boot-cover-out { opacity: 0; }
 .dcc-action {
   flex: none;
   height: 28px;
@@ -960,26 +949,19 @@ html[data-dcc-dim="on"] body[data-ds-dark-theme] [class*="_sessionOverflowButton
 html[data-dcc-dot="on"] body[data-ds-dark-theme] [class*="_sessionRow"]::before {
   opacity: .28;
 }
+/* 浅色主题下导航 hover 与新会话常规底色略微加强 */
+body:not([data-ds-dark-theme]) nav[class*="_panelList"] [class*="_panelRow"]:hover {
+  box-shadow: inset 0 0 0 999px rgba(0, 0, 0, .035) !important;
+}
 /* 浅色主题下选中会话的背景再强一点 */
 body:not([data-ds-dark-theme]) [class*="_sessionRow"][class*="_selected"] {
   box-shadow: inset 0 0 0 999px rgba(0, 0, 0, .04) !important;
 }
 
-/* 深色下导航行：悬停弱、选中强。
-   宿主的激活标记在父级 _panelEntryActive 上，按钮只有 aria-current="page"，
-   所以悬停作用在行上、选中作用在按钮的 aria-current 上，两者叠出来才有层次。 */
-body[data-ds-dark-theme] nav[class*="_panelList"] [class*="_panelRow"]:hover {
-  box-shadow: inset 0 0 0 999px rgba(255, 255, 255, .05) !important;
-}
-body[data-ds-dark-theme] nav[class*="_panelList"] [class*="_panelRow"][aria-current="page"] {
-  box-shadow: inset 0 0 0 999px rgba(255, 255, 255, .16) !important;
-}
-/* 浅色同理：宿主的悬停与选中用的是同一个底色，靠叠加深色区分 */
-body:not([data-ds-dark-theme]) nav[class*="_panelList"] [class*="_panelRow"]:hover {
-  box-shadow: inset 0 0 0 999px rgba(0, 0, 0, .025) !important;
-}
-body:not([data-ds-dark-theme]) nav[class*="_panelList"] [class*="_panelRow"][aria-current="page"] {
-  box-shadow: inset 0 0 0 999px rgba(0, 0, 0, .07) !important;
+html[data-dcc-new="on"] body[data-ds-dark-theme] nav[class*="_panelList"] [class*="_panelRow"]:hover,
+html[data-dcc-new="on"] body[data-ds-dark-theme] nav[class*="_panelList"] [class*="_panelRow"][class*="_panelActive"] {
+  background-color: var(--dsw-alias-interactive-bg-hover) !important;
+  box-shadow: inset 0 0 0 999px rgba(255, 255, 255, .1) !important;
 }
 
 /* ---------- 设置面板：全屏（避开 Electron 标题栏）+ 标题左侧返回按钮 ---------- */
@@ -1094,7 +1076,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         const entryClasses = entry === null
           ? []
           : [...entry.classList].filter((name) => name.includes('_panelEntry'));
-        clone.className = row.classList.join(' ')
+        clone.className = [...row.classList].filter((name) => !name.includes('_panelActive')).join(' ')
           + ' dcc-newrow'
           + (entryClasses.length > 0 ? ' ' + entryClasses.join(' ') : '');
         const aria = orig.getAttribute('aria-label');
@@ -1929,60 +1911,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       return () => observer.disconnect();
     }
 
-    /**
-     * 启动遮罩：宿主的加载页退场、应用界面渲染出来之后，本插件注入的样式
-     * 还要再落一次，中间能看到一次布局跳变。这里等界面真正出现（侧栏根节点
-     * 就位）再多等一帧，然后盖 500ms 再淡出。
-     */
-    function installBootCover(prefs) {
-      if (!prefs.enabled) return () => {};
-      let cover = null;
-      let rafId = 0;
-      let fadeTimer = 0;
-      let removeTimer = 0;
-      let disposed = false;
-
-      /* 判定「界面已经出来」：侧栏根节点存在，且应用根容器有实际尺寸 */
-      const ready = () => {
-        const sidebar = document.querySelector('[class*="_root"]:has(nav[class*="_panelList"])');
-        if (sidebar === null) return false;
-        const rect = sidebar.getBoundingClientRect();
-        return rect.width > 100 && rect.height > 100;
-      };
-
-      const wait = () => {
-        if (disposed) return;
-        if (!ready()) {
-          rafId = window.requestAnimationFrame(wait);
-          return;
-        }
-        /* 多等一帧，让本插件的样式先应用完再盖 */
-        rafId = window.requestAnimationFrame(() => {
-          if (disposed) return;
-          cover = document.createElement('div');
-          cover.className = 'dcc-boot-cover';
-          document.documentElement.appendChild(cover);
-          fadeTimer = window.setTimeout(() => {
-            if (cover === null) return;
-            cover.classList.add('dcc-boot-cover-out');
-            removeTimer = window.setTimeout(() => {
-              if (cover !== null) cover.remove();
-              cover = null;
-            }, 320);
-          }, 500);
-        });
-      };
-
-      wait();
-      return () => {
-        disposed = true;
-        if (rafId !== 0) window.cancelAnimationFrame(rafId);
-        window.clearTimeout(fadeTimer);
-        window.clearTimeout(removeTimer);
-        if (cover !== null) cover.remove();
-      };
-    }
-
     function Switch(props) {
       return h('label', { className: 'dcc-switch' },
         h('input', {
@@ -2241,7 +2169,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const removeHoverCardBlocker = installHoverCardBlocker();
           const removeViewSwitcher = installViewSwitcher();
           const removeBalance = installBalancePill(ctx);
-          const removeBootCover = installBootCover(readPrefs());
           const removePluginPin = installNavToggle();
           const removeMenuOrigin = installMenuOrigin();
           const removeDialogExit = installDialogExit();
@@ -2253,7 +2180,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             removeHoverCardBlocker();
             removeViewSwitcher();
             removeBalance();
-            removeBootCover();
             removePluginPin();
             removeMenuOrigin();
             removeDialogExit();
