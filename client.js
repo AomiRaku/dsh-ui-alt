@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.140';
+    const VERSION = '0.2.141';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1609,6 +1609,15 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const x = Math.min(1, Math.max(0, (lastX - rect.left) / rect.width));
           const y = Math.min(1, Math.max(0, (lastY - rect.top) / rect.height));
           menu.style.setProperty('--dcc-menu-origin', `${Math.round(x * 100)}% ${Math.round(y * 100)}%`);
+        }
+        /* 宿主切换可展开项时，旧子菜单要等关闭延迟才移除，期间会和新的叠在一起。
+           这里只留最后一个可见，其余立即隐身——不碰宿主状态，它照常走自己的关闭流程。 */
+        const subs = Array.from(document.querySelectorAll('[role="menu"]:not([data-menu-phase])'));
+        for (let i = 0; i < subs.length; i += 1) {
+          const sub = subs[i];
+          const latest = i === subs.length - 1;
+          sub.style.opacity = latest ? '' : '0';
+          sub.style.pointerEvents = latest ? '' : 'none';
         }
       };
 
