@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.195';
+    const VERSION = '0.2.196';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -955,12 +955,13 @@ body:not([data-ds-dark-theme]) [class*="_sessionRow"][class*="_selected"] {
 }
 
 /* 深色下导航行的悬停与选中要拉开层次：悬停弱、选中强。
-   之前两条写在同一组里，颜色一样，看起来就没有区别。 */
-html[data-dcc-new="on"] body[data-ds-dark-theme] nav[class*="_panelList"] [class*="_panelRow"]:hover {
+   不挂 data-dcc-new——那条只在「统一新会话按钮样式」开启时存在，
+   关掉时这套规则会失效，就又回到宿主默认的反向层次。 */
+body[data-ds-dark-theme] nav[class*="_panelList"] [class*="_panelRow"]:hover {
   background-color: var(--dsw-alias-interactive-bg-hover) !important;
   box-shadow: inset 0 0 0 999px rgba(255, 255, 255, .06) !important;
 }
-html[data-dcc-new="on"] body[data-ds-dark-theme] nav[class*="_panelList"] [class*="_panelRow"][class*="_panelActive"] {
+body[data-ds-dark-theme] nav[class*="_panelList"] [class*="_panelRow"][class*="_panelActive"] {
   background-color: var(--dsw-alias-interactive-bg-hover) !important;
   box-shadow: inset 0 0 0 999px rgba(255, 255, 255, .14) !important;
 }
