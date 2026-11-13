@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.213';
+    const VERSION = '0.2.214';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -144,6 +144,88 @@ body:not([data-ds-dark-theme]) .dcc-boot-fish {
   color: #000000;
 }
 .dcc-boot-cover-out { opacity: 0; }
+/* 底部信息行：左边版本信息（可换行），右边重置按钮 */
+.dcc-meta-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 2px 2px 0;
+}
+.dcc-meta-row .dcc-meta {
+  padding: 0;
+  white-space: pre-line;
+}
+.dcc-reset {
+  flex: none;
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--dsw-alias-border-l3);
+  border-radius: var(--dsw-radius-sm, 8px);
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.dcc-reset:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}
+/* 重置确认弹窗 */
+.dcc-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, .45);
+}
+.dcc-modal-card {
+  width: 340px;
+  max-width: calc(100vw - 48px);
+  padding: 20px;
+  border-radius: var(--dsw-radius-lg);
+  background: var(--dsw-alias-bg-layer-1);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, .35);
+}
+.dcc-modal-title {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 600;
+  color: var(--dsw-alias-label-primary);
+}
+.dcc-modal-body {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-secondary);
+}
+.dcc-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+}
+.dcc-modal-btn {
+  height: 30px;
+  padding: 0 14px;
+  border: 1px solid var(--dsw-alias-border-l3);
+  border-radius: var(--dsw-radius-sm, 8px);
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.dcc-modal-btn:hover { background: var(--dsw-alias-interactive-bg-hover); }
+.dcc-modal-primary {
+  border-color: transparent;
+  background: var(--dsw-alias-state-business-primary);
+  color: var(--dsw-alias-label-primary-foreground);
+}
+.dcc-modal-primary:hover { opacity: .9; }
 .dcc-action {
   flex: none;
   height: 28px;
@@ -2138,7 +2220,14 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
 
     function Section() {
       const [prefs, setPrefs] = React.useState(readPrefs);
+      const [confirmReset, setConfirmReset] = React.useState(false);
       const zh = isZh();
+      /* 重置全部设置：写回默认值后重载，避免残留的 DOM 与属性状态 */
+      const resetPrefs = () => {
+        const next = { ...DEFAULTS };
+        savePrefs(next);
+        if (typeof window !== 'undefined') window.location.reload();
+      };
       const update = (key) => (value) => {
         setPrefs((current) => {
           const next = { ...current, [key]: value };
@@ -2333,9 +2422,25 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             checked: prefs.textSelectLimit,
             onChange: update('textSelectLimit'),
           })),
-        h('p', { className: 'dcc-meta' },
-          /* 中文之间用一个全角空格（\u3000）分隔，比两个半角空格更稳 */
-          zh ? `版本：${VERSION}\u3000更新日期：${UPDATED}\u3000基于 DSH v0.2.2-rc.2 测试` : `Version: ${VERSION}  Updated: ${UPDATED}  Tested on DSH v0.2.2-rc.2`));
+        h('div', { className: 'dcc-meta-row' },
+          h('p', { className: 'dcc-meta' },
+            /* 中文之间用一个全角空格（\u3000）分隔，比两个半角空格更稳 */
+            zh
+              ? `版本：${VERSION}\u3000更新日期：${UPDATED}\n此版本基于 DSH v0.2.2-rc2 测试`
+              : `Version: ${VERSION}  Updated: ${UPDATED}\nTested on DSH v0.2.2-rc2`),
+          h('button', {
+            type: 'button',
+            className: 'dcc-reset',
+            onClick: () => setConfirmReset(true),
+          }, zh ? '重置设置' : 'Reset')),
+        confirmReset ? h('div', { className: 'dcc-modal' },
+          h('div', { className: 'dcc-modal-card' },
+            h('div', { className: 'dcc-modal-title' }, zh ? '重置 UI 改进选项' : 'Reset UI improvements'),
+            h('div', { className: 'dcc-modal-body' }, zh ? '将会重置本插件的所有设置项到默认状态。' : 'Every option in this plugin will be reset to its default.'),
+            h('div', { className: 'dcc-modal-actions' },
+              h('button', { type: 'button', className: 'dcc-modal-btn', onClick: () => setConfirmReset(false) }, zh ? '取消' : 'Cancel'),
+              h('button', { type: 'button', className: 'dcc-modal-btn dcc-modal-primary', onClick: () => { resetPrefs(); } }, zh ? '重置' : 'Reset'))))
+          : null);
     }
 
     function SectionIcon(props) {
