@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.246';
+    const VERSION = '0.2.247';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -846,7 +846,7 @@ html[data-dcc-compact-header="off"] .dcc-segmented {
    圆角用 sm(8px) 而不是 md(12px)，描边用更浅的 l1。 */
 .dcc-segmented {
   box-sizing: border-box;
-  transition: opacity .25s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
+  transition: opacity .35s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
   display: inline-flex;
   align-items: stretch;
   height: 24px;
