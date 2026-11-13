@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.215';
+    const VERSION = '0.2.216';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -232,12 +232,16 @@ body:not([data-ds-dark-theme]) .dcc-boot-fish {
   cursor: pointer;
 }
 .dcc-modal-btn:hover { background: var(--dsw-alias-interactive-bg-hover); }
+/* 破坏性操作：红色，悬停时变淡而不是变深 */
 .dcc-modal-primary {
   border-color: transparent;
-  background: var(--dsw-alias-state-business-primary);
-  color: var(--dsw-alias-label-primary-foreground);
+  background: var(--dsw-alias-state-error-primary, #e5484d);
+  color: #fff;
 }
-.dcc-modal-primary:hover { opacity: .9; }
+.dcc-modal-primary:hover {
+  background: var(--dsw-alias-state-error-primary, #e5484d);
+  opacity: .82;
+}
 .dcc-action {
   flex: none;
   height: 28px;
