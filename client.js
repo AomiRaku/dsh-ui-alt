@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.139';
+    const VERSION = '0.2.140';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -383,6 +383,13 @@ html[data-dcc-text-dim="on"] body[data-ds-dark-theme] {
   transform-origin: var(--dcc-menu-origin, top center);
   animation: dcc-menu-out .12s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) forwards;
 }
+/* 子菜单没有 data-menu-phase（宿主只给主菜单标阶段），它带 role="menu"，
+   所以用 :not([data-menu-phase]) 单独命中，套同一组入场动画。 */
+[role="menu"]:not([data-menu-phase]) {
+  transform-origin: var(--dcc-menu-origin, left center);
+  animation: dcc-menu-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
+}
+
 @keyframes dcc-menu-in {
   from {
     opacity: 0;
