@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.147';
+    const VERSION = '0.2.148';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -403,14 +403,16 @@ html[data-dcc-menu-anim="on"] [role="dialog"]:not([data-menu-phase]) {
   to {
     opacity: 1;
     transform: none;
-    background-color: transparent;
+    /* 保持兜底到最后一帧：动画没有 forwards，结束即自动回到元素自身样式，
+       那时 transform 也消失、backdrop-filter 恢复，衔接无痕。 */
+    background-color: var(--dsw-specific-menu-fallback, var(--dsw-alias-bg-layer-1));
   }
 }
 @keyframes dcc-menu-out {
   from {
     opacity: 1;
     transform: none;
-    background-color: transparent;
+    background-color: var(--dsw-specific-menu-fallback, var(--dsw-alias-bg-layer-1));
   }
   to {
     opacity: 0;
