@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.163';
+    const VERSION = '0.2.164';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1143,24 +1143,25 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
 
       /**
-       * 按钮垂直位置按「标题文字的实际矩形」算，而不是按容器盒算——
-       * 容器带 padding / inline 布局时，盒子中心和文字中心并不重合。
+       * 按钮垂直位置按「标题文字的中心」算。
+       * 用 offsetTop / offsetHeight 这类布局值而不是 getBoundingClientRect：
+       * 入场动画会给面板挂 transform，rect 是缩放后的，照着算会偏上。
        */
+      const offsetWithin = (el, ancestor) => {
+        let y = 0;
+        let node = el;
+        while (node !== null && node !== ancestor) {
+          y += node.offsetTop;
+          node = node.offsetParent;
+        }
+        return y;
+      };
+
       const align = () => {
         if (btn === null || !btn.isConnected || btn.offsetParent === null) return;
-        /* 入场动画期间 offsetParent 上挂着 transform，getBoundingClientRect
-           返回的是缩放后的矩形，据此算出来会偏上；等动画结束再对齐。 */
-        const running = btn.offsetParent.getAnimations().some((anim) => anim.playState === 'running');
-        if (running) return;
         const title = document.querySelector('[class*="_navTitle"]');
         if (title === null) return;
-        const range = document.createRange();
-        range.selectNodeContents(title);
-        const rects = range.getClientRects();
-        if (rects.length === 0) return;
-        const textRect = rects[0];
-        const panelRect = btn.offsetParent.getBoundingClientRect();
-        const centerY = textRect.top + textRect.height / 2 - panelRect.top;
+        const centerY = offsetWithin(title, btn.offsetParent) + title.offsetHeight / 2;
         btn.style.top = `${Math.round(centerY - btn.offsetHeight / 2)}px`;
       };
 
@@ -1192,8 +1193,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         btn.addEventListener('click', () => closePanel(panel));
         panel.appendChild(btn);
         align();
-        /* 动画结束时补一次对齐：上面在动画期间会主动跳过 */
-        panel.addEventListener('animationend', align);
       };
 
       const insertSoon = () => {
