@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.144';
+    const VERSION = '0.2.145';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -374,45 +374,41 @@ html[data-dcc-text-dim="on"] body[data-ds-dark-theme] {
   --dsw-alias-label-primary: rgba(255, 255, 255, .8) !important;
 }
 
-/* 菜单出现/消失时从点击处缩放。缩放不能加在毛玻璃那一层上——
-   transform 会让元素脱离背景采样层，同元素上的 backdrop-filter 当场失效，
-   动画期间菜单就变成透明的。所以动画只挂在内容子元素上，
-   [data-menu-material] 自带的背景层保持不动。 */
-html[data-dcc-menu-anim="on"] [data-menu-material][data-menu-phase="enter"] > :last-child {
-  transform-origin: var(--dcc-menu-origin, top center);
-  animation: dcc-menu-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
+/* 菜单出现/消失：从点击处裁切展开。不用 transform——它会隔离背景采样层，
+   让同元素的 backdrop-filter（毛玻璃）当场失效，动画期间就透明了。
+   clip-path 只裁剪可见区域，背景层仍在原位被采样。 */
+html[data-dcc-menu-anim="on"] [data-menu-material][data-menu-phase="enter"] {
+  animation: dcc-menu-in .14s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
 }
-html[data-dcc-menu-anim="on"] [data-menu-material][data-menu-phase="dismiss"] > :last-child {
-  transform-origin: var(--dcc-menu-origin, top center);
+html[data-dcc-menu-anim="on"] [data-menu-material][data-menu-phase="dismiss"] {
   animation: dcc-menu-out .12s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) forwards;
 }
-/* 子菜单没有 data-menu-phase（宿主只给主菜单标阶段），它带 role="menu"，
-   所以用 :not([data-menu-phase]) 单独命中，套同一组入场动画。 */
+/* 子菜单没有 data-menu-phase，用 role="menu" 单独命中 */
 html[data-dcc-menu-anim="on"] [role="menu"]:not([data-menu-phase]) {
-  transform-origin: var(--dcc-menu-origin, left center);
-  animation: dcc-menu-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
+  animation: dcc-menu-in .14s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
 }
 
 @keyframes dcc-menu-in {
   from {
+    clip-path: circle(0% at var(--dcc-menu-origin, 50% 50%));
     opacity: 0;
-    transform: scale(.94);
   }
   to {
+    clip-path: circle(150% at var(--dcc-menu-origin, 50% 50%));
     opacity: 1;
-    transform: none;
   }
 }
 @keyframes dcc-menu-out {
   from {
+    clip-path: circle(150% at var(--dcc-menu-origin, 50% 50%));
     opacity: 1;
-    transform: none;
   }
   to {
+    clip-path: circle(0% at var(--dcc-menu-origin, 50% 50%));
     opacity: 0;
-    transform: scale(.96);
   }
 }
+
 
 /* ---------- 工作区名称更明显，「展开其余」更淡 ---------- */
 html[data-dcc-dim="on"] [class*="_projectRow"] [class*="_title"] {
