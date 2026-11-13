@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.231';
+    const VERSION = '0.2.233';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -2048,19 +2048,16 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         /* 标记打在克隆的遮罩层上，卡片只是它的子孙，所以用 closest 向上找 */
         if (dialog.closest('[data-dcc-dialog-clone]') !== null) return;
         if (!rects.has(dialog)) return;
-        /* 克隆整个遮罩层而不是对话框卡片：卡片本身是靠外层 flex 居中的，
-           单独提出来做 fixed 会丢掉那层上下文，内部内容就跟着重新排版下沉。 */
-        const overlay = dialog.closest('[class*="_root"]') || dialog.parentElement;
-        const source = overlay !== null && overlay !== document.body ? overlay : dialog;
-        if (source.hasAttribute('data-dcc-dialog-clone')) return;
-        const clone = source.cloneNode(true);
+        /* 克隆卡片本体，按原始矩形固定到同一位置 */
+        const rect = rects.get(dialog);
+        const clone = dialog.cloneNode(true);
         clone.removeAttribute('data-dcc-menu-seq');
         clone.setAttribute('data-dcc-dialog-clone', '');
         clone.style.position = 'fixed';
-        clone.style.left = '0';
-        clone.style.top = '0';
-        clone.style.width = '100vw';
-        clone.style.height = '100vh';
+        clone.style.left = `${rect.left}px`;
+        clone.style.top = `${rect.top}px`;
+        clone.style.width = `${rect.width}px`;
+        clone.style.height = `${rect.height}px`;
         clone.style.margin = '0';
         clone.style.zIndex = '2147483000';
         clone.style.pointerEvents = 'none';
@@ -2069,10 +2066,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         const exitAnim = document.documentElement.dataset.dccMenuBlur === 'on'
           ? 'dcc-plain-out'
           : 'dcc-menu-out';
-        /* 动画只作用在卡片上：整层是全屏遮罩，缩放它会连屏幕一起缩。 */
-        const inner = clone.querySelector('[role="dialog"]');
-        const animated = inner !== null ? inner : clone;
-        animated.style.animation = `${exitAnim} .12s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) forwards`;
+        clone.style.animation = `${exitAnim} .12s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) forwards`;
         document.body.appendChild(clone);
         window.setTimeout(() => clone.remove(), 220);
       };
