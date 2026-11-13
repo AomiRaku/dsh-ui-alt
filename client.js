@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.152';
+    const VERSION = '0.2.153';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -16,6 +16,7 @@ window.__ModuleLoader__.load({
       winFont: false,
       softenDarkText: true,
       menuAnimation: true,
+      uiTransition: true,
       sessionDot: false,
       settingsFullscreen: true,
       hideHoverCard: true,
@@ -54,6 +55,7 @@ window.__ModuleLoader__.load({
       root.dataset.dccFont = prefs.winFont ? 'on' : 'off';
       root.dataset.dccTextDim = prefs.softenDarkText ? 'on' : 'off';
       root.dataset.dccMenuAnim = prefs.menuAnimation ? 'on' : 'off';
+      root.dataset.dccTransition = prefs.uiTransition ? 'on' : 'off';
       root.dataset.dccFull = prefs.settingsFullscreen ? 'on' : 'off';
       root.dataset.dccHover = prefs.hideHoverCard ? 'off' : 'on';
       root.dataset.dccRowButtons = prefs.hideRowButtons ? 'on' : 'off';
@@ -377,23 +379,23 @@ html[data-dcc-text-dim="on"] body[data-ds-dark-theme] {
 /* 菜单出现/消失：整体从点击处缩放。
    transform 会让同元素的 backdrop-filter 在动画期间失效，所以动画期间
    用一层近似底色的背景兜住，避免那 130ms 出现「透明」的观感。 */
-html[data-dcc-menu-anim="on"] [data-menu-material][data-menu-phase="enter"] {
+html[data-dcc-transition="on"][data-dcc-menu-anim="on"] [data-menu-material][data-menu-phase="enter"] {
   transform-origin: var(--dcc-menu-origin, 50% 50%);
   animation: dcc-menu-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
 }
-html[data-dcc-menu-anim="on"] [data-menu-material][data-menu-phase="dismiss"] {
+html[data-dcc-transition="on"][data-dcc-menu-anim="on"] [data-menu-material][data-menu-phase="dismiss"] {
   transform-origin: var(--dcc-menu-origin, 50% 50%);
   animation: dcc-menu-out .12s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) forwards;
 }
 /* 子菜单、列表选择器这些没有 data-menu-phase 的弹出层，
    用 role 单独命中，套同一组入场动画。对话框单独处理：
    窗口从中心缩放，不跟随点击位置。 */
-html[data-dcc-menu-anim="on"] [role="menu"]:not([data-menu-phase]),
-html[data-dcc-menu-anim="on"] [role="listbox"]:not([data-menu-phase]) {
+html[data-dcc-transition="on"][data-dcc-menu-anim="on"] [role="menu"]:not([data-menu-phase]),
+html[data-dcc-transition="on"][data-dcc-menu-anim="on"] [role="listbox"]:not([data-menu-phase]) {
   transform-origin: var(--dcc-menu-origin, left center);
   animation: dcc-menu-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
 }
-html[data-dcc-menu-anim="on"] [role="dialog"]:not([data-menu-phase]) {
+html[data-dcc-transition="on"] [role="dialog"]:not([data-menu-phase]) {
   transform-origin: 50% 50%;
   animation: dcc-menu-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
 }
@@ -1624,6 +1626,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           seq += 1;
           menu.setAttribute('data-dcc-menu-seq', String(seq));
           if (document.documentElement.dataset.dccMenuAnim !== 'on') continue;
+          if (document.documentElement.dataset.dccTransition !== 'on') continue;
           const rect = menu.getBoundingClientRect();
           if (rect.width <= 0 || rect.height <= 0) continue;
           const x = Math.min(1, Math.max(0, (lastX - rect.left) / rect.width));
@@ -1690,6 +1693,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
 
       const playExit = (dialog) => {
         if (document.documentElement.dataset.dccMenuAnim !== 'on') return;
+        if (document.documentElement.dataset.dccTransition !== 'on') return;
         /* 快照自己也是 role="dialog"，不排除的话它的移除会再触发一轮快照，无限循环 */
         if (dialog.hasAttribute('data-dcc-dialog-clone')) return;
         const rect = rects.get(dialog);
@@ -1801,6 +1805,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             desc: zh ? '菜单从点击处缩放展开，关闭时缩回原处。' : 'Menus scale in from where you clicked and scale back out on close.',
             checked: prefs.menuAnimation,
             onChange: update('menuAnimation'),
+          }),
+          h(Row, {
+            title: zh ? '为菜单和窗口添加过渡动画' : 'Transitions for menus and dialogs',
+            desc: zh ? '总开关：关闭后菜单与窗口都不再有展开、收起动画。' : 'Master switch: turns off every menu and dialog transition.',
+            checked: prefs.uiTransition,
+            onChange: update('uiTransition'),
           })),
         h('div', { className: 'dcc-group' },
           h('div', { className: 'dcc-group-title' }, zh ? '布局' : 'Layout'),
@@ -1974,6 +1984,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             delete root.dataset.dccFont;
             delete root.dataset.dccTextDim;
             delete root.dataset.dccMenuAnim;
+            delete root.dataset.dccTransition;
             delete root.dataset.dccFull;
             delete root.dataset.dccHover;
             delete root.dataset.dccRowButtons;
