@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.185';
+    const VERSION = '0.2.186';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1411,6 +1411,8 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
      */
     function installHoverCardBlocker() {
       const ROW = '[class*="_sessionRow"], [class*="_projectRow"], [class*="_searchResultRow"]';
+      /* 最近一次「进入行」的时间戳，供下面的定时器过滤使用 */
+      let lastRowHoverAt = 0;
 
       const onOver = (event) => {
         if (document.documentElement.dataset.dccHover !== 'off') return;
@@ -1421,13 +1423,26 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         /* 已经在行内移动，不是「进入」，放行给宿主 */
         const related = event.relatedTarget;
         if (related instanceof Node && row.contains(related)) return;
+        lastRowHoverAt = Date.now();
         /* 用 stopImmediatePropagation 而不是 stopPropagation：
            宿主的悬停计时器只要收到「进入」就会挂上，同层的监听器也得一并掐断。 */
         event.stopImmediatePropagation();
       };
 
-      /* 卡片是预渲染的，宿主靠 pointermove 持续跟位置；
-         不截这条，即使卡片被 CSS 藏了，计算和取数还在跑，滚动就会卡。 */
+      /* 宿主是在「进入行」之后用 setTimeout 排一个延迟，到点才真的取数并渲染。
+         事件层抢不过它的注册顺序，所以改从这里掐：只丢弃悬停进入后极短时间内
+         注册、且延迟落在该区间里的那一个，其余定时器全部放行。 */
+      const originalSetTimeout = window.setTimeout;
+      const patchedSetTimeout = function (fn, delay, ...rest) {
+        if (document.documentElement.dataset.dccHover === 'off'
+          && typeof delay === 'number'
+          && delay >= 300 && delay <= 2000
+          && Date.now() - lastRowHoverAt < 250) {
+          return 0;
+        }
+        return originalSetTimeout.call(this, fn, delay, ...rest);
+      };
+      window.setTimeout = patchedSetTimeout;
       const onMove = (event) => {
         if (document.documentElement.dataset.dccHover !== 'off') return;
         const target = event.target;
@@ -1448,6 +1463,8 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       document.addEventListener('pointerover', onOver, true);
       document.addEventListener('pointermove', onMove, true);
       return () => {
+        /* 还原 setTimeout，避免插件卸载后仍影响全局定时器 */
+        if (window.setTimeout === patchedSetTimeout) window.setTimeout = originalSetTimeout;
         window.removeEventListener('pointerover', onOver, true);
         window.removeEventListener('pointerenter', onOver, true);
         window.removeEventListener('mouseenter', onOver, true);
