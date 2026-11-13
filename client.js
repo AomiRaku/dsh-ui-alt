@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.142';
+    const VERSION = '0.2.143';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -15,6 +15,7 @@ window.__ModuleLoader__.load({
       hideLogo: false,
       winFont: false,
       softenDarkText: true,
+      menuAnimation: true,
       sessionDot: false,
       settingsFullscreen: true,
       hideHoverCard: true,
@@ -52,6 +53,7 @@ window.__ModuleLoader__.load({
       root.dataset.dccDot = prefs.sessionDot ? 'on' : 'off';
       root.dataset.dccFont = prefs.winFont ? 'on' : 'off';
       root.dataset.dccTextDim = prefs.softenDarkText ? 'on' : 'off';
+      root.dataset.dccMenuAnim = prefs.menuAnimation ? 'on' : 'off';
       root.dataset.dccFull = prefs.settingsFullscreen ? 'on' : 'off';
       root.dataset.dccHover = prefs.hideHoverCard ? 'off' : 'on';
       root.dataset.dccRowButtons = prefs.hideRowButtons ? 'on' : 'off';
@@ -375,17 +377,17 @@ html[data-dcc-text-dim="on"] body[data-ds-dark-theme] {
 /* 菜单出现/消失时从点击处缩放。宿主用 data-menu-phase 标出阶段，
    这里挂在阶段属性上；关键是动画结束后不要保留 transform——
    常驻的 transform 会让同层的 backdrop-filter（毛玻璃）失效。 */
-[data-menu-phase="enter"] {
+html[data-dcc-menu-anim="on"] [data-menu-phase="enter"] {
   transform-origin: var(--dcc-menu-origin, top center);
   animation: dcc-menu-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
 }
-[data-menu-phase="dismiss"] {
+html[data-dcc-menu-anim="on"] [data-menu-phase="dismiss"] {
   transform-origin: var(--dcc-menu-origin, top center);
   animation: dcc-menu-out .12s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) forwards;
 }
 /* 子菜单没有 data-menu-phase（宿主只给主菜单标阶段），它带 role="menu"，
    所以用 :not([data-menu-phase]) 单独命中，套同一组入场动画。 */
-[role="menu"]:not([data-menu-phase]) {
+html[data-dcc-menu-anim="on"] [role="menu"]:not([data-menu-phase]) {
   transform-origin: var(--dcc-menu-origin, left center);
   animation: dcc-menu-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
 }
@@ -1608,6 +1610,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           if (menu.hasAttribute('data-dcc-menu-seq')) continue;
           seq += 1;
           menu.setAttribute('data-dcc-menu-seq', String(seq));
+          if (document.documentElement.dataset.dccMenuAnim !== 'on') continue;
           const rect = menu.getBoundingClientRect();
           if (rect.width <= 0 || rect.height <= 0) continue;
           const x = Math.min(1, Math.max(0, (lastX - rect.left) / rect.width));
@@ -1715,6 +1718,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             desc: zh ? '略微降低深色模式文字亮度，避免纯白文字过于刺眼。' : 'Slightly dims text in dark mode so pure white is less harsh.',
             checked: prefs.softenDarkText,
             onChange: update('softenDarkText'),
+          }),
+          h(Row, {
+            title: zh ? '菜单展开动画' : 'Menu expand animation',
+            desc: zh ? '菜单从点击处缩放展开，关闭时缩回原处。' : 'Menus scale in from where you clicked and scale back out on close.',
+            checked: prefs.menuAnimation,
+            onChange: update('menuAnimation'),
           })),
         h('div', { className: 'dcc-group' },
           h('div', { className: 'dcc-group-title' }, zh ? '布局' : 'Layout'),
@@ -1885,6 +1894,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             delete root.dataset.dccDot;
             delete root.dataset.dccFont;
             delete root.dataset.dccTextDim;
+            delete root.dataset.dccMenuAnim;
             delete root.dataset.dccFull;
             delete root.dataset.dccHover;
             delete root.dataset.dccRowButtons;
