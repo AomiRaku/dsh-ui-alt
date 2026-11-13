@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.204';
+    const VERSION = '0.2.205';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -300,6 +300,10 @@ html[data-dcc-new="on"] button[data-dcc-newrow] {
 /* 显示 logo 时，给导航区留出与上方接近的下边距 */
 html[data-dcc-logo="shown"] nav[class*="_panelList"] {
   margin-top: 4px;
+}
+/* 新会话按钮换成小尺寸后，Logo 上方会显得空，向下挪 2px 找回平衡 */
+html[data-dcc-new="on"] [class*="_logoRow"] {
+  margin-top: 2px !important;
 }
 /* Logo 上下留白：高度略放大，底下留一点空隙，别贴着导航 */
 html[data-dcc-logo="shown"] [class*="_logoRow"] {
