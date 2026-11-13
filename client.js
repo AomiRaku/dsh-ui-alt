@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.197';
+    const VERSION = '0.2.198';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1951,6 +1951,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
     function installBootCover(prefs) {
       if (!prefs.enabled) return () => {};
       let cover = null;
+      let themeObserver = null;
       let rafId = 0;
       let fadeTimer = 0;
       let removeTimer = 0;
@@ -1974,11 +1975,27 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           if (disposed) return;
           cover = document.createElement('div');
           cover.className = 'dcc-boot-cover';
+          /* 主题标记可能比遮罩晚落地，这里直接读一次并按变化实时跟 */
+          const applyTheme = () => {
+            if (cover === null) return;
+            const dark = document.body.hasAttribute('data-ds-dark-theme');
+            cover.style.backgroundColor = dark ? '#16161a' : '#ffffff';
+          };
+          applyTheme();
+          themeObserver = new MutationObserver(applyTheme);
+          themeObserver.observe(document.body, {
+            attributes: true,
+            attributeFilter: ['data-ds-dark-theme', 'class'],
+          });
           document.documentElement.appendChild(cover);
           fadeTimer = window.setTimeout(() => {
             if (cover === null) return;
             cover.classList.add('dcc-boot-cover-out');
             removeTimer = window.setTimeout(() => {
+              if (themeObserver !== null) {
+                themeObserver.disconnect();
+                themeObserver = null;
+              }
               if (cover !== null) cover.remove();
               cover = null;
             }, 320);
@@ -1989,6 +2006,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       wait();
       return () => {
         disposed = true;
+        if (themeObserver !== null) themeObserver.disconnect();
         if (rafId !== 0) window.cancelAnimationFrame(rafId);
         window.clearTimeout(fadeTimer);
         window.clearTimeout(removeTimer);
