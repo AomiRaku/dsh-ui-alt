@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.189';
+    const VERSION = '0.2.190';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -324,6 +324,8 @@ html[data-dcc-collapse="on"] [data-sidebar-scrollport] > [class*="_regionArea"] 
 html[data-dcc-collapse="on"] [data-sidebar-scrollport] [class*="_listArea"] {
   overflow-y: auto !important;
   overflow-x: hidden !important;
+  /* 底部留出与 footArea 等高的空白，滚到底时最后一项不会被底栏压住 */
+  padding-bottom: 56px !important;
 }
 
 /* 导航折叠：收起时用 max-height 裁到前两项（新会话 + 插件），
