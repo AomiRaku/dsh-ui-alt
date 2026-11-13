@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.211';
+    const VERSION = '0.2.212';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -296,6 +296,10 @@ html[data-dcc-new="on"] button[data-dcc-newrow] {
   white-space: nowrap;
   font: inherit;
   color: inherit;
+}
+/* 左右内边距加到 12px 后，Logo 行整体右移了 4px，这里抵消回原位 */
+html[data-dcc-collapse="on"][data-dcc-logo="shown"] [class*="_logoRow"] {
+  margin-left: -4px !important;
 }
 /* 显示 logo 时，给导航区留出与上方接近的下边距（同样只在折叠开启时） */
 html[data-dcc-collapse="on"][data-dcc-logo="shown"] nav[class*="_panelList"] {
