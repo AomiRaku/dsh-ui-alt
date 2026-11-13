@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.265';
+    const VERSION = '0.2.268';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -848,7 +848,10 @@ html[data-dcc-compact-header="off"] .dcc-segmented {
    圆角用 sm(8px) 而不是 md(12px)，描边用更浅的 l1。 */
 .dcc-segmented {
   box-sizing: border-box;
-  transition: opacity .35s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
+  /* 默认隐藏，鼠标进入标题栏时浮现。用 opacity 而不是 display，
+     保留占位，浮现时不会把右侧按钮挤开。 */
+  opacity: 0;
+  transition: opacity .2s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
   display: inline-flex;
   align-items: stretch;
   height: 24px;
@@ -862,6 +865,12 @@ html[data-dcc-compact-header="off"] .dcc-segmented {
   border-radius: var(--dsw-radius-sm, 8px);
   background: var(--dsw-alias-bg-layer-1);
   overflow: hidden;
+}
+/* 悬停整个标题栏区域时浮现；鼠标直接落在控件上也保持可见 */
+[class*="_header"]:hover .dcc-segmented,
+.dcc-segmented:hover,
+.dcc-segmented:focus-within {
+  opacity: 1;
 }
 /* 单个分段也不压缩，标签文字保持完整 */
 .dcc-seg {
@@ -1736,7 +1745,11 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const rect = old.getBoundingClientRect();
           /* 控件已经被宿主摘掉时 rect 全是 0，照着定位会把它摆到窗口左上角。
              这种情况直接丢掉，不做淡出。 */
-          if (!old.isConnected || rect.width === 0) {
+          /* 控件平时是隐藏的（opacity:0），只有标题栏被悬停时才可见。
+             不可见时做淡出没有意义，反而会凭空闪一下，所以直接丢掉。 */
+          const visible = old.isConnected && rect.width > 0
+            && window.getComputedStyle(old).opacity !== '0';
+          if (!visible) {
             old.remove();
           } else {
             /* 把旧控件固定到原位置、脱离布局流再淡出——
@@ -1761,7 +1774,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         }
         bar = document.createElement('div');
         bar.className = 'dcc-segmented';
-        bar.style.opacity = '0';
         closeSegMenu();
         const sources = Array.from(tabs.querySelectorAll('button[role="tab"]'));
         const activeIndex = sources.findIndex((el) => el.getAttribute('aria-selected') === 'true');
@@ -1840,9 +1852,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           bar.appendChild(more);
         }
         host.insertBefore(bar, host.firstChild);
-        window.requestAnimationFrame(() => {
-          if (bar !== null) bar.style.opacity = '';
-        });
         syncActive();
       };
 
