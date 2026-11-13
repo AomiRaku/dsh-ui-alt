@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.247';
+    const VERSION = '0.2.248';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1657,6 +1657,8 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       let bar = null;
       let observer = null;
       let timer = null;
+      /* 正在淡出的旧控件被临时挂到 body 上，卸载时要一起收走 */
+      const ghosts = new Set();
 
       const findTabs = () => document.querySelector('[data-conversation-tabs]');
       const findHost = () => document.querySelector('[class*="_headerUtilities"]');
@@ -1688,10 +1690,14 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           old.style.pointerEvents = 'none';
           old.style.zIndex = '1';
           document.body.appendChild(old);
+          ghosts.add(old);
           window.requestAnimationFrame(() => {
             old.style.opacity = '0';
           });
-          window.setTimeout(() => old.remove(), 300);
+          window.setTimeout(() => {
+            old.remove();
+            ghosts.delete(old);
+          }, 300);
           bar = null;
         }
         bar = document.createElement('div');
@@ -1777,6 +1783,8 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         observer.disconnect();
         if (timer !== null) clearTimeout(timer);
         if (bar !== null) bar.remove();
+        for (const ghost of ghosts) ghost.remove();
+        ghosts.clear();
       };
     }
 
