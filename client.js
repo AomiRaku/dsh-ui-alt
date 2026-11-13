@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.269';
+    const VERSION = '0.2.270';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1819,8 +1819,11 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             const rect = bar.getBoundingClientRect();
             const menu = document.createElement('div');
             menu.className = 'dcc-seg-menu';
-            menu.style.left = Math.max(8, rect.right - 150) + 'px';
+            /* 先插进 DOM 再量宽度，右边缘对齐到按钮右侧 —— 菜单宽度由内容决定，
+               不能用固定值估算，否则会对不齐。 */
+            menu.style.left = '0px';
             menu.style.top = rect.bottom + 6 + 'px';
+            menu.style.visibility = 'hidden';
             const live = findTabs();
             const list = live === null ? [] : Array.from(live.querySelectorAll('button[role="tab"]'));
             const act = list.findIndex((el) => el.getAttribute('aria-selected') === 'true');
@@ -1837,6 +1840,11 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
               menu.appendChild(entry);
             });
             document.body.appendChild(menu);
+            const menuRect = menu.getBoundingClientRect();
+            menu.style.left = Math.max(8, rect.right - menuRect.width) + 'px';
+            menu.style.visibility = '';
+            menu.style.transformOrigin = 'top right';
+            menu.style.animation = 'dcc-plain-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1))';
             segMenu = menu;
             window.setTimeout(() => {
               const onDown = (ev) => {
