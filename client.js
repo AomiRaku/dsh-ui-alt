@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.172';
+    const VERSION = '0.2.173';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -128,7 +128,7 @@ html[data-dcc-font="on"][data-windows-titlebar] body {
 }
 .dcc-action:hover { background: var(--dsw-alias-interactive-bg-hover); }
 /* 总开关关闭时，下面所有分组置灰且不可操作（第一个组是总开关本身，跳过） */
-html[data-dcc-enabled="off"] .dcc-page .dcc-group:not(:first-of-type) {
+html[data-dcc-enabled="off"] .dcc-page .dcc-group:not(.dcc-primary) {
   opacity: .4;
   pointer-events: none;
 }
@@ -1894,7 +1894,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         h('p', { className: 'dcc-intro' },
           zh ? '在保持原版 UI 大体布局不变的情况下，进行减小圆角、紧凑化、整洁化、高效化改进，使 UI 视觉更加冷静、专业、高效。同时添加余额显示。大部分改动可在设置中单独开关。' : 'Keeps the overall layout of the stock UI while tightening its radii, spacing and tidiness for a calmer, more professional and more efficient look. Also adds an account balance display. Most changes can be switched on or off individually in Settings.'),
         /* 无组名的操作区：总开关 + 重载前端界面 */
-        h('div', { className: 'dcc-group' },
+        h('div', { className: 'dcc-group dcc-primary' },
           h(Row, {
             title: zh ? '启用 UI 改进' : 'Enable UI improvements',
             desc: zh ? '本插件的总开关。关闭后将禁用全部修改，包括不受各开关控制的部分界面修复。' : 'Master switch. Turning it off disables every change, including the small UI fixes that have no individual switch.',
