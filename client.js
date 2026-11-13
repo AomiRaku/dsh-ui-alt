@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.240';
+    const VERSION = '0.2.241';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1606,7 +1606,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         if (document.documentElement.dataset.dccHover === 'off'
           && typeof delay === 'number'
           && delay >= 300 && delay <= 2000
-          && Date.now() - lastRowHoverAt < 250) {
+          && Date.now() - lastRowHoverAt < 400) {
           return 0;
         }
         return originalSetTimeout.call(this, fn, delay, ...rest);
@@ -1617,6 +1617,9 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         const target = event.target;
         if (!(target instanceof Element)) return;
         if (target.closest(ROW) === null) return;
+        /* 行内移动也要刷新时间戳：宿主随时可能因为一次移动重新排上延迟调用，
+           只在「进入」时记一次的话，停留久了时间戳过期，定时器就漏过去了。 */
+        lastRowHoverAt = Date.now();
         event.stopImmediatePropagation();
       };
 
