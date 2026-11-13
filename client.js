@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.264';
+    const VERSION = '0.2.265';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -887,10 +887,11 @@ html[data-dcc-compact-header="off"] .dcc-segmented {
   color: var(--dsw-alias-label-primary);
 }
 .dcc-seg-more {
-  min-width: 26px;
+  min-width: 18px;
+  padding: 0 4px;
   justify-content: center;
   font-size: 13px;
-  letter-spacing: 1px;
+  letter-spacing: 0;
 }
 /* 溢出菜单 */
 .dcc-seg-menu {
