@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.195';
+    const VERSION = '0.2.196';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -116,15 +116,18 @@ html[data-dcc-font="on"][data-windows-titlebar] body {
 .dcc-group-title + .dcc-row { border-top: none; }
 /* 无组名的组（总开关那一块）没有标题，首行同样不该有分隔线 */
 .dcc-group > .dcc-row:first-child { border-top: none; }
-/* 启动遮罩：先盖住，等样式稳定后淡出 */
+/* 启动遮罩：先盖住，等样式稳定后淡出。底色跟随深浅主题 */
 .dcc-boot-cover {
   position: fixed;
   inset: 0;
   z-index: 2147483000;
-  background: var(--dsw-alias-bg-base, #1b1b1c);
+  background-color: var(--dsw-alias-bg-base, #ffffff);
   opacity: 1;
   transition: opacity .3s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
   pointer-events: none;
+}
+body[data-ds-dark-theme] .dcc-boot-cover {
+  background-color: var(--dsw-alias-bg-base, #16161a);
 }
 .dcc-boot-cover-out { opacity: 0; }
 .dcc-action {
