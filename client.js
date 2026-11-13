@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.208';
+    const VERSION = '0.2.209';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -982,9 +982,6 @@ html[data-dcc-dot="on"] body[data-ds-dark-theme] [class*="_sessionRow"]::before 
   opacity: .28;
 }
 /* 浅色主题下导航 hover 与新会话常规底色略微加强 */
-body:not([data-ds-dark-theme]) nav[class*="_panelList"] [class*="_panelRow"]:hover {
-  box-shadow: inset 0 0 0 999px rgba(0, 0, 0, .035) !important;
-}
 /* 浅色主题下选中会话的背景再强一点 */
 body:not([data-ds-dark-theme]) [class*="_sessionRow"][class*="_selected"] {
   box-shadow: inset 0 0 0 999px rgba(0, 0, 0, .04) !important;
