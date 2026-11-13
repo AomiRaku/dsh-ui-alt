@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.143';
+    const VERSION = '0.2.144';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -374,14 +374,15 @@ html[data-dcc-text-dim="on"] body[data-ds-dark-theme] {
   --dsw-alias-label-primary: rgba(255, 255, 255, .8) !important;
 }
 
-/* 菜单出现/消失时从点击处缩放。宿主用 data-menu-phase 标出阶段，
-   这里挂在阶段属性上；关键是动画结束后不要保留 transform——
-   常驻的 transform 会让同层的 backdrop-filter（毛玻璃）失效。 */
-html[data-dcc-menu-anim="on"] [data-menu-phase="enter"] {
+/* 菜单出现/消失时从点击处缩放。缩放不能加在毛玻璃那一层上——
+   transform 会让元素脱离背景采样层，同元素上的 backdrop-filter 当场失效，
+   动画期间菜单就变成透明的。所以动画只挂在内容子元素上，
+   [data-menu-material] 自带的背景层保持不动。 */
+html[data-dcc-menu-anim="on"] [data-menu-material][data-menu-phase="enter"] > :last-child {
   transform-origin: var(--dcc-menu-origin, top center);
   animation: dcc-menu-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
 }
-html[data-dcc-menu-anim="on"] [data-menu-phase="dismiss"] {
+html[data-dcc-menu-anim="on"] [data-menu-material][data-menu-phase="dismiss"] > :last-child {
   transform-origin: var(--dcc-menu-origin, top center);
   animation: dcc-menu-out .12s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) forwards;
 }
