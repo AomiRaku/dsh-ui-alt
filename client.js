@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.223';
+    const VERSION = '0.2.224';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -112,6 +112,8 @@ html[data-dcc-font="on"][data-windows-titlebar] body {
 .dcc-meta { margin: 0; padding: 2px 2px 0; font-size: 12px; line-height: 18px; color: var(--dsw-alias-label-tertiary); }
 .dcc-group { display: flex; flex-direction: column; padding: 6px 20px; border: 1px solid var(--dsw-alias-border-l2); border-radius: var(--dsw-radius-lg); background: var(--dsw-alias-bg-layer-1); }
 .dcc-group-title { padding: 14px 2px 4px; font-size: 13px; line-height: 20px; font-weight: 600; color: var(--dsw-alias-label-primary); }
+/* 告知类分组：标题降一级，不与功能组抢注意力 */
+.dcc-group-title-muted { color: var(--dsw-alias-label-secondary); font-weight: 500; }
 .dcc-row { display: flex; align-items: center; gap: 16px; padding: 14px 2px; border-top: 1px solid var(--dsw-alias-border-l1); }
 .dcc-group-title + .dcc-row { border-top: none; }
 /* 无组名的组（总开关那一块）没有标题，首行同样不该有分隔线 */
@@ -2453,13 +2455,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             onChange: update('textSelectLimit'),
           })),
         h('div', { className: 'dcc-group' },
-          h('div', { className: 'dcc-group-title' }, zh ? '基础改进' : 'Base fixes'),
+          h('div', { className: 'dcc-group-title dcc-group-title-muted' }, zh ? '基础改进' : 'Base fixes'),
           h(InfoRow, {
             title: zh ? '基础细节改进和修复' : 'Base detail fixes and improvements',
             desc: zh
               ? [
                 '这些基础修复和改进影响很小，会始终启用，除非关闭总开关。',
-                '',
                 '- 左侧导航栏部分布局细节优化。',
                 '- 工作区文件夹悬停时保留图标。',
                 '- 已归档会话显示删除线。',
@@ -2470,7 +2471,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
               ].join('\n')
               : [
                 'These small fixes and improvements are always on unless the master switch is off.',
-                '',
                 '- Layout details refined in the left navigation.',
                 '- Workspace folder icons stay visible on hover.',
                 '- Archived sessions show a strikethrough.',
