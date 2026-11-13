@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.235';
+    const VERSION = '0.2.236';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -2067,13 +2067,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         const exitAnim = document.documentElement.dataset.dccMenuBlur === 'on'
           ? 'dcc-plain-out'
           : 'dcc-menu-out';
+        /* 整层统一淡出：这样压暗层和卡片一定同步，不依赖 mask 的类名是否命中 */
+        clone.style.animation = 'dcc-fade-out .12s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) forwards';
+        /* 卡片在这之上再加缩放 */
         const inner = clone.querySelector('[role="dialog"]');
-        const animated = inner !== null ? inner : clone;
-        animated.style.animation = `${exitAnim} .12s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) forwards`;
-        /* 背景压暗层跟着一起淡出，否则卡片缩完了遮罩还是实的一下子消失 */
-        const backdrop = clone.querySelector('[class*="_mask"]');
-        if (backdrop !== null) {
-          backdrop.style.animation = 'dcc-fade-out .12s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) forwards';
+        if (inner !== null) {
+          inner.style.animation = `${exitAnim} .12s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) forwards`;
         }
         document.body.appendChild(clone);
         window.setTimeout(() => clone.remove(), 220);
