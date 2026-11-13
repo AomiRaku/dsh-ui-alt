@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.184';
+    const VERSION = '0.2.185';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1421,7 +1421,9 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         /* 已经在行内移动，不是「进入」，放行给宿主 */
         const related = event.relatedTarget;
         if (related instanceof Node && row.contains(related)) return;
-        event.stopPropagation();
+        /* 用 stopImmediatePropagation 而不是 stopPropagation：
+           宿主的悬停计时器只要收到「进入」就会挂上，同层的监听器也得一并掐断。 */
+        event.stopImmediatePropagation();
       };
 
       /* 卡片是预渲染的，宿主靠 pointermove 持续跟位置；
@@ -1431,23 +1433,28 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         const target = event.target;
         if (!(target instanceof Element)) return;
         if (target.closest(ROW) === null) return;
-        event.stopPropagation();
+        event.stopImmediatePropagation();
       };
 
       /* 放在 window 捕获阶段：这是事件流最早的位置，先于 React 挂在 root 容器上的
          onPointerOverCapture，才能保证宿主那一层完全收不到「进入行」这件事。
-         新版悬停卡片还会用 pointerenter / mouseenter 那条路径，一并截住。 */
+         新版悬停卡片还会用 pointerenter / mouseenter 那条路径，一并截住。
+         document 上再挂一层，覆盖宿主把监听挂在 document 的情况。 */
       window.addEventListener('pointerover', onOver, true);
       window.addEventListener('pointerenter', onOver, true);
       window.addEventListener('mouseenter', onOver, true);
       window.addEventListener('pointermove', onMove, true);
       window.addEventListener('mousemove', onMove, true);
+      document.addEventListener('pointerover', onOver, true);
+      document.addEventListener('pointermove', onMove, true);
       return () => {
         window.removeEventListener('pointerover', onOver, true);
         window.removeEventListener('pointerenter', onOver, true);
         window.removeEventListener('mouseenter', onOver, true);
         window.removeEventListener('pointermove', onMove, true);
         window.removeEventListener('mousemove', onMove, true);
+        document.removeEventListener('pointerover', onOver, true);
+        document.removeEventListener('pointermove', onMove, true);
       };
     }
 
