@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.284';
+    const VERSION = '0.2.285';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -139,12 +139,6 @@ body[data-ds-dark-theme] .dcc-boot-cover {
   width: 64px;
   height: auto;
   opacity: .3;
-  color: #ffffff;
-}
-/* 浅色底上黑色 30% 几乎看不见，提一点不透明度 */
-body:not([data-ds-dark-theme]) .dcc-boot-fish {
-  color: #000000;
-  opacity: .45;
 }
 .dcc-boot-cover-out { opacity: 0; }
 /* 纯告知行：无右侧控件，用列表承载多条说明 */
@@ -2412,7 +2406,11 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         svg.setAttribute('aria-hidden', 'true');
         const shape = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         shape.setAttribute('d', FISH_LOGO_PATH);
-        shape.setAttribute('fill', 'currentColor');
+        /* 直接按主题写死填充色，不依赖 CSS 选择器：
+           之前靠 body:not([...]) 反色，浅色下没生效就会变成白鱼压在白底上。 */
+        const darkNow = document.body.hasAttribute('data-ds-dark-theme')
+          || document.documentElement.hasAttribute('data-ds-dark-theme');
+        shape.setAttribute('fill', darkNow ? '#ffffff' : '#000000');
         svg.appendChild(shape);
         cover.appendChild(svg);
         document.documentElement.appendChild(cover);
