@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.161';
+    const VERSION = '0.2.162';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1888,7 +1888,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           }),
           h(Row, {
             title: zh ? '会话标题栏紧凑化' : 'Compact session header',
-            desc: zh ? '紧凑化会话标题栏，使会话内容可视范围更大。' : 'Tighten the session header so more of the conversation is visible.',
+            desc: zh ? '紧凑化会话标题栏，将视图切换标签移到工具按钮处，使会话内容可视范围更大。' : 'Tighten the session header by moving the view tabs next to the toolbar buttons, so more of the conversation is visible.',
             checked: prefs.compactHeader,
             onChange: update('compactHeader'),
           }),
