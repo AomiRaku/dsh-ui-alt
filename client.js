@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.159';
+    const VERSION = '0.2.160';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -394,16 +394,6 @@ html[data-dcc-menu-blur="on"] [data-menu-material] {
 /* 禁用模糊后弹层本身已是不透明底，动画就不该再去动 background-color——
    否则 keyframes 的 transparent 会盖掉实底，动画结束才回落，看起来就是闪一下。
    所以这套场景单独用一组不带背景色的关键帧。 */
-html[data-dcc-menu-blur="on"] [data-menu-material][data-menu-phase="enter"],
-html[data-dcc-menu-blur="on"] [data-menu-material][data-menu-phase="dismiss"],
-html[data-dcc-menu-blur="on"] [role="menu"]:not([data-menu-phase]),
-html[data-dcc-menu-blur="on"] [role="listbox"]:not([data-menu-phase]),
-html[data-dcc-menu-blur="on"] [role="dialog"]:not([data-menu-phase]) {
-  animation-name: dcc-plain-in;
-}
-html[data-dcc-menu-blur="on"] [data-menu-material][data-menu-phase="dismiss"] {
-  animation-name: dcc-plain-out;
-}
 @keyframes dcc-plain-in {
   from {
     opacity: 0;
@@ -460,6 +450,18 @@ html[data-dcc-transition="on"] [role="dialog"]:not([data-menu-phase]) {
   transform-origin: 50% 50%;
   animation: dcc-menu-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
 }
+/* animation 简写会把 name 重置回 dcc-menu-in，所以这条必须写在它之后 */
+html[data-dcc-menu-blur="on"] [data-menu-material][data-menu-phase="enter"],
+html[data-dcc-menu-blur="on"] [data-menu-material][data-menu-phase="dismiss"],
+html[data-dcc-menu-blur="on"] [role="menu"]:not([data-menu-phase]),
+html[data-dcc-menu-blur="on"] [role="listbox"]:not([data-menu-phase]),
+html[data-dcc-menu-blur="on"] [role="dialog"]:not([data-menu-phase]) {
+  animation-name: dcc-plain-in;
+}
+html[data-dcc-menu-blur="on"] [data-menu-material][data-menu-phase="dismiss"] {
+  animation-name: dcc-plain-out;
+}
+
 
 @keyframes dcc-menu-in {
   from {
