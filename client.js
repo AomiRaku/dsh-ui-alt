@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.150';
+    const VERSION = '0.2.151';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1677,6 +1677,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       const rects = new WeakMap();
 
       const remember = (root) => {
+        if (root.hasAttribute('data-dcc-dialog-clone')) return;
         const dialog = root.matches('[role="dialog"]') ? root : root.querySelector('[role="dialog"]');
         if (dialog === null || rects.has(dialog)) return;
         const rect = dialog.getBoundingClientRect();
@@ -1685,10 +1686,13 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
 
       const playExit = (dialog) => {
         if (document.documentElement.dataset.dccMenuAnim !== 'on') return;
+        /* 快照自己也是 role="dialog"，不排除的话它的移除会再触发一轮快照，无限循环 */
+        if (dialog.hasAttribute('data-dcc-dialog-clone')) return;
         const rect = rects.get(dialog);
         if (rect === undefined) return;
         const clone = dialog.cloneNode(true);
         clone.removeAttribute('data-dcc-menu-seq');
+        clone.setAttribute('data-dcc-dialog-clone', '');
         clone.style.position = 'fixed';
         clone.style.left = `${rect.left}px`;
         clone.style.top = `${rect.top}px`;
