@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.206';
+    const VERSION = '0.2.207';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1379,8 +1379,14 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       observer.observe(document.body, { childList: true, subtree: true });
       document.addEventListener('click', onClick, true);
       document.addEventListener('mousemove', onMove, true);
+      /* 紧凑化开关切换后立刻重建分段控件 */
+      const onPrefs = (event) => {
+        if (event.detail && event.detail.key === 'compactHeader') ensure();
+      };
+      window.addEventListener('dcc-prefs-changed', onPrefs);
 
       return () => {
+        window.removeEventListener('dcc-prefs-changed', onPrefs);
         observer.disconnect();
         if (timer !== null) clearTimeout(timer);
         if (rafId !== 0) window.cancelAnimationFrame(rafId);
@@ -1698,11 +1704,17 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
 
       window.addEventListener('dcc-balance-threshold', onThreshold);
+      /* 开关切换后立刻按已拿到的数据重算，不必等下一次轮询 */
+      const onPrefs = (event) => {
+        if (event.detail && event.detail.key === 'showBalance') recalc();
+      };
+      window.addEventListener('dcc-prefs-changed', onPrefs);
       load();
       refresh = window.setInterval(load, 60000);
 
       return () => {
         window.removeEventListener('dcc-balance-threshold', onThreshold);
+        window.removeEventListener('dcc-prefs-changed', onPrefs);
         if (refresh !== null) window.clearInterval(refresh);
         document.documentElement.style.removeProperty('--dcc-balance-text');
         delete document.documentElement.dataset.dccBalanceLow;
@@ -1814,9 +1826,17 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       /* 新会话克隆行增删会改变「折叠时保留几项」，要立刻重算高度 */
       const onNewSessionPref = () => ensure();
       window.addEventListener('dcc-newsession-pref', onNewSessionPref);
+      /* 导航折叠开关本身切换后也要立刻重算，否则箭头和布局要等 400ms 防抖 */
+      const onNavPref = (event) => {
+        if (event.detail && event.detail.key === 'navCollapse') {
+          window.setTimeout(() => ensure(), 0);
+        }
+      };
+      window.addEventListener('dcc-prefs-changed', onNavPref);
 
       return () => {
         window.removeEventListener('dcc-newsession-pref', onNewSessionPref);
+        window.removeEventListener('dcc-prefs-changed', onNavPref);
         observer.disconnect();
         if (timer !== null) clearTimeout(timer);
         if (btn !== null) btn.remove();
@@ -2123,6 +2143,13 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         if (key === 'invertNewSession' && typeof window !== 'undefined') {
           window.setTimeout(() => {
             window.dispatchEvent(new Event('dcc-newsession-pref'));
+          }, 0);
+        }
+        /* 其余需要重建 DOM 的开关统一走这个事件，各模块只处理自己关心的 key。
+           同样延后一拍，等 applyPrefs 把属性写进 html。 */
+        if (typeof window !== 'undefined') {
+          window.setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('dcc-prefs-changed', { detail: { key } }));
           }, 0);
         }
         /* 总开关切换会整体改变已注入的 DOM 与样式，重载一次前端最干净。
