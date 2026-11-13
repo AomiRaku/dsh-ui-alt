@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.169';
+    const VERSION = '0.2.170';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1883,21 +1883,15 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             desc: zh ? '禁用原版菜单聊胜于无的模糊效果，增加流畅度和整体感。' : 'Drops the stock menu blur for smoother rendering and a more unified look.',
             checked: prefs.disableMenuBlur,
             onChange: update('disableMenuBlur'),
+          }),
+          h(Row, {
+            title: zh ? '设置面板全屏' : 'Full-screen settings panel',
+            desc: zh ? '使用非窗口化的设置页面。' : 'Use a non-windowed settings page.',
+            checked: prefs.settingsFullscreen,
+            onChange: update('settingsFullscreen'),
           })),
         h('div', { className: 'dcc-group' },
-          h('div', { className: 'dcc-group-title' }, zh ? '布局' : 'Layout'),
-          h(Row, {
-            title: zh ? '减小圆角与间距' : 'Smaller radii and spacing',
-            desc: zh ? '缩小全局圆角、缩小侧栏部分字号、收紧间距，使界面更高效。' : 'Smaller global radii, smaller sidebar type and tighter spacing, for a more efficient interface.',
-            checked: prefs.radiusDensity,
-            onChange: update('radiusDensity'),
-          }),
-          h(Row, {
-            title: zh ? '会话标题栏紧凑化' : 'Compact session header',
-            desc: zh ? '紧凑化会话标题栏，将视图切换标签移到工具按钮处，使会话内容可视范围更大。' : 'Tighten the session header by moving the view tabs next to the toolbar buttons, so more of the conversation is visible.',
-            checked: prefs.compactHeader,
-            onChange: update('compactHeader'),
-          }),
+          h('div', { className: 'dcc-group-title' }, zh ? '导航和工作区' : 'Navigation and workspace'),
           h(Row, {
             title: zh ? '统一新会话按钮样式' : 'Unified new-session button',
             desc: zh ? '将新会话按钮样式改为与导航按钮一致的样式。' : 'Style the new-session button the same as the navigation buttons.',
@@ -1933,12 +1927,20 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             desc: zh ? '隐藏会话悬停时除了菜单和置顶之外的其他按钮，避免拥挤遮盖过多标题。正常情况下这些按钮都已经在右键菜单中包含。若其他插件添加的按钮未在右键菜单包含，可以关闭此功能。' : 'Hide every button on a hovered session row except the "…" menu and pin, so they stop crowding the title. These actions are normally in the right-click menu too; turn this off if a plugin adds a button that is not.',
             checked: prefs.hideRowButtons,
             onChange: update('hideRowButtons'),
+          })),
+        h('div', { className: 'dcc-group' },
+          h('div', { className: 'dcc-group-title' }, zh ? '会话标题栏' : 'Session header'),
+          h(Row, {
+            title: zh ? '减小圆角与间距' : 'Smaller radii and spacing',
+            desc: zh ? '缩小全局圆角、缩小侧栏部分字号、收紧间距，使界面更高效。' : 'Smaller global radii, smaller sidebar type and tighter spacing, for a more efficient interface.',
+            checked: prefs.radiusDensity,
+            onChange: update('radiusDensity'),
           }),
           h(Row, {
-            title: zh ? '设置面板全屏' : 'Full-screen settings panel',
-            desc: zh ? '使用非窗口化的设置页面。' : 'Use a non-windowed settings page.',
-            checked: prefs.settingsFullscreen,
-            onChange: update('settingsFullscreen'),
+            title: zh ? '会话标题栏紧凑化' : 'Compact session header',
+            desc: zh ? '紧凑化会话标题栏，将视图切换标签移到工具按钮处，使会话内容可视范围更大。' : 'Tighten the session header by moving the view tabs next to the toolbar buttons, so more of the conversation is visible.',
+            checked: prefs.compactHeader,
+            onChange: update('compactHeader'),
           })),
         h('div', { className: 'dcc-group' },
           h('div', { className: 'dcc-group-title' }, zh ? '性能与用量信息' : 'Performance and usage'),
