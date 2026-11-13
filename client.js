@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.200';
+    const VERSION = '0.2.201';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -129,7 +129,7 @@ html[data-dcc-font="on"][data-windows-titlebar] body {
   pointer-events: none;
 }
 body[data-ds-dark-theme] .dcc-boot-cover {
-  background-color: #1a1a1a;
+  background-color: #151517;
 }
 .dcc-boot-cover-out { opacity: 0; }
 .dcc-action {
@@ -1981,7 +1981,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             if (cover === null) return;
             const dark = document.body.hasAttribute('data-ds-dark-theme')
               || document.documentElement.hasAttribute('data-ds-dark-theme');
-            cover.style.backgroundColor = dark ? '#1a1a1a' : '#ffffff';
+            cover.style.backgroundColor = dark ? '#151517' : '#ffffff';
           };
           applyTheme();
           themeObserver = new MutationObserver(applyTheme);
