@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.243';
+    const VERSION = '0.2.244';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1719,6 +1719,9 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         }
         if (tabs === null) return;
         const count = tabs.querySelectorAll('button[role="tab"]').length;
+        /* 切换工作区那一瞬标签还没渲染完，数量会短暂变成 0。
+           这时如果按「数量不一致」去重建，就会闪一下。等它稳定下来再说。 */
+        if (count === 0) return;
         /* 控件还在 DOM 里、只是容器换了 → 直接搬过去，不要重建（重建会闪一下） */
         if (bar !== null && bar.isConnected && bar.parentElement !== host) {
           host.insertBefore(bar, host.firstChild);
