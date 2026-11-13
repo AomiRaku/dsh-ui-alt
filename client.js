@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.137';
+    const VERSION = '0.2.138';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -372,11 +372,16 @@ html[data-dcc-text-dim="on"] body[data-ds-dark-theme] {
   --dsw-alias-label-primary: rgba(255, 255, 255, .8) !important;
 }
 
-/* 菜单出现时从点击处缩放展开：transform-origin 由脚本按最后一次
-   指针位置写进 --dcc-menu-origin，锚点落在菜单内的相对坐标上。 */
-[role="menu"] {
+/* 菜单出现/消失时从点击处缩放。宿主用 data-menu-phase 标出阶段，
+   这里挂在阶段属性上；关键是动画结束后不要保留 transform——
+   常驻的 transform 会让同层的 backdrop-filter（毛玻璃）失效。 */
+[data-menu-phase="enter"] {
   transform-origin: var(--dcc-menu-origin, top center);
-  animation: dcc-menu-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) both;
+  animation: dcc-menu-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
+}
+[data-menu-phase="closing"] {
+  transform-origin: var(--dcc-menu-origin, top center);
+  animation: dcc-menu-out .12s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) forwards;
 }
 @keyframes dcc-menu-in {
   from {
@@ -385,7 +390,17 @@ html[data-dcc-text-dim="on"] body[data-ds-dark-theme] {
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: none;
+  }
+}
+@keyframes dcc-menu-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: scale(.96);
   }
 }
 
