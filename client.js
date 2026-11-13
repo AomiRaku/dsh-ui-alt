@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.182';
+    const VERSION = '0.2.183';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -467,9 +467,11 @@ body[data-ds-dark-theme] :where([role="dialog"], [role="listbox"], [role="menu"]
   --dcc-menu-fallback: color-mix(in oklab, var(--dsw-alias-bg-layer-1) 82%, #fff);
 }
 
-/* 禁用悬停卡片时兜底隐藏：事件拦截偶有漏网（比如宿主用 enter 类事件或
-   定时器已经排上了），直接把带 data-hovercard-bridge 的传送门容器藏掉。 */
-html[data-dcc-hover="off"] :has(> [data-hovercard-bridge]) {
+/* 禁用悬停卡片时直接隐藏卡片本体。
+   新版的卡片是预渲染的常驻节点，悬停时只改 left/top 不改结构，
+   所以拦事件没有用；它带 --dsh-hover-preview-fade 这个专有变量，用它精确定位。 */
+html[data-dcc-hover="off"] [class*="_card_"][style*="--dsh-hover-preview-fade"],
+html[data-dcc-hover="off"] [class*="_card_"][data-closing] {
   display: none !important;
 }
 
