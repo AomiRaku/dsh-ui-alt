@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.146';
+    const VERSION = '0.2.147';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -385,8 +385,11 @@ html[data-dcc-menu-anim="on"] [data-menu-material][data-menu-phase="dismiss"] {
   transform-origin: var(--dcc-menu-origin, 50% 50%);
   animation: dcc-menu-out .12s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) forwards;
 }
-/* 子菜单没有 data-menu-phase，用 role="menu" 单独命中 */
-html[data-dcc-menu-anim="on"] [role="menu"]:not([data-menu-phase]) {
+/* 子菜单、列表选择器、上下文弹层这些没有 data-menu-phase 的弹出层，
+   用 role 单独命中，套同一组入场动画。 */
+html[data-dcc-menu-anim="on"] [role="menu"]:not([data-menu-phase]),
+html[data-dcc-menu-anim="on"] [role="listbox"]:not([data-menu-phase]),
+html[data-dcc-menu-anim="on"] [role="dialog"]:not([data-menu-phase]) {
   transform-origin: var(--dcc-menu-origin, left center);
   animation: dcc-menu-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
 }
@@ -1608,7 +1611,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
 
       const mark = () => {
-        const menus = document.querySelectorAll('[role="menu"]');
+        const menus = document.querySelectorAll('[role="menu"], [role="listbox"], [role="dialog"]');
         for (let i = 0; i < menus.length; i += 1) {
           const menu = menus[i];
           if (menu.hasAttribute('data-dcc-menu-seq')) continue;
