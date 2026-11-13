@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.214';
+    const VERSION = '0.2.215';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -172,7 +172,7 @@ body:not([data-ds-dark-theme]) .dcc-boot-fish {
   background: var(--dsw-alias-interactive-bg-hover);
   color: var(--dsw-alias-label-primary);
 }
-/* 重置确认弹窗 */
+/* 重置确认弹窗：结构与底色对齐宿主的 Dialog（root / mask / dialog / content / footer） */
 .dcc-modal {
   position: fixed;
   inset: 0;
@@ -180,15 +180,27 @@ body:not([data-ds-dark-theme]) .dcc-boot-fish {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, .45);
+}
+.dcc-modal-mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, .5);
+  backdrop-filter: blur(2px);
 }
 .dcc-modal-card {
-  width: 340px;
+  position: relative;
+  width: 360px;
   max-width: calc(100vw - 48px);
-  padding: 20px;
-  border-radius: var(--dsw-radius-lg);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: var(--dsw-radius-lg, 12px);
   background: var(--dsw-alias-bg-layer-1);
   box-shadow: 0 16px 48px rgba(0, 0, 0, .35);
+  animation: dcc-plain-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
+}
+.dcc-modal-content {
+  padding: 18px 20px 4px;
 }
 .dcc-modal-title {
   font-size: 15px;
@@ -197,7 +209,7 @@ body:not([data-ds-dark-theme]) .dcc-boot-fish {
   color: var(--dsw-alias-label-primary);
 }
 .dcc-modal-body {
-  margin-top: 8px;
+  margin-top: 6px;
   font-size: 13px;
   line-height: 20px;
   color: var(--dsw-alias-label-secondary);
@@ -206,7 +218,7 @@ body:not([data-ds-dark-theme]) .dcc-boot-fish {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
-  margin-top: 20px;
+  padding: 14px 20px 18px;
 }
 .dcc-modal-btn {
   height: 30px;
@@ -2433,10 +2445,16 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             className: 'dcc-reset',
             onClick: () => setConfirmReset(true),
           }, zh ? '重置设置' : 'Reset')),
-        confirmReset ? h('div', { className: 'dcc-modal' },
-          h('div', { className: 'dcc-modal-card' },
-            h('div', { className: 'dcc-modal-title' }, zh ? '重置 UI 改进选项' : 'Reset UI improvements'),
-            h('div', { className: 'dcc-modal-body' }, zh ? '将会重置本插件的所有设置项到默认状态。' : 'Every option in this plugin will be reset to its default.'),
+        confirmReset ? h('div', { className: 'dcc-modal', role: 'presentation' },
+          h('div', {
+            className: 'dcc-modal-mask',
+            'aria-hidden': 'true',
+            onClick: () => setConfirmReset(false),
+          }),
+          h('div', { className: 'dcc-modal-card', role: 'dialog', 'aria-modal': 'true', 'aria-label': zh ? '重置 UI 改进选项' : 'Reset UI improvements' },
+            h('div', { className: 'dcc-modal-content' },
+              h('div', { className: 'dcc-modal-title' }, zh ? '重置 UI 改进选项' : 'Reset UI improvements'),
+              h('div', { className: 'dcc-modal-body' }, zh ? '将会重置本插件的所有设置项到默认状态。' : 'Every option in this plugin will be reset to its default.')),
             h('div', { className: 'dcc-modal-actions' },
               h('button', { type: 'button', className: 'dcc-modal-btn', onClick: () => setConfirmReset(false) }, zh ? '取消' : 'Cancel'),
               h('button', { type: 'button', className: 'dcc-modal-btn dcc-modal-primary', onClick: () => { resetPrefs(); } }, zh ? '重置' : 'Reset'))))
