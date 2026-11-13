@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.156';
+    const VERSION = '0.2.157';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -16,6 +16,7 @@ window.__ModuleLoader__.load({
       winFont: false,
       softenDarkText: true,
       uiTransition: true,
+      disableMenuBlur: true,
       sessionDot: false,
       settingsFullscreen: true,
       hideHoverCard: true,
@@ -54,6 +55,7 @@ window.__ModuleLoader__.load({
       root.dataset.dccFont = prefs.winFont ? 'on' : 'off';
       root.dataset.dccTextDim = prefs.softenDarkText ? 'on' : 'off';
       root.dataset.dccTransition = prefs.uiTransition ? 'on' : 'off';
+      root.dataset.dccMenuBlur = prefs.disableMenuBlur ? 'on' : 'off';
       root.dataset.dccFull = prefs.settingsFullscreen ? 'on' : 'off';
       root.dataset.dccHover = prefs.hideHoverCard ? 'off' : 'on';
       root.dataset.dccRowButtons = prefs.hideRowButtons ? 'on' : 'off';
@@ -372,6 +374,21 @@ html[data-dcc-radius="on"] [class*="_groupSection"] {
    改 token 而不是逐个元素设色，图标、输入框、菜单都会一起跟上。 */
 html[data-dcc-text-dim="on"] body[data-ds-dark-theme] {
   --dsw-alias-label-primary: rgba(255, 255, 255, .8) !important;
+}
+
+/* 禁用菜单的毛玻璃：宿主那层模糊聊胜于无，关掉之后弹层改用不透明底色，
+   既省掉合成开销，也让动画期间不再需要额外的兜底背景。 */
+html[data-dcc-menu-blur="on"] [data-menu-material],
+html[data-dcc-menu-blur="on"] [data-menu-material] *,
+html[data-dcc-menu-blur="on"] [role="dialog"],
+html[data-dcc-menu-blur="on"] [role="listbox"],
+html[data-dcc-menu-blur="on"] [role="menu"] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+/* 模糊没了就得有实底，否则会透出后面的内容 */
+html[data-dcc-menu-blur="on"] [data-menu-material] {
+  background-color: var(--dsw-alias-bg-layer-1) !important;
 }
 
 /* 兜底色：动画期间顶替失效的毛玻璃。各弹层的实际背景不一样，
@@ -1813,6 +1830,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             desc: zh ? '为菜单添加更流畅的出现和消失动画。部分菜单由于底层限制无法添加消失动画。' : 'Smoother open and close animations for menus. Some menus cannot animate their close due to platform limits.',
             checked: prefs.uiTransition,
             onChange: update('uiTransition'),
+          }),
+          h(Row, {
+            title: zh ? '禁用菜单模糊效果' : 'Disable menu blur',
+            desc: zh ? '禁用原版菜单聊胜于无的模糊效果，增加流畅度和整体感。' : 'Drops the stock menu blur for smoother rendering and a more unified look.',
+            checked: prefs.disableMenuBlur,
+            onChange: update('disableMenuBlur'),
           })),
         h('div', { className: 'dcc-group' },
           h('div', { className: 'dcc-group-title' }, zh ? '布局' : 'Layout'),
@@ -1986,6 +2009,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             delete root.dataset.dccFont;
             delete root.dataset.dccTextDim;
             delete root.dataset.dccTransition;
+            delete root.dataset.dccMenuBlur;
             delete root.dataset.dccFull;
             delete root.dataset.dccHover;
             delete root.dataset.dccRowButtons;
