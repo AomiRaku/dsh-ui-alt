@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.173';
+    const VERSION = '0.2.174';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1200,6 +1200,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
 
       const ensure = () => {
+        /* 总开关关闭时自绘按钮也要撤掉，否则会留下一个没有样式的裸按钮 */
+        if (document.documentElement.dataset.dccEnabled !== 'on') {
+          if (btn !== null) btn.remove();
+          btn = null;
+          return;
+        }
         const panel = findPanel();
         if (panel === null) {
           if (btn !== null) btn.remove();
@@ -1359,6 +1365,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
          早先还挂了一个 MutationObserver 定期全量扫描，滚动时虚拟列表频繁改 DOM，
          每 400ms 扫一遍所有会话行，反而成了新的卡顿源，已移除。 */
       const onPointer = (event) => {
+        /* 总开关关闭时，把之前打上的隐藏标记全部撤掉 */
+        if (document.documentElement.dataset.dccEnabled !== 'on') {
+          const marked = document.querySelectorAll('[data-dcc-hidden]');
+          for (const el of marked) el.removeAttribute('data-dcc-hidden');
+          return;
+        }
         if (document.documentElement.dataset.dccRowButtons !== 'on') return;
         const target = event.target;
         if (!(target instanceof Element)) return;
@@ -1462,7 +1474,8 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
 
       const ensure = () => {
         /* 开关关掉时把自绘控件撤掉，标签行由 CSS 恢复原样 */
-        if (document.documentElement.dataset.dccCompactHeader !== 'on') {
+        if (document.documentElement.dataset.dccEnabled !== 'on'
+          || document.documentElement.dataset.dccCompactHeader !== 'on') {
           if (bar !== null) { bar.remove(); bar = null; }
           return;
         }
@@ -1528,6 +1541,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       const sync = () => {
         if (text === '') return;
         const root = document.documentElement;
+        /* 总开关关闭时不再写这两个值，否则会留下一个永远显示余额的伪元素 */
+        if (root.dataset.dccEnabled !== 'on') {
+          root.style.removeProperty('--dcc-balance-text');
+          if (root.dataset.dccBalanceLow !== undefined) delete root.dataset.dccBalanceLow;
+          return;
+        }
         const next = JSON.stringify(`余额 ${text}`);
         if (root.style.getPropertyValue('--dcc-balance-text') !== next) {
           root.style.setProperty('--dcc-balance-text', next);
