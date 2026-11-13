@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.154';
+    const VERSION = '0.2.155';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -374,6 +374,18 @@ html[data-dcc-text-dim="on"] body[data-ds-dark-theme] {
   --dsw-alias-label-primary: rgba(255, 255, 255, .8) !important;
 }
 
+/* 兜底色：动画期间顶替失效的毛玻璃。各弹层的实际背景不一样，
+   统一一个 token 会对不齐，所以按「浅色/深色 × 是否带毛玻璃」分档微调。 */
+body:not([data-ds-dark-theme]) {
+  --dcc-menu-fallback: color-mix(in oklab, var(--dsw-alias-bg-layer-1) 94%, #000);
+}
+body[data-ds-dark-theme] [data-menu-material] {
+  --dcc-menu-fallback: color-mix(in oklab, var(--dsw-alias-bg-layer-1) 94%, #000);
+}
+body[data-ds-dark-theme] :where([role="dialog"], [role="listbox"], [role="menu"]):not([data-menu-material]) {
+  --dcc-menu-fallback: color-mix(in oklab, var(--dsw-alias-bg-layer-1) 90%, #fff);
+}
+
 /* 菜单出现/消失：整体从点击处缩放。
    transform 会让同元素的 backdrop-filter 在动画期间失效，所以动画期间
    用一层近似底色的背景兜住，避免那 130ms 出现「透明」的观感。 */
@@ -402,26 +414,26 @@ html[data-dcc-transition="on"] [role="dialog"]:not([data-menu-phase]) {
   from {
     opacity: 0;
     transform: scale(.94);
-    background-color: var(--dsw-specific-menu-fallback, var(--dsw-alias-bg-layer-1));
+    background-color: var(--dcc-menu-fallback, var(--dsw-alias-bg-layer-1));
   }
   to {
     opacity: 1;
     transform: none;
     /* 保持兜底到最后一帧：动画没有 forwards，结束即自动回到元素自身样式，
        那时 transform 也消失、backdrop-filter 恢复，衔接无痕。 */
-    background-color: var(--dsw-specific-menu-fallback, var(--dsw-alias-bg-layer-1));
+    background-color: var(--dcc-menu-fallback, var(--dsw-alias-bg-layer-1));
   }
 }
 @keyframes dcc-menu-out {
   from {
     opacity: 1;
     transform: none;
-    background-color: var(--dsw-specific-menu-fallback, var(--dsw-alias-bg-layer-1));
+    background-color: var(--dcc-menu-fallback, var(--dsw-alias-bg-layer-1));
   }
   to {
     opacity: 0;
     transform: scale(.96);
-    background-color: var(--dsw-specific-menu-fallback, var(--dsw-alias-bg-layer-1));
+    background-color: var(--dcc-menu-fallback, var(--dsw-alias-bg-layer-1));
   }
 }
 
