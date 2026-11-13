@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.217';
+    const VERSION = '0.2.218';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -185,7 +185,6 @@ body:not([data-ds-dark-theme]) .dcc-boot-fish {
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, .5);
-  backdrop-filter: blur(2px);
 }
 .dcc-modal-card {
   position: relative;
