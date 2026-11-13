@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.218';
+    const VERSION = '0.2.219';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -536,10 +536,11 @@ html[data-dcc-radius="on"] [class*="_groupSection"] {
   margin-top: 2px !important;
 }
 
-/* 深色模式下正文不再用纯白：整体压到 80% 白，长时间看不刺眼。
-   改 token 而不是逐个元素设色，图标、输入框、菜单都会一起跟上。 */
+/* 深色模式下正文不再用纯白：主文本压到 80%，次级文本同步压得更低，
+   否则主文本一降，和次级文本反而贴在一起，层次就没了。 */
 html[data-dcc-text-dim="on"] body[data-ds-dark-theme] {
   --dsw-alias-label-primary: rgba(255, 255, 255, .8) !important;
+  --dsw-alias-label-secondary: rgba(255, 255, 255, .52) !important;
 }
 
 /* 关掉动画开关时，只掐掉「消失」这一段：宿主在 dismiss 阶段会做淡出，
