@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.149';
+    const VERSION = '0.2.150';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1672,11 +1672,21 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
      */
     function installDialogExit() {
       let observer = null;
+      /* 节点被移除时再量尺寸已经晚了——脱离文档的元素 rect 全是 0。
+         所以对话框一出现就把位置记下来，移除时直接取这份快照。 */
+      const rects = new WeakMap();
+
+      const remember = (root) => {
+        const dialog = root.matches('[role="dialog"]') ? root : root.querySelector('[role="dialog"]');
+        if (dialog === null || rects.has(dialog)) return;
+        const rect = dialog.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) rects.set(dialog, rect);
+      };
 
       const playExit = (dialog) => {
         if (document.documentElement.dataset.dccMenuAnim !== 'on') return;
-        const rect = dialog.getBoundingClientRect();
-        if (rect.width <= 0 || rect.height <= 0) return;
+        const rect = rects.get(dialog);
+        if (rect === undefined) return;
         const clone = dialog.cloneNode(true);
         clone.removeAttribute('data-dcc-menu-seq');
         clone.style.position = 'fixed';
@@ -1694,6 +1704,11 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
 
       observer = new MutationObserver((records) => {
         for (let i = 0; i < records.length; i += 1) {
+          const added = records[i].addedNodes;
+          for (let j = 0; j < added.length; j += 1) {
+            const node = added[j];
+            if (node instanceof Element) remember(node);
+          }
           const removed = records[i].removedNodes;
           for (let j = 0; j < removed.length; j += 1) {
             const node = removed[j];
