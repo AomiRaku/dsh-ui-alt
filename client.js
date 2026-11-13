@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.196';
+    const VERSION = '0.2.197';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -954,16 +954,14 @@ body:not([data-ds-dark-theme]) [class*="_sessionRow"][class*="_selected"] {
   box-shadow: inset 0 0 0 999px rgba(0, 0, 0, .04) !important;
 }
 
-/* 深色下导航行的悬停与选中要拉开层次：悬停弱、选中强。
-   不挂 data-dcc-new——那条只在「统一新会话按钮样式」开启时存在，
-   关掉时这套规则会失效，就又回到宿主默认的反向层次。 */
+/* 深色下导航行：悬停弱、选中强。
+   宿主的激活标记在父级 _panelEntryActive 上，按钮只有 aria-current="page"，
+   所以悬停作用在行上、选中作用在按钮的 aria-current 上，两者叠出来才有层次。 */
 body[data-ds-dark-theme] nav[class*="_panelList"] [class*="_panelRow"]:hover {
-  background-color: var(--dsw-alias-interactive-bg-hover) !important;
-  box-shadow: inset 0 0 0 999px rgba(255, 255, 255, .06) !important;
+  box-shadow: inset 0 0 0 999px rgba(255, 255, 255, .05) !important;
 }
-body[data-ds-dark-theme] nav[class*="_panelList"] [class*="_panelRow"][class*="_panelActive"] {
-  background-color: var(--dsw-alias-interactive-bg-hover) !important;
-  box-shadow: inset 0 0 0 999px rgba(255, 255, 255, .14) !important;
+body[data-ds-dark-theme] nav[class*="_panelList"] [class*="_panelRow"][aria-current="page"] {
+  box-shadow: inset 0 0 0 999px rgba(255, 255, 255, .16) !important;
 }
 
 /* ---------- 设置面板：全屏（避开 Electron 标题栏）+ 标题左侧返回按钮 ---------- */
@@ -1078,7 +1076,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         const entryClasses = entry === null
           ? []
           : [...entry.classList].filter((name) => name.includes('_panelEntry'));
-        clone.className = [...row.classList].filter((name) => !name.includes('_panelActive')).join(' ')
+        clone.className = row.classList.join(' ')
           + ' dcc-newrow'
           + (entryClasses.length > 0 ? ' ' + entryClasses.join(' ') : '');
         const aria = orig.getAttribute('aria-label');
