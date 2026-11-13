@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.141';
+    const VERSION = '0.2.142';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1592,6 +1592,9 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       let lastX = 0;
       let lastY = 0;
       let observer = null;
+      /* 每出现一个新菜单就递增编号，用来判断「谁是最后出现的」。
+         不能用 DOM 顺序：子菜单是 portal 节点，先出现的可能排在后面。 */
+      let seq = 0;
 
       const onDown = (event) => {
         lastX = event.clientX;
@@ -1602,22 +1605,40 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         const menus = document.querySelectorAll('[role="menu"]');
         for (let i = 0; i < menus.length; i += 1) {
           const menu = menus[i];
-          if (menu.hasAttribute('data-dcc-menu')) continue;
-          menu.setAttribute('data-dcc-menu', '');
+          if (menu.hasAttribute('data-dcc-menu-seq')) continue;
+          seq += 1;
+          menu.setAttribute('data-dcc-menu-seq', String(seq));
           const rect = menu.getBoundingClientRect();
           if (rect.width <= 0 || rect.height <= 0) continue;
           const x = Math.min(1, Math.max(0, (lastX - rect.left) / rect.width));
           const y = Math.min(1, Math.max(0, (lastY - rect.top) / rect.height));
           menu.style.setProperty('--dcc-menu-origin', `${Math.round(x * 100)}% ${Math.round(y * 100)}%`);
         }
-        /* 宿主切换可展开项时，旧子菜单要等关闭延迟才移除，期间会和新的叠在一起。
-           这里只留最后一个可见，其余立即隐身——不碰宿主状态，它照常走自己的关闭流程。 */
+        /* 宿主切换可展开项时，旧子菜单要等关闭延迟才移除，期间会和新叠在一起。
+           只留编号最大（最后出现）的那个可见，其余立即隐身；
+           不碰宿主状态，它照常走自己的关闭流程。 */
         const subs = Array.from(document.querySelectorAll('[role="menu"]:not([data-menu-phase])'));
+        if (subs.length < 2) {
+          for (let i = 0; i < subs.length; i += 1) {
+            subs[i].style.opacity = '';
+            subs[i].style.pointerEvents = '';
+          }
+          return;
+        }
+        let newest = null;
+        let newestSeq = -1;
+        for (let i = 0; i < subs.length; i += 1) {
+          const value = Number(subs[i].getAttribute('data-dcc-menu-seq') || 0);
+          if (value > newestSeq) {
+            newestSeq = value;
+            newest = subs[i];
+          }
+        }
         for (let i = 0; i < subs.length; i += 1) {
           const sub = subs[i];
-          const latest = i === subs.length - 1;
-          sub.style.opacity = latest ? '' : '0';
-          sub.style.pointerEvents = latest ? '' : 'none';
+          const keep = sub === newest;
+          sub.style.opacity = keep ? '' : '0';
+          sub.style.pointerEvents = keep ? '' : 'none';
         }
       };
 
