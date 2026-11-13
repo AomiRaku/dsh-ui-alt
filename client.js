@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.199';
+    const VERSION = '0.2.200';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1930,21 +1930,56 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
     }
 
     /**
-     * 启动遮罩：宿主的加载页切到应用界面时，本插件注入的样式还要再跑一遍，
-     * 中间会看到一次布局跳变。这里盖一层与主题同色的遮罩，等布局稳定后淡出。
+     * 启动遮罩：宿主的加载页退场、应用界面渲染出来之后，本插件注入的样式
+     * 还要再落一次，中间能看到一次布局跳变。这里等界面真正出现（侧栏根节点
+     * 就位）再多等一帧，然后盖 500ms 再淡出。
      */
     function installBootCover(prefs) {
       if (!prefs.enabled) return () => {};
-      const cover = document.createElement('div');
-      cover.className = 'dcc-boot-cover';
-      document.documentElement.appendChild(cover);
-      const timer = window.setTimeout(() => {
-        cover.classList.add('dcc-boot-cover-out');
-        window.setTimeout(() => cover.remove(), 320);
-      }, 500);
+      let cover = null;
+      let rafId = 0;
+      let fadeTimer = 0;
+      let removeTimer = 0;
+      let disposed = false;
+
+      /* 判定「界面已经出来」：侧栏根节点存在，且应用根容器有实际尺寸 */
+      const ready = () => {
+        const sidebar = document.querySelector('[class*="_root"]:has(nav[class*="_panelList"])');
+        if (sidebar === null) return false;
+        const rect = sidebar.getBoundingClientRect();
+        return rect.width > 100 && rect.height > 100;
+      };
+
+      const wait = () => {
+        if (disposed) return;
+        if (!ready()) {
+          rafId = window.requestAnimationFrame(wait);
+          return;
+        }
+        /* 多等一帧，让本插件的样式先应用完再盖 */
+        rafId = window.requestAnimationFrame(() => {
+          if (disposed) return;
+          cover = document.createElement('div');
+          cover.className = 'dcc-boot-cover';
+          document.documentElement.appendChild(cover);
+          fadeTimer = window.setTimeout(() => {
+            if (cover === null) return;
+            cover.classList.add('dcc-boot-cover-out');
+            removeTimer = window.setTimeout(() => {
+              if (cover !== null) cover.remove();
+              cover = null;
+            }, 320);
+          }, 500);
+        });
+      };
+
+      wait();
       return () => {
-        window.clearTimeout(timer);
-        cover.remove();
+        disposed = true;
+        if (rafId !== 0) window.cancelAnimationFrame(rafId);
+        window.clearTimeout(fadeTimer);
+        window.clearTimeout(removeTimer);
+        if (cover !== null) cover.remove();
       };
     }
 
