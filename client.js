@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.253';
+    const VERSION = '0.2.255';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -836,12 +836,17 @@ html:has([data-conversation-tabs] [role="tab"]:first-child[aria-selected="true"]
   mask-image: linear-gradient(to bottom, transparent 0, #000 20px);
 }
 /* 宿主的「更多」按钮不能直接 display:none——那样它量不到尺寸，
-   而我们正是靠它是否占位来判断「当前是否处于溢出状态」。 */
-html[data-dcc-compact-header="on"] [class*="_viewsMore"] {
+   而我们正是靠它是否渲染来判断「当前是否处于溢出状态」。
+   只把它推出视口并设为不可见，保留它原本的尺寸。 */
+html[data-dcc-compact-header="on"] [class*="_viewsMore"]:not([class*="_viewsMoreAnchor"]) {
   position: absolute !important;
   left: -9999px !important;
   top: 0 !important;
-  width: 1px !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+/* 容器同样不可见，但不脱离布局，避免标题栏里少一块位置 */
+html[data-dcc-compact-header="on"] [class*="_viewsMoreAnchor"] {
   visibility: hidden !important;
   pointer-events: none !important;
 }
@@ -1709,7 +1714,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
          我们把它移出视口而不是删除，这样它既不可见、又能用尺寸判断是否在溢出。 */
       let compact = false;
       const isOverflowing = () => {
-        const more = document.querySelector('[class*="_viewsMore"]');
+        const more = document.querySelector('[class*="_viewsMore"]:not([class*="_viewsMoreAnchor"])');
         if (more === null) return false;
         const rect = more.getBoundingClientRect();
         return rect.width > 2 && rect.height > 0;
