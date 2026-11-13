@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.183';
+    const VERSION = '0.2.184';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1424,16 +1424,30 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         event.stopPropagation();
       };
 
+      /* 卡片是预渲染的，宿主靠 pointermove 持续跟位置；
+         不截这条，即使卡片被 CSS 藏了，计算和取数还在跑，滚动就会卡。 */
+      const onMove = (event) => {
+        if (document.documentElement.dataset.dccHover !== 'off') return;
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        if (target.closest(ROW) === null) return;
+        event.stopPropagation();
+      };
+
       /* 放在 window 捕获阶段：这是事件流最早的位置，先于 React 挂在 root 容器上的
          onPointerOverCapture，才能保证宿主那一层完全收不到「进入行」这件事。
          新版悬停卡片还会用 pointerenter / mouseenter 那条路径，一并截住。 */
       window.addEventListener('pointerover', onOver, true);
       window.addEventListener('pointerenter', onOver, true);
       window.addEventListener('mouseenter', onOver, true);
+      window.addEventListener('pointermove', onMove, true);
+      window.addEventListener('mousemove', onMove, true);
       return () => {
         window.removeEventListener('pointerover', onOver, true);
         window.removeEventListener('pointerenter', onOver, true);
         window.removeEventListener('mouseenter', onOver, true);
+        window.removeEventListener('pointermove', onMove, true);
+        window.removeEventListener('mousemove', onMove, true);
       };
     }
 
