@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.225';
+    const VERSION = '0.2.226';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1098,12 +1098,6 @@ body:not([data-ds-dark-theme]) [class*="_sessionRow"][class*="_selected"] {
   box-shadow: inset 0 0 0 999px rgba(0, 0, 0, .04) !important;
 }
 
-html[data-dcc-new="on"] body[data-ds-dark-theme] nav[class*="_panelList"] [class*="_panelRow"]:hover,
-html[data-dcc-new="on"] body[data-ds-dark-theme] nav[class*="_panelList"] [class*="_panelRow"][class*="_panelActive"] {
-  background-color: var(--dsw-alias-interactive-bg-hover) !important;
-  box-shadow: inset 0 0 0 999px rgba(255, 255, 255, .1) !important;
-}
-
 /* 导航行：悬停弱、选中强。
    宿主的激活标记不在行类名上，而是按钮的 aria-current="page"，
    所以悬停作用在 :hover、选中作用在 [aria-current="page"]，两者叠出来才有层次。 */
@@ -1232,7 +1226,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         const entryClasses = entry === null
           ? []
           : [...entry.classList].filter((name) => name.includes('_panelEntry'));
-        clone.className = [...row.classList].filter((name) => !name.includes('_panelActive')).join(' ')
+        clone.className = row.classList.join(' ')
           + ' dcc-newrow'
           + (entryClasses.length > 0 ? ' ' + entryClasses.join(' ') : '');
         const aria = orig.getAttribute('aria-label');
