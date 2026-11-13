@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.274';
+    const VERSION = '0.2.275';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -870,6 +870,10 @@ html[data-dcc-compact-header="off"] .dcc-segmented {
 [class*="_header"]:hover .dcc-segmented,
 .dcc-segmented:hover,
 .dcc-segmented:focus-within {
+  opacity: 1;
+}
+/* 不在「对话」视图时，控件常驻显示当前视图名 */
+.dcc-segmented[data-pinned="true"] {
   opacity: 1;
 }
 /* 单个分段也不压缩，标签文字保持完整 */
@@ -1780,6 +1784,8 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const text = (sources[activeIndex].textContent || '').trim();
           if (first.textContent !== text) first.textContent = text;
         }
+        /* 第一个视图（对话）之外的页面，控件要常驻显示当前视图名 */
+        bar.dataset.pinned = activeIndex > 0 ? 'true' : 'false';
       };
 
       const build = (tabs, host) => {
