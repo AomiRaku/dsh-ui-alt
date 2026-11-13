@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.167';
+    const VERSION = '0.2.168';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -374,6 +374,17 @@ html[data-dcc-radius="on"] [class*="_groupSection"] {
    改 token 而不是逐个元素设色，图标、输入框、菜单都会一起跟上。 */
 html[data-dcc-text-dim="on"] body[data-ds-dark-theme] {
   --dsw-alias-label-primary: rgba(255, 255, 255, .8) !important;
+}
+
+/* 关掉动画开关时，连宿主自带的消失渐隐也一起去掉——
+   只留「瞬间出现 / 瞬间消失」，不再有那一段淡出。 */
+html[data-dcc-transition="off"] [data-menu-material],
+html[data-dcc-transition="off"] [data-menu-material] *,
+html[data-dcc-transition="off"] [role="menu"],
+html[data-dcc-transition="off"] [role="listbox"],
+html[data-dcc-transition="off"] [role="dialog"] {
+  transition: none !important;
+  animation: none !important;
 }
 
 /* 禁用菜单的毛玻璃：宿主那层模糊聊胜于无，关掉之后弹层改用不透明底色，
