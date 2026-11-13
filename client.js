@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.168';
+    const VERSION = '0.2.169';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -376,13 +376,10 @@ html[data-dcc-text-dim="on"] body[data-ds-dark-theme] {
   --dsw-alias-label-primary: rgba(255, 255, 255, .8) !important;
 }
 
-/* 关掉动画开关时，连宿主自带的消失渐隐也一起去掉——
-   只留「瞬间出现 / 瞬间消失」，不再有那一段淡出。 */
-html[data-dcc-transition="off"] [data-menu-material],
-html[data-dcc-transition="off"] [data-menu-material] *,
-html[data-dcc-transition="off"] [role="menu"],
-html[data-dcc-transition="off"] [role="listbox"],
-html[data-dcc-transition="off"] [role="dialog"] {
+/* 关掉动画开关时，只掐掉「消失」这一段：宿主在 dismiss 阶段会做淡出，
+   这里让它瞬间结束。菜单项的 hover 等其余过渡保持原样。 */
+html[data-dcc-transition="off"] [data-menu-phase="dismiss"],
+html[data-dcc-transition="off"] [data-menu-phase="dismiss"] * {
   transition: none !important;
   animation: none !important;
 }
