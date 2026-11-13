@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.198';
+    const VERSION = '0.2.199';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -116,6 +116,17 @@ html[data-dcc-font="on"][data-windows-titlebar] body {
 .dcc-group-title + .dcc-row { border-top: none; }
 /* 无组名的组（总开关那一块）没有标题，首行同样不该有分隔线 */
 .dcc-group > .dcc-row:first-child { border-top: none; }
+/* 启动遮罩：先盖住，等样式稳定后淡出 */
+.dcc-boot-cover {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  background: var(--dsw-alias-bg-base, #1b1b1c);
+  opacity: 1;
+  transition: opacity .3s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
+  pointer-events: none;
+}
+.dcc-boot-cover-out { opacity: 0; }
 .dcc-action {
   flex: none;
   height: 28px;
@@ -1918,6 +1929,25 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       return () => observer.disconnect();
     }
 
+    /**
+     * 启动遮罩：宿主的加载页切到应用界面时，本插件注入的样式还要再跑一遍，
+     * 中间会看到一次布局跳变。这里盖一层与主题同色的遮罩，等布局稳定后淡出。
+     */
+    function installBootCover(prefs) {
+      if (!prefs.enabled) return () => {};
+      const cover = document.createElement('div');
+      cover.className = 'dcc-boot-cover';
+      document.documentElement.appendChild(cover);
+      const timer = window.setTimeout(() => {
+        cover.classList.add('dcc-boot-cover-out');
+        window.setTimeout(() => cover.remove(), 320);
+      }, 500);
+      return () => {
+        window.clearTimeout(timer);
+        cover.remove();
+      };
+    }
+
     function Switch(props) {
       return h('label', { className: 'dcc-switch' },
         h('input', {
@@ -2176,6 +2206,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const removeHoverCardBlocker = installHoverCardBlocker();
           const removeViewSwitcher = installViewSwitcher();
           const removeBalance = installBalancePill(ctx);
+          const removeBootCover = installBootCover(readPrefs());
           const removePluginPin = installNavToggle();
           const removeMenuOrigin = installMenuOrigin();
           const removeDialogExit = installDialogExit();
@@ -2187,6 +2218,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             removeHoverCardBlocker();
             removeViewSwitcher();
             removeBalance();
+            removeBootCover();
             removePluginPin();
             removeMenuOrigin();
             removeDialogExit();
