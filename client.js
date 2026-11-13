@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.197';
+    const VERSION = '0.2.198';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -962,6 +962,13 @@ body[data-ds-dark-theme] nav[class*="_panelList"] [class*="_panelRow"]:hover {
 }
 body[data-ds-dark-theme] nav[class*="_panelList"] [class*="_panelRow"][aria-current="page"] {
   box-shadow: inset 0 0 0 999px rgba(255, 255, 255, .16) !important;
+}
+/* 浅色同理：宿主的悬停与选中用的是同一个底色，靠叠加深色区分 */
+body:not([data-ds-dark-theme]) nav[class*="_panelList"] [class*="_panelRow"]:hover {
+  box-shadow: inset 0 0 0 999px rgba(0, 0, 0, .025) !important;
+}
+body:not([data-ds-dark-theme]) nav[class*="_panelList"] [class*="_panelRow"][aria-current="page"] {
+  box-shadow: inset 0 0 0 999px rgba(0, 0, 0, .07) !important;
 }
 
 /* ---------- 设置面板：全屏（避开 Electron 标题栏）+ 标题左侧返回按钮 ---------- */
