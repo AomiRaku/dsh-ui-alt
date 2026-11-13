@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.236';
+    const VERSION = '0.2.237';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -567,8 +567,12 @@ html[data-dcc-menu-blur="on"] [role="menu"] {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
-/* 模糊没了就得有实底，否则会透出后面的内容 */
-html[data-dcc-menu-blur="on"] [data-menu-material] {
+/* 模糊没了就得有实底，否则会透出后面的内容。
+   上下文用量这类弹层不是 data-menu-material，用 role 兜住。 */
+html[data-dcc-menu-blur="on"] [data-menu-material],
+html[data-dcc-menu-blur="on"] [role="dialog"],
+html[data-dcc-menu-blur="on"] [role="listbox"],
+html[data-dcc-menu-blur="on"] [role="menu"] {
   background-color: var(--dsw-alias-bg-layer-1) !important;
 }
 
