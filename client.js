@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.176';
+    const VERSION = '0.2.177';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -136,7 +136,8 @@ html[data-dcc-enabled="off"] .dcc-page .dcc-group:not(.dcc-primary) {
 }
 .dcc-row-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
 .dcc-row-title { font-size: 14px; line-height: 20px; color: var(--dsw-alias-label-primary); }
-.dcc-row-desc { font-size: 12px; line-height: 17px; color: var(--dsw-alias-label-secondary); }
+.dcc-row-desc {
+  white-space: pre-line; font-size: 12px; line-height: 17px; color: var(--dsw-alias-label-secondary); }
 .dcc-switch { position: relative; display: inline-flex; width: 36px; height: 20px; flex: none; cursor: pointer; }
 .dcc-input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
 /* 宿主全站默认 corner-shape: superellipse(1.5)，999px 会被渲染成圆角矩形而不是胶囊。
@@ -1929,7 +1930,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           }),
           h(ActionRow, {
             title: zh ? '重载前端界面' : 'Reload the UI',
-            desc: zh ? '调整本插件的设置后建议执行一次。使用了其他修改前端界面类的插件，也可以在此处重载。不会影响正在运行的任务。' : 'Recommended after changing this plugin settings. Also reloads other UI-modifying plugins. Running tasks are not affected.',
+            desc: zh ? '调整本插件的设置后建议执行一次。使用了其他修改前端界面类的插件，也可以在此处重载。\n不会影响正在运行的任务。' : 'Recommended after changing this plugin settings. Also reloads other UI-modifying plugins.\nRunning tasks are not affected.',
             label: zh ? '重载' : 'Reload',
             onClick: () => { window.location.reload(); },
           })),
@@ -1937,7 +1938,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           h('div', { className: 'dcc-group-title' }, zh ? '外观' : 'Appearance'),
           h(Row, {
             title: zh ? 'Windows 默认微软雅黑字体' : 'Microsoft YaHei on Windows',
-            desc: zh ? '将 Windows 端默认字体改为微软雅黑。微软雅黑带有 hinting，使文字在显示设置低于 200% 缩放比例下，更加锐利清晰。若手动设置了字体，或使用 macOS 端，则不受影响。' : 'Use Microsoft YaHei as the default Windows font. It carries hinting, which keeps text sharp below 200% display scaling. Has no effect if you set a font manually, or on macOS.',
+            desc: zh ? '将 Windows 端默认字体改为微软雅黑。微软雅黑带有 hinting，使文字在显示设置低于 200% 缩放比例下，更加锐利清晰。\n若手动设置了字体，或使用 macOS 端，则不受影响。' : 'Use Microsoft YaHei as the default Windows font. It carries hinting, which keeps text sharp below 200% display scaling.\nHas no effect if you set a font manually, or on macOS.',
             checked: prefs.winFont,
             onChange: update('winFont'),
           }),
@@ -2005,7 +2006,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           }),
           h(Row, {
             title: zh ? '隐藏会话悬停多余按钮' : 'Hide extra session-row buttons',
-            desc: zh ? '隐藏会话悬停时除了菜单和置顶之外的其他按钮，避免拥挤遮盖过多标题。正常情况下这些按钮都已经在右键菜单中包含。若其他插件添加的按钮未在右键菜单包含，可以关闭此功能。' : 'Hide every button on a hovered session row except the "…" menu and pin, so they stop crowding the title. These actions are normally in the right-click menu too; turn this off if a plugin adds a button that is not.',
+            desc: zh ? '隐藏会话悬停时除了菜单和置顶之外的其他按钮，避免拥挤遮盖过多标题。\n正常情况下这些按钮都已经在右键菜单中包含。若其他插件添加的按钮未在右键菜单包含，可以关闭此功能。' : 'Hide every button on a hovered session row except the "…" menu and pin, so they stop crowding the title.\nThese actions are normally in the right-click menu too; turn this off if a plugin adds a button that is not.',
             checked: prefs.hideRowButtons,
             onChange: update('hideRowButtons'),
           })),
