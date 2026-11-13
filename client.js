@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.250';
+    const VERSION = '0.2.251';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1889,6 +1889,13 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         if (wantCompact !== compact) {
           compact = wantCompact;
           build(tabs, host);
+          return;
+        }
+        /* 紧凑模式固定只有两项（激活项 + ⋯），不能拿它和标签总数比，
+           否则每次都会判定「数量不一致」→ 反复重建 → 看起来一直在闪。 */
+        if (compact) {
+          if (bar === null || !bar.isConnected) build(tabs, host);
+          else syncActive();
           return;
         }
         if (bar === null || !bar.isConnected || bar.children.length !== count) {
