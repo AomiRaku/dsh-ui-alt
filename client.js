@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.201';
+    const VERSION = '0.2.202';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1952,6 +1952,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       if (!prefs.enabled) return () => {};
       let cover = null;
       let themeObserver = null;
+      let bootObserver = null;
       let rafId = 0;
       let fadeTimer = 0;
       let removeTimer = 0;
@@ -1970,48 +1971,65 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           rafId = window.requestAnimationFrame(wait);
           return;
         }
-        /* 多等一帧，让本插件的样式先应用完再盖 */
-        rafId = window.requestAnimationFrame(() => {
-          if (disposed) return;
-          cover = document.createElement('div');
-          cover.className = 'dcc-boot-cover';
-          /* 主题标记可能比遮罩晚落地，这里直接读一次并按变化实时跟。
-             body 和 html 两处都看——宿主不同版本把它挂在不同的元素上。 */
-          const applyTheme = () => {
-            if (cover === null) return;
-            const dark = document.body.hasAttribute('data-ds-dark-theme')
-              || document.documentElement.hasAttribute('data-ds-dark-theme');
-            cover.style.backgroundColor = dark ? '#151517' : '#ffffff';
-          };
-          applyTheme();
-          themeObserver = new MutationObserver(applyTheme);
-          themeObserver.observe(document.body, {
-            attributes: true,
-            attributeFilter: ['data-ds-dark-theme', 'class'],
-          });
-          themeObserver.observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ['data-ds-dark-theme', 'class'],
-          });
-          document.documentElement.appendChild(cover);
-          fadeTimer = window.setTimeout(() => {
-            if (cover === null) return;
-            cover.classList.add('dcc-boot-cover-out');
-            removeTimer = window.setTimeout(() => {
-              if (themeObserver !== null) {
-                themeObserver.disconnect();
-                themeObserver = null;
-              }
-              if (cover !== null) cover.remove();
-              cover = null;
-            }, 320);
-          }, 500);
-        });
+        makeCover();
       };
+
+      const makeCover = () => {
+        if (disposed || cover !== null) return;
+        cover = document.createElement('div');
+        cover.className = 'dcc-boot-cover';
+        const applyTheme = () => {
+          if (cover === null) return;
+          const dark = document.body.hasAttribute('data-ds-dark-theme')
+            || document.documentElement.hasAttribute('data-ds-dark-theme');
+          cover.style.backgroundColor = dark ? '#151517' : '#ffffff';
+        };
+        applyTheme();
+        themeObserver = new MutationObserver(applyTheme);
+        themeObserver.observe(document.body, {
+          attributes: true,
+          attributeFilter: ['data-ds-dark-theme', 'class'],
+        });
+        themeObserver.observe(document.documentElement, {
+          attributes: true,
+          attributeFilter: ['data-ds-dark-theme', 'class'],
+        });
+        document.documentElement.appendChild(cover);
+        fadeTimer = window.setTimeout(() => {
+          if (cover === null) return;
+          cover.classList.add('dcc-boot-cover-out');
+          removeTimer = window.setTimeout(() => {
+            if (themeObserver !== null) {
+              themeObserver.disconnect();
+              themeObserver = null;
+            }
+            if (cover !== null) cover.remove();
+            cover = null;
+          }, 320);
+        }, 500);
+      };
+
+      /* 宿主的加载页是 [data-dsh-boot]。它一被移除就立刻盖遮罩——
+         MutationObserver 的回调在同一轮微任务里跑，赶在浏览器绘制之前，
+         所以中间不会露出没有样式的那一帧。 */
+      const hasBoot = () => document.querySelector('[data-dsh-boot]') !== null;
+      if (hasBoot()) {
+        bootObserver = new MutationObserver(() => {
+          if (hasBoot()) return;
+          bootObserver.disconnect();
+          bootObserver = null;
+          makeCover();
+        });
+        bootObserver.observe(document.body, { childList: true, subtree: true });
+      } else {
+        /* 插件加载得比加载页还晚，那就等界面就绪 */
+        wait();
+      }
 
       wait();
       return () => {
         disposed = true;
+        if (bootObserver !== null) bootObserver.disconnect();
         if (themeObserver !== null) themeObserver.disconnect();
         if (rafId !== 0) window.cancelAnimationFrame(rafId);
         window.clearTimeout(fadeTimer);
