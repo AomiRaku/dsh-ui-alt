@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.158';
+    const VERSION = '0.2.159';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -390,9 +390,39 @@ html[data-dcc-menu-blur="on"] [role="menu"] {
 html[data-dcc-menu-blur="on"] [data-menu-material] {
   background-color: var(--dsw-alias-bg-layer-1) !important;
 }
-/* 既然弹层已经是不透明底，动画期间就不再需要额外的兜底背景 */
-html[data-dcc-menu-blur="on"] {
-  --dcc-menu-fallback: transparent;
+
+/* 禁用模糊后弹层本身已是不透明底，动画就不该再去动 background-color——
+   否则 keyframes 的 transparent 会盖掉实底，动画结束才回落，看起来就是闪一下。
+   所以这套场景单独用一组不带背景色的关键帧。 */
+html[data-dcc-menu-blur="on"] [data-menu-material][data-menu-phase="enter"],
+html[data-dcc-menu-blur="on"] [data-menu-material][data-menu-phase="dismiss"],
+html[data-dcc-menu-blur="on"] [role="menu"]:not([data-menu-phase]),
+html[data-dcc-menu-blur="on"] [role="listbox"]:not([data-menu-phase]),
+html[data-dcc-menu-blur="on"] [role="dialog"]:not([data-menu-phase]) {
+  animation-name: dcc-plain-in;
+}
+html[data-dcc-menu-blur="on"] [data-menu-material][data-menu-phase="dismiss"] {
+  animation-name: dcc-plain-out;
+}
+@keyframes dcc-plain-in {
+  from {
+    opacity: 0;
+    transform: scale(.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes dcc-plain-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: scale(.96);
+  }
 }
 
 /* 兜底色：动画期间顶替失效的毛玻璃。各弹层的实际背景不一样，
