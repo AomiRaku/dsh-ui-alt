@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.210';
+    const VERSION = '0.2.211';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -371,12 +371,12 @@ html[data-dcc-nav="expanded"] nav[class*="_panelList"] {
 /* 整个侧栏的左右内边距：宿主根上用 --dsh-sidebar-inline-padding（默认 8px），
    调大它，导航、工作区、会话列表会一起内缩，不用逐类去改 padding。
    用 :has(nav) 限定成「包含面板列表的那个根」，避免误伤其他 _root。 */
-html[data-dcc-nav] [class*="_root"]:has(nav[class*="_panelList"]) {
+html[data-dcc-collapse="on"] [class*="_root"]:has(nav[class*="_panelList"]) {
   --dsh-sidebar-inline-padding: 12px !important;
 }
 /* 右边缘再多留一点：宿主的 scrollArea 第三列是 inline-padding - 2px，
    扣掉滚动条后文字几乎贴边，这里给工作区区域补 4px。 */
-html[data-dcc-nav] [data-sidebar-scrollport] > [class*="_regionArea"] {
+html[data-dcc-collapse="on"] [data-sidebar-scrollport] > [class*="_regionArea"] {
   padding-right: 4px;
 }
 
