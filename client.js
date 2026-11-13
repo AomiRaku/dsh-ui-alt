@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.205';
+    const VERSION = '0.2.206';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1811,8 +1811,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       ensure();
       observer = new MutationObserver(schedule);
       observer.observe(document.body, { childList: true, subtree: true });
+      /* 新会话克隆行增删会改变「折叠时保留几项」，要立刻重算高度 */
+      const onNewSessionPref = () => ensure();
+      window.addEventListener('dcc-newsession-pref', onNewSessionPref);
 
       return () => {
+        window.removeEventListener('dcc-newsession-pref', onNewSessionPref);
         observer.disconnect();
         if (timer !== null) clearTimeout(timer);
         if (btn !== null) btn.remove();
@@ -2113,9 +2117,13 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         if ((key === 'balanceThreshold' || key === 'balanceDecimals') && typeof window !== 'undefined') {
           window.dispatchEvent(new Event('dcc-balance-threshold'));
         }
-        /* 「统一新会话按钮样式」关掉时要立刻拆掉克隆行并还原原按钮 */
+        /* 「统一新会话按钮样式」切换后要立刻重建克隆行。
+           延后一拍再发：属性由 applyPrefs 在下一次渲染里写入，
+           事件如果先到，ensure 读到的还是旧值，看起来就像没反应。 */
         if (key === 'invertNewSession' && typeof window !== 'undefined') {
-          window.dispatchEvent(new Event('dcc-newsession-pref'));
+          window.setTimeout(() => {
+            window.dispatchEvent(new Event('dcc-newsession-pref'));
+          }, 0);
         }
         /* 总开关切换会整体改变已注入的 DOM 与样式，重载一次前端最干净。
            偏好此时已经写进存储，重载后会按新状态重建。 */
