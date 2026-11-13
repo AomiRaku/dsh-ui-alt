@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.194';
+    const VERSION = '0.2.195';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -116,6 +116,17 @@ html[data-dcc-font="on"][data-windows-titlebar] body {
 .dcc-group-title + .dcc-row { border-top: none; }
 /* 无组名的组（总开关那一块）没有标题，首行同样不该有分隔线 */
 .dcc-group > .dcc-row:first-child { border-top: none; }
+/* 启动遮罩：先盖住，等样式稳定后淡出 */
+.dcc-boot-cover {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  background: var(--dsw-alias-bg-base, #1b1b1c);
+  opacity: 1;
+  transition: opacity .3s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
+  pointer-events: none;
+}
+.dcc-boot-cover-out { opacity: 0; }
 .dcc-action {
   flex: none;
   height: 28px;
@@ -1927,6 +1938,59 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       return () => observer.disconnect();
     }
 
+    /**
+     * 启动遮罩：宿主的加载页退场、应用界面渲染出来之后，本插件注入的样式
+     * 还要再落一次，中间能看到一次布局跳变。这里等界面真正出现（侧栏根节点
+     * 就位且有尺寸）再多等一帧，然后盖 500ms 再淡出。
+     */
+    function installBootCover(prefs) {
+      if (!prefs.enabled) return () => {};
+      let cover = null;
+      let rafId = 0;
+      let fadeTimer = 0;
+      let removeTimer = 0;
+      let disposed = false;
+
+      const ready = () => {
+        const sidebar = document.querySelector('[class*="_root"]:has(nav[class*="_panelList"])');
+        if (sidebar === null) return false;
+        const rect = sidebar.getBoundingClientRect();
+        return rect.width > 100 && rect.height > 100;
+      };
+
+      const wait = () => {
+        if (disposed) return;
+        if (!ready()) {
+          rafId = window.requestAnimationFrame(wait);
+          return;
+        }
+        /* 多等一帧，让本插件的样式先应用完再盖 */
+        rafId = window.requestAnimationFrame(() => {
+          if (disposed) return;
+          cover = document.createElement('div');
+          cover.className = 'dcc-boot-cover';
+          document.documentElement.appendChild(cover);
+          fadeTimer = window.setTimeout(() => {
+            if (cover === null) return;
+            cover.classList.add('dcc-boot-cover-out');
+            removeTimer = window.setTimeout(() => {
+              if (cover !== null) cover.remove();
+              cover = null;
+            }, 320);
+          }, 500);
+        });
+      };
+
+      wait();
+      return () => {
+        disposed = true;
+        if (rafId !== 0) window.cancelAnimationFrame(rafId);
+        window.clearTimeout(fadeTimer);
+        window.clearTimeout(removeTimer);
+        if (cover !== null) cover.remove();
+      };
+    }
+
     function Switch(props) {
       return h('label', { className: 'dcc-switch' },
         h('input', {
@@ -2185,6 +2249,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const removeHoverCardBlocker = installHoverCardBlocker();
           const removeViewSwitcher = installViewSwitcher();
           const removeBalance = installBalancePill(ctx);
+          const removeBootCover = installBootCover(readPrefs());
           const removePluginPin = installNavToggle();
           const removeMenuOrigin = installMenuOrigin();
           const removeDialogExit = installDialogExit();
@@ -2196,6 +2261,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             removeHoverCardBlocker();
             removeViewSwitcher();
             removeBalance();
+            removeBootCover();
             removePluginPin();
             removeMenuOrigin();
             removeDialogExit();
