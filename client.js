@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.162';
+    const VERSION = '0.2.163';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1148,6 +1148,10 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
        */
       const align = () => {
         if (btn === null || !btn.isConnected || btn.offsetParent === null) return;
+        /* 入场动画期间 offsetParent 上挂着 transform，getBoundingClientRect
+           返回的是缩放后的矩形，据此算出来会偏上；等动画结束再对齐。 */
+        const running = btn.offsetParent.getAnimations().some((anim) => anim.playState === 'running');
+        if (running) return;
         const title = document.querySelector('[class*="_navTitle"]');
         if (title === null) return;
         const range = document.createRange();
@@ -1188,6 +1192,8 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         btn.addEventListener('click', () => closePanel(panel));
         panel.appendChild(btn);
         align();
+        /* 动画结束时补一次对齐：上面在动画期间会主动跳过 */
+        panel.addEventListener('animationend', align);
       };
 
       const insertSoon = () => {
