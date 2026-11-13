@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.160';
+    const VERSION = '0.2.161';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1770,7 +1770,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         clone.style.margin = '0';
         clone.style.zIndex = '2147483000';
         clone.style.pointerEvents = 'none';
-        clone.style.animation = 'dcc-menu-out .12s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) forwards';
+        /* 禁用模糊时弹层是不透明底，得用不带背景色的那组关键帧，
+           否则快照会从实底渐变到兜底色，看起来就是退场时变色。 */
+        const exitAnim = document.documentElement.dataset.dccMenuBlur === 'on'
+          ? 'dcc-plain-out'
+          : 'dcc-menu-out';
+        clone.style.animation = `${exitAnim} .12s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) forwards`;
         document.body.appendChild(clone);
         window.setTimeout(() => clone.remove(), 220);
       };
