@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.180';
+    const VERSION = '0.2.181';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1925,7 +1925,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         h('div', { className: 'dcc-group dcc-primary' },
           h(Row, {
             title: zh ? '总开关' : 'Master switch',
-            desc: zh ? '本插件的总开关。\n关闭后将禁用全部修改，包括始终启用的部分界面修复功能。\n打开和关闭会重载前端界面，不影响正在运行的任务。' : 'Master switch for this plugin.\nTurning it off disables every change, including the always-on UI fixes.\nToggling it reloads the UI; running tasks are not affected.',
+            desc: zh ? '关闭后将禁用全部修改，包括始终启用的部分界面修复功能。\n打开和关闭会重载前端界面，不影响正在运行的任务。' : 'Turning it off disables every change, including the always-on UI fixes.\nToggling it reloads the UI; running tasks are not affected.',
             checked: prefs.enabled,
             onChange: update('enabled'),
           }),
