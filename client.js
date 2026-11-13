@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.229';
+    const VERSION = '0.2.231';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -2045,7 +2045,8 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       const playExit = (dialog) => {
         if (document.documentElement.dataset.dccTransition !== 'on') return;
         /* 快照自己也是 role="dialog"，不排除的话它的移除会再触发一轮快照，无限循环 */
-        if (dialog.hasAttribute('data-dcc-dialog-clone')) return;
+        /* 标记打在克隆的遮罩层上，卡片只是它的子孙，所以用 closest 向上找 */
+        if (dialog.closest('[data-dcc-dialog-clone]') !== null) return;
         if (!rects.has(dialog)) return;
         /* 克隆整个遮罩层而不是对话框卡片：卡片本身是靠外层 flex 居中的，
            单独提出来做 fixed 会丢掉那层上下文，内部内容就跟着重新排版下沉。 */
@@ -2068,7 +2069,10 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         const exitAnim = document.documentElement.dataset.dccMenuBlur === 'on'
           ? 'dcc-plain-out'
           : 'dcc-menu-out';
-        clone.style.animation = `${exitAnim} .12s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) forwards`;
+        /* 动画只作用在卡片上：整层是全屏遮罩，缩放它会连屏幕一起缩。 */
+        const inner = clone.querySelector('[role="dialog"]');
+        const animated = inner !== null ? inner : clone;
+        animated.style.animation = `${exitAnim} .12s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) forwards`;
         document.body.appendChild(clone);
         window.setTimeout(() => clone.remove(), 220);
       };
