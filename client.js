@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.221';
+    const VERSION = '0.2.222';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -144,6 +144,24 @@ body:not([data-ds-dark-theme]) .dcc-boot-fish {
   color: #000000;
 }
 .dcc-boot-cover-out { opacity: 0; }
+/* 纯告知行：无右侧控件，用列表承载多条说明 */
+.dcc-row-info {
+  align-items: flex-start;
+}
+.dcc-row-info .dcc-row-text {
+  flex: 1;
+}
+.dcc-row-list {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  line-height: 19px;
+  list-style: disc;
+}
+.dcc-row-list li {
+  margin: 0;
+}
 /* 底部信息行：左边版本信息（可换行），右边重置按钮 */
 .dcc-meta-row {
   display: flex;
@@ -2220,6 +2238,18 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         h(Switch, { checked: props.checked, onChange: props.onChange, title: props.title }));
     }
 
+    /* 纯告知行：右侧没有任何控件，只用来列出一组始终生效的改动 */
+    function InfoRow(props) {
+      return h('div', { className: 'dcc-row dcc-row-info' },
+        h('div', { className: 'dcc-row-text' },
+          h('div', { className: 'dcc-row-title' }, props.title),
+          h('div', { className: 'dcc-row-desc' }, props.desc),
+          props.lines && props.lines.length > 0
+            ? h('ul', { className: 'dcc-row-list' },
+              props.lines.map((line, index) => h('li', { key: index }, line)))
+            : null));
+    }
+
     /* 右侧是按钮而不是开关的行：用于「重载前端界面」这类一次性操作 */
     function ActionRow(props) {
       return h('div', { className: 'dcc-row' },
@@ -2436,6 +2466,31 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             desc: zh ? '遵循桌面软件的规范，使 UI 界面元素的文本不可被选中。' : 'Follows desktop conventions: text in interface elements cannot be selected.',
             checked: prefs.textSelectLimit,
             onChange: update('textSelectLimit'),
+          })),
+        h('div', { className: 'dcc-group' },
+          h('div', { className: 'dcc-group-title' }, zh ? '基础改进' : 'Base fixes'),
+          h(InfoRow, {
+            title: zh ? '基础细节改进和修复' : 'Base detail fixes and improvements',
+            desc: zh ? '这些基础修复和改进影响很小，会始终启用，除非关闭总开关。' : 'These small fixes and improvements are always on unless the master switch is off.',
+            lines: zh
+              ? [
+                '左侧导航栏部分布局细节优化。',
+                '工作区文件夹悬停时保留图标。',
+                '已归档会话显示删除线。',
+                '会话标题栏与正文间去除分割线，柔化过渡。',
+                '选择题弹窗细节优化。',
+                '避免界面加载时跳变添加的过渡遮罩。',
+                '修复二级右键菜单消失延迟。',
+              ]
+              : [
+                'Layout details refined in the left navigation.',
+                'Workspace folder icons stay visible on hover.',
+                'Archived sessions show a strikethrough.',
+                'No divider between the session header and the body; softened transition.',
+                'Multiple-choice dialog details refined.',
+                'A transition cover added to avoid layout jumps on startup.',
+                'Fixed the delay when closing a second-level context menu.',
+              ],
           })),
         h('div', { className: 'dcc-meta-row' },
           h('p', { className: 'dcc-meta' },
