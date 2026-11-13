@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.170';
+    const VERSION = '0.2.171';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1855,12 +1855,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         h('div', { className: 'dcc-group' },
           h('div', { className: 'dcc-group-title' }, zh ? '外观' : 'Appearance'),
           h(Row, {
-            title: zh ? '隐藏左上角 Logo' : 'Hide the top-left logo',
-            desc: zh ? '隐藏侧栏顶部的 Logo。' : 'Hide the logo at the top of the sidebar.',
-            checked: prefs.hideLogo,
-            onChange: update('hideLogo'),
-          }),
-          h(Row, {
             title: zh ? 'Windows 默认微软雅黑字体' : 'Microsoft YaHei on Windows',
             desc: zh ? '将 Windows 端默认字体改为微软雅黑。微软雅黑带有 hinting，使文字在显示设置低于 200% 缩放比例下，更加锐利清晰。若手动设置了字体，或使用 macOS 端，则不受影响。' : 'Use Microsoft YaHei as the default Windows font. It carries hinting, which keeps text sharp below 200% display scaling. Has no effect if you set a font manually, or on macOS.',
             checked: prefs.winFont,
@@ -1892,6 +1886,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           })),
         h('div', { className: 'dcc-group' },
           h('div', { className: 'dcc-group-title' }, zh ? '导航和工作区' : 'Navigation and workspace'),
+          h(Row, {
+            title: zh ? '隐藏左上角 Logo' : 'Hide the top-left logo',
+            desc: zh ? '隐藏侧栏顶部的 Logo。' : 'Hide the logo at the top of the sidebar.',
+            checked: prefs.hideLogo,
+            onChange: update('hideLogo'),
+          }),
           h(Row, {
             title: zh ? '统一新会话按钮样式' : 'Unified new-session button',
             desc: zh ? '将新会话按钮样式改为与导航按钮一致的样式。' : 'Style the new-session button the same as the navigation buttons.',
