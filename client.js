@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.275';
+    const VERSION = '0.2.276';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1924,6 +1924,13 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         }
         host.insertBefore(bar, host.firstChild);
         syncActive();
+        /* 重建后如果这一页需要常驻显示（非对话视图），让它淡入而不是直接跳出来 */
+        if (bar.dataset.pinned === 'true') {
+          bar.style.opacity = '0';
+          window.requestAnimationFrame(() => {
+            if (bar !== null) bar.style.opacity = '';
+          });
+        }
       };
 
       const ensure = () => {
