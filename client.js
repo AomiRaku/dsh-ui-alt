@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.148';
+    const VERSION = '0.2.149';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1665,6 +1665,51 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
     }
 
+    /**
+     * 对话框没有关闭阶段（open 为 false 时整个 portal 直接卸载），
+     * 所以退场动画只能靠「卸载瞬间克隆一份快照、覆盖在原位播完再删」。
+     * 原节点照常卸载，不干扰 React 状态。
+     */
+    function installDialogExit() {
+      let observer = null;
+
+      const playExit = (dialog) => {
+        if (document.documentElement.dataset.dccMenuAnim !== 'on') return;
+        const rect = dialog.getBoundingClientRect();
+        if (rect.width <= 0 || rect.height <= 0) return;
+        const clone = dialog.cloneNode(true);
+        clone.removeAttribute('data-dcc-menu-seq');
+        clone.style.position = 'fixed';
+        clone.style.left = `${rect.left}px`;
+        clone.style.top = `${rect.top}px`;
+        clone.style.width = `${rect.width}px`;
+        clone.style.height = `${rect.height}px`;
+        clone.style.margin = '0';
+        clone.style.zIndex = '2147483000';
+        clone.style.pointerEvents = 'none';
+        clone.style.animation = 'dcc-menu-out .12s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) forwards';
+        document.body.appendChild(clone);
+        window.setTimeout(() => clone.remove(), 220);
+      };
+
+      observer = new MutationObserver((records) => {
+        for (let i = 0; i < records.length; i += 1) {
+          const removed = records[i].removedNodes;
+          for (let j = 0; j < removed.length; j += 1) {
+            const node = removed[j];
+            if (!(node instanceof Element)) continue;
+            const dialog = node.matches('[role="dialog"]')
+              ? node
+              : node.querySelector('[role="dialog"]');
+            if (dialog !== null) playExit(dialog);
+          }
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+
+      return () => observer.disconnect();
+    }
+
     function Switch(props) {
       return h('label', { className: 'dcc-switch' },
         h('input', {
@@ -1885,6 +1930,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const removeBalance = installBalancePill(ctx);
           const removePluginPin = installNavToggle();
           const removeMenuOrigin = installMenuOrigin();
+          const removeDialogExit = installDialogExit();
           return () => {
             removeCss();
             removeNewSessionRow();
@@ -1895,6 +1941,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             removeBalance();
             removePluginPin();
             removeMenuOrigin();
+            removeDialogExit();
             const root = document.documentElement;
             delete root.dataset.dccRadius;
             delete root.dataset.dccNew;
