@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.136';
+    const VERSION = '0.2.137';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -370,6 +370,23 @@ html[data-dcc-radius="on"] [class*="_groupSection"] {
    改 token 而不是逐个元素设色，图标、输入框、菜单都会一起跟上。 */
 html[data-dcc-text-dim="on"] body[data-ds-dark-theme] {
   --dsw-alias-label-primary: rgba(255, 255, 255, .8) !important;
+}
+
+/* 菜单出现时从点击处缩放展开：transform-origin 由脚本按最后一次
+   指针位置写进 --dcc-menu-origin，锚点落在菜单内的相对坐标上。 */
+[role="menu"] {
+  transform-origin: var(--dcc-menu-origin, top center);
+  animation: dcc-menu-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) both;
+}
+@keyframes dcc-menu-in {
+  from {
+    opacity: 0;
+    transform: scale(.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* ---------- 工作区名称更明显，「展开其余」更淡 ---------- */
@@ -1545,6 +1562,45 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
     }
 
+    /**
+     * 菜单从点击处缩放展开。CSS 负责动画，这里只把「最后一次指针位置」
+     * 换算成菜单内的相对坐标写进变量，让缩放的锚点落在点下去的地方。
+     */
+    function installMenuOrigin() {
+      let lastX = 0;
+      let lastY = 0;
+      let observer = null;
+
+      const onDown = (event) => {
+        lastX = event.clientX;
+        lastY = event.clientY;
+      };
+
+      const mark = () => {
+        const menus = document.querySelectorAll('[role="menu"]');
+        for (let i = 0; i < menus.length; i += 1) {
+          const menu = menus[i];
+          if (menu.hasAttribute('data-dcc-menu')) continue;
+          menu.setAttribute('data-dcc-menu', '');
+          const rect = menu.getBoundingClientRect();
+          if (rect.width <= 0 || rect.height <= 0) continue;
+          const x = Math.min(1, Math.max(0, (lastX - rect.left) / rect.width));
+          const y = Math.min(1, Math.max(0, (lastY - rect.top) / rect.height));
+          menu.style.setProperty('--dcc-menu-origin', `${Math.round(x * 100)}% ${Math.round(y * 100)}%`);
+        }
+      };
+
+      window.addEventListener('pointerdown', onDown, true);
+      observer = new MutationObserver(mark);
+      observer.observe(document.body, { childList: true, subtree: true });
+      mark();
+
+      return () => {
+        observer.disconnect();
+        window.removeEventListener('pointerdown', onDown, true);
+      };
+    }
+
     function Switch(props) {
       return h('label', { className: 'dcc-switch' },
         h('input', {
@@ -1758,6 +1814,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const removeViewSwitcher = installViewSwitcher();
           const removeBalance = installBalancePill(ctx);
           const removePluginPin = installNavToggle();
+          const removeMenuOrigin = installMenuOrigin();
           return () => {
             removeCss();
             removeNewSessionRow();
@@ -1767,6 +1824,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             removeViewSwitcher();
             removeBalance();
             removePluginPin();
+            removeMenuOrigin();
             const root = document.documentElement;
             delete root.dataset.dccRadius;
             delete root.dataset.dccNew;
