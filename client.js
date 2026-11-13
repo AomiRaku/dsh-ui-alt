@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.255';
+    const VERSION = '0.2.257';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -835,20 +835,9 @@ html:has([data-conversation-tabs] [role="tab"]:first-child[aria-selected="true"]
   -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 20px);
   mask-image: linear-gradient(to bottom, transparent 0, #000 20px);
 }
-/* 宿主的「更多」按钮不能直接 display:none——那样它量不到尺寸，
-   而我们正是靠它是否渲染来判断「当前是否处于溢出状态」。
-   只把它推出视口并设为不可见，保留它原本的尺寸。 */
-html[data-dcc-compact-header="on"] [class*="_viewsMore"]:not([class*="_viewsMoreAnchor"]) {
-  position: absolute !important;
-  left: -9999px !important;
-  top: 0 !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-}
-/* 容器同样不可见，但不脱离布局，避免标题栏里少一块位置 */
+/* 宿主自带的「更多」按钮在紧凑化后由自绘控件取代，直接隐藏 */
 html[data-dcc-compact-header="on"] [class*="_viewsMoreAnchor"] {
-  visibility: hidden !important;
-  pointer-events: none !important;
+  display: none !important;
 }
 /* 开关关掉时，自绘的分段控件不出现，标签行恢复原样 */
 html[data-dcc-compact-header="off"] .dcc-segmented {
@@ -1710,14 +1699,14 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
 
       const findTabs = () => document.querySelector('[data-conversation-tabs]');
       const findHost = () => document.querySelector('[class*="_headerUtilities"]');
-      /* 宿主的「更多」按钮只在真的放不下时才渲染出来。
-         我们把它移出视口而不是删除，这样它既不可见、又能用尺寸判断是否在溢出。 */
+      /* 宿主的「更多」按钮是常驻渲染的，不能当溢出信号。
+         改用启发式：宿主放不下时会裁掉标签，所以「当前标签数 < 历史最大数」
+         就说明正在压缩。窗口变宽、标签恢复时它会自己退出去。 */
       let compact = false;
-      const isOverflowing = () => {
-        const more = document.querySelector('[class*="_viewsMore"]:not([class*="_viewsMoreAnchor"])');
-        if (more === null) return false;
-        const rect = more.getBoundingClientRect();
-        return rect.width > 2 && rect.height > 0;
+      let maxTabCount = 0;
+      const isShrinking = (count) => {
+        if (count > maxTabCount) maxTabCount = count;
+        return count < maxTabCount;
       };
       let segMenu = null;
       const closeSegMenu = () => {
@@ -1902,7 +1891,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           host.insertBefore(bar, host.firstChild);
         }
         /* 是否放不下：变了就切换形态（全量 ⇄ 激活项 + ⋯） */
-        const wantCompact = count > 1 && isOverflowing();
+        const wantCompact = count > 1 && isShrinking(count);
         if (wantCompact !== compact) {
           compact = wantCompact;
           build(tabs, host);
