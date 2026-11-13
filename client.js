@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.164';
+    const VERSION = '0.2.165';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1143,25 +1143,24 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
 
       /**
-       * 按钮垂直位置按「标题文字的中心」算。
-       * 用 offsetTop / offsetHeight 这类布局值而不是 getBoundingClientRect：
-       * 入场动画会给面板挂 transform，rect 是缩放后的，照着算会偏上。
+       * 按钮垂直位置按「标题文字的实际矩形」算——容器带 padding 时，
+       * 盒子中心和文字中心并不重合。
+       * 入场动画会给面板挂 transform，rect 是缩放后的，所以再除以缩放比
+       * 还原成布局坐标，动画前后算出来的值才一致。
        */
-      const offsetWithin = (el, ancestor) => {
-        let y = 0;
-        let node = el;
-        while (node !== null && node !== ancestor) {
-          y += node.offsetTop;
-          node = node.offsetParent;
-        }
-        return y;
-      };
-
       const align = () => {
         if (btn === null || !btn.isConnected || btn.offsetParent === null) return;
         const title = document.querySelector('[class*="_navTitle"]');
         if (title === null) return;
-        const centerY = offsetWithin(title, btn.offsetParent) + title.offsetHeight / 2;
+        const range = document.createRange();
+        range.selectNodeContents(title);
+        const rects = range.getClientRects();
+        if (rects.length === 0) return;
+        const textRect = rects[0];
+        const panel = btn.offsetParent;
+        const panelRect = panel.getBoundingClientRect();
+        const scale = panel.offsetHeight > 0 ? panelRect.height / panel.offsetHeight : 1;
+        const centerY = (textRect.top + textRect.height / 2 - panelRect.top) / (scale > 0 ? scale : 1);
         btn.style.top = `${Math.round(centerY - btn.offsetHeight / 2)}px`;
       };
 
