@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.252';
+    const VERSION = '0.2.253';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -835,8 +835,15 @@ html:has([data-conversation-tabs] [role="tab"]:first-child[aria-selected="true"]
   -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 20px);
   mask-image: linear-gradient(to bottom, transparent 0, #000 20px);
 }
+/* 宿主的「更多」按钮不能直接 display:none——那样它量不到尺寸，
+   而我们正是靠它是否占位来判断「当前是否处于溢出状态」。 */
 html[data-dcc-compact-header="on"] [class*="_viewsMore"] {
-  display: none !important;
+  position: absolute !important;
+  left: -9999px !important;
+  top: 0 !important;
+  width: 1px !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 /* 开关关掉时，自绘的分段控件不出现，标签行恢复原样 */
 html[data-dcc-compact-header="off"] .dcc-segmented {
@@ -1698,22 +1705,14 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
 
       const findTabs = () => document.querySelector('[data-conversation-tabs]');
       const findHost = () => document.querySelector('[class*="_headerUtilities"]');
-      /* _viewsMore 在 DOM 里常驻（只是被我们 display:none 了），不能拿它当溢出信号。
-         改成自己量：控件全量时的宽度 vs 标题栏里剩下的可用宽度。 */
+      /* 宿主的「更多」按钮只在真的放不下时才渲染出来。
+         我们把它移出视口而不是删除，这样它既不可见、又能用尺寸判断是否在溢出。 */
       let compact = false;
-      let fullWidth = 0;
-      const availableWidth = (host) => {
-        const rect = host.getBoundingClientRect();
-        const style = window.getComputedStyle(host);
-        const gap = parseFloat(style.columnGap || style.gap) || 0;
-        let used = 0;
-        let siblings = 0;
-        for (const child of host.children) {
-          if (child === bar) continue;
-          used += child.getBoundingClientRect().width;
-          siblings += 1;
-        }
-        return rect.width - used - gap * siblings;
+      const isOverflowing = () => {
+        const more = document.querySelector('[class*="_viewsMore"]');
+        if (more === null) return false;
+        const rect = more.getBoundingClientRect();
+        return rect.width > 2 && rect.height > 0;
       };
       let segMenu = null;
       const closeSegMenu = () => {
@@ -1869,8 +1868,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         window.requestAnimationFrame(() => {
           if (bar !== null) bar.style.opacity = '';
         });
-        /* 非紧凑形态下记下自然宽度，供下次判断是否放得下 */
-        if (!compact) fullWidth = bar.offsetWidth;
         syncActive();
       };
 
@@ -1900,7 +1897,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           host.insertBefore(bar, host.firstChild);
         }
         /* 是否放不下：变了就切换形态（全量 ⇄ 激活项 + ⋯） */
-        const wantCompact = count > 1 && fullWidth > 0 && fullWidth > availableWidth(host);
+        const wantCompact = count > 1 && isOverflowing();
         if (wantCompact !== compact) {
           compact = wantCompact;
           build(tabs, host);
