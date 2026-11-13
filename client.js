@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.283';
+    const VERSION = '0.2.284';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -141,8 +141,10 @@ body[data-ds-dark-theme] .dcc-boot-cover {
   opacity: .3;
   color: #ffffff;
 }
+/* 浅色底上黑色 30% 几乎看不见，提一点不透明度 */
 body:not([data-ds-dark-theme]) .dcc-boot-fish {
   color: #000000;
+  opacity: .45;
 }
 .dcc-boot-cover-out { opacity: 0; }
 /* 纯告知行：无右侧控件，用列表承载多条说明 */
