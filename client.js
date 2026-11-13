@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.187';
+    const VERSION = '0.2.188';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -322,9 +322,7 @@ html[data-dcc-collapse="on"] [data-sidebar-scrollport] [class*="_listArea"] {
 html[data-dcc-nav] nav[class*="_panelList"] {
   overflow: hidden;
   transition: max-height .15s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
-}
-/* 导航项之间放松一点，行与行不再挨得那么紧 */
-html[data-dcc-nav] nav[class*="_panelList"] {
+  /* 导航项之间放松一点，行与行不再挨得那么紧 */
   gap: 4px !important;
   margin-bottom: 4px !important;
 }
@@ -715,8 +713,6 @@ html[data-dcc-compact-header="off"] .dcc-segmented {
 .dcc-seg {
   flex: none;
   white-space: nowrap;
-}
-.dcc-seg {
   display: inline-flex;
   align-items: center;
   border: 0;
