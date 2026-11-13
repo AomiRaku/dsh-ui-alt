@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.181';
+    const VERSION = '0.2.182';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -465,6 +465,12 @@ body[data-ds-dark-theme] [data-menu-material] {
 }
 body[data-ds-dark-theme] :where([role="dialog"], [role="listbox"], [role="menu"]):not([data-menu-material]) {
   --dcc-menu-fallback: color-mix(in oklab, var(--dsw-alias-bg-layer-1) 82%, #fff);
+}
+
+/* 禁用悬停卡片时兜底隐藏：事件拦截偶有漏网（比如宿主用 enter 类事件或
+   定时器已经排上了），直接把带 data-hovercard-bridge 的传送门容器藏掉。 */
+html[data-dcc-hover="off"] :has(> [data-hovercard-bridge]) {
+  display: none !important;
 }
 
 /* 菜单出现/消失：整体从点击处缩放。
@@ -1417,9 +1423,16 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
 
       /* 放在 window 捕获阶段：这是事件流最早的位置，先于 React 挂在 root 容器上的
-         onPointerOverCapture，才能保证宿主那一层完全收不到「进入行」这件事。 */
+         onPointerOverCapture，才能保证宿主那一层完全收不到「进入行」这件事。
+         新版悬停卡片还会用 pointerenter / mouseenter 那条路径，一并截住。 */
       window.addEventListener('pointerover', onOver, true);
-      return () => window.removeEventListener('pointerover', onOver, true);
+      window.addEventListener('pointerenter', onOver, true);
+      window.addEventListener('mouseenter', onOver, true);
+      return () => {
+        window.removeEventListener('pointerover', onOver, true);
+        window.removeEventListener('pointerenter', onOver, true);
+        window.removeEventListener('mouseenter', onOver, true);
+      };
     }
 
     /**
