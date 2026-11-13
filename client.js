@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.242';
+    const VERSION = '0.2.243';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1719,7 +1719,11 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         }
         if (tabs === null) return;
         const count = tabs.querySelectorAll('button[role="tab"]').length;
-        if (bar === null || !bar.isConnected || bar.parentElement !== host || bar.children.length !== count) {
+        /* 控件还在 DOM 里、只是容器换了 → 直接搬过去，不要重建（重建会闪一下） */
+        if (bar !== null && bar.isConnected && bar.parentElement !== host) {
+          host.insertBefore(bar, host.firstChild);
+        }
+        if (bar === null || !bar.isConnected || bar.children.length !== count) {
           build(tabs, host);
           return;
         }
