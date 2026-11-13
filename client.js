@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.209';
+    const VERSION = '0.2.210';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -297,16 +297,18 @@ html[data-dcc-new="on"] button[data-dcc-newrow] {
   font: inherit;
   color: inherit;
 }
-/* 显示 logo 时，给导航区留出与上方接近的下边距 */
-html[data-dcc-logo="shown"] nav[class*="_panelList"] {
+/* 显示 logo 时，给导航区留出与上方接近的下边距（同样只在折叠开启时） */
+html[data-dcc-collapse="on"][data-dcc-logo="shown"] nav[class*="_panelList"] {
   margin-top: 4px;
 }
 /* 新会话按钮换成小尺寸后，Logo 上方会显得空，向下挪 2px 找回平衡 */
-html[data-dcc-new="on"] [class*="_logoRow"] {
+html[data-dcc-collapse="on"][data-dcc-new="on"] [class*="_logoRow"] {
   margin-top: 2px !important;
 }
-/* Logo 上下留白：高度略放大，底下留一点空隙，别贴着导航 */
-html[data-dcc-logo="shown"] [class*="_logoRow"] {
+/* Logo 上下留白：高度略放大，底下留一点空隙，别贴着导航。
+   只在「导航折叠」开启时生效——关掉后侧栏回到整块滚动，
+   这圈额外留白就成了多余的空白，交给宿主原本的排布。 */
+html[data-dcc-collapse="on"][data-dcc-logo="shown"] [class*="_logoRow"] {
   height: 32px !important;
   margin-bottom: 6px !important;
   padding-top: 2px !important;
