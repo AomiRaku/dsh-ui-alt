@@ -6,12 +6,13 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.171';
+    const VERSION = '0.2.172';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
       invertNewSession: true,
       dimSessions: true,
+      enabled: true,
       hideLogo: false,
       winFont: false,
       softenDarkText: true,
@@ -47,6 +48,15 @@ window.__ModuleLoader__.load({
 
     function applyPrefs(prefs) {
       const root = document.documentElement;
+      /* 总开关关掉时，把本插件写上去的所有属性全部摘掉：
+         不受单独开关控制的那部分修复（标题栏去线、侧栏边距等）也一并失效。 */
+      if (!prefs.enabled) {
+        const keys = Object.keys(root.dataset).filter((key) => key.startsWith('dcc'));
+        for (const key of keys) delete root.dataset[key];
+        root.dataset.dccEnabled = 'off';
+        return;
+      }
+      root.dataset.dccEnabled = 'on';
       root.dataset.dccRadius = prefs.radiusDensity ? 'on' : 'off';
       root.dataset.dccNew = prefs.invertNewSession ? 'on' : 'off';
       root.dataset.dccDim = prefs.dimSessions ? 'on' : 'off';
@@ -104,6 +114,24 @@ html[data-dcc-font="on"][data-windows-titlebar] body {
 .dcc-group-title { padding: 14px 2px 4px; font-size: 13px; line-height: 20px; font-weight: 600; color: var(--dsw-alias-label-primary); }
 .dcc-row { display: flex; align-items: center; gap: 16px; padding: 14px 2px; border-top: 1px solid var(--dsw-alias-border-l1); }
 .dcc-group-title + .dcc-row { border-top: none; }
+.dcc-action {
+  flex: none;
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--dsw-alias-border-l4);
+  border-radius: var(--dsw-radius-sm, 8px);
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.dcc-action:hover { background: var(--dsw-alias-interactive-bg-hover); }
+/* 总开关关闭时，下面所有分组置灰且不可操作（第一个组是总开关本身，跳过） */
+html[data-dcc-enabled="off"] .dcc-page .dcc-group:not(:first-of-type) {
+  opacity: .4;
+  pointer-events: none;
+}
 .dcc-row-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
 .dcc-row-title { font-size: 14px; line-height: 20px; color: var(--dsw-alias-label-primary); }
 .dcc-row-desc { font-size: 12px; line-height: 17px; color: var(--dsw-alias-label-secondary); }
@@ -1068,7 +1096,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         if (nav === null || orig === null) return false;
         /* 开关关掉时彻底还原：移除克隆行、去掉原按钮上的标记，
            让它回到宿主本来的样子，而不是仅靠 CSS 隐藏 */
-        if (document.documentElement.dataset.dccNew !== 'on') {
+        if (document.documentElement.dataset.dccEnabled !== 'on' || document.documentElement.dataset.dccNew !== 'on') {
           if (clone !== null) {
             clone.remove();
             clone = null;
@@ -1575,7 +1603,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       const sync = () => {
         if (btn === null) return;
         /* 开关关掉时撤掉箭头并强制展开，导航回到宿主原样 */
-        if (document.documentElement.dataset.dccCollapse !== 'on') {
+        if (document.documentElement.dataset.dccEnabled !== 'on' || document.documentElement.dataset.dccCollapse !== 'on') {
           btn.remove();
           btn = null;
           document.documentElement.dataset.dccNav = 'expanded';
@@ -1830,6 +1858,19 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         h(Switch, { checked: props.checked, onChange: props.onChange, title: props.title }));
     }
 
+    /* 右侧是按钮而不是开关的行：用于「重载前端界面」这类一次性操作 */
+    function ActionRow(props) {
+      return h('div', { className: 'dcc-row' },
+        h('div', { className: 'dcc-row-text' },
+          h('div', { className: 'dcc-row-title' }, props.title),
+          props.desc ? h('div', { className: 'dcc-row-desc' }, props.desc) : null),
+        h('button', {
+          type: 'button',
+          className: 'dcc-action',
+          onClick: props.onClick,
+        }, props.label));
+    }
+
     function Section() {
       const [prefs, setPrefs] = React.useState(readPrefs);
       const zh = isZh();
@@ -1852,6 +1893,20 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         h('div', { className: 'dcc-title' }, zh ? 'UI 改进' : 'UI improvements'),
         h('p', { className: 'dcc-intro' },
           zh ? '在保持原版 UI 大体布局不变的情况下，进行减小圆角、紧凑化、整洁化、高效化改进，使 UI 视觉更加冷静、专业、高效。同时添加余额显示。大部分改动可在设置中单独开关。' : 'Keeps the overall layout of the stock UI while tightening its radii, spacing and tidiness for a calmer, more professional and more efficient look. Also adds an account balance display. Most changes can be switched on or off individually in Settings.'),
+        /* 无组名的操作区：总开关 + 重载前端界面 */
+        h('div', { className: 'dcc-group' },
+          h(Row, {
+            title: zh ? '启用 UI 改进' : 'Enable UI improvements',
+            desc: zh ? '本插件的总开关。关闭后将禁用全部修改，包括不受各开关控制的部分界面修复。' : 'Master switch. Turning it off disables every change, including the small UI fixes that have no individual switch.',
+            checked: prefs.enabled,
+            onChange: update('enabled'),
+          }),
+          h(ActionRow, {
+            title: zh ? '重载前端界面' : 'Reload the UI',
+            desc: zh ? '调整本插件的设置后建议执行一次。使用了其他修改前端界面类的插件，也可以在此处重载。不会影响正在运行的任务。' : 'Recommended after changing this plugin settings. Also reloads other UI-modifying plugins. Running tasks are not affected.',
+            label: zh ? '重载' : 'Reload',
+            onClick: () => { window.location.reload(); },
+          })),
         h('div', { className: 'dcc-group' },
           h('div', { className: 'dcc-group-title' }, zh ? '外观' : 'Appearance'),
           h(Row, {
@@ -2053,6 +2108,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             delete root.dataset.dccRadius;
             delete root.dataset.dccNew;
             delete root.dataset.dccDim;
+            delete root.dataset.dccEnabled;
             delete root.dataset.dccLogo;
             delete root.dataset.dccDot;
             delete root.dataset.dccFont;
