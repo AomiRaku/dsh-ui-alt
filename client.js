@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.249';
+    const VERSION = '0.2.250';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -884,6 +884,42 @@ html[data-dcc-compact-header="off"] .dcc-segmented {
   background: var(--dsw-alias-interactive-bg-hover);
   color: var(--dsw-alias-label-primary);
 }
+.dcc-seg-more {
+  min-width: 26px;
+  justify-content: center;
+  font-size: 13px;
+  letter-spacing: 1px;
+}
+/* 溢出菜单 */
+.dcc-seg-menu {
+  position: fixed;
+  z-index: 2147483000;
+  min-width: 120px;
+  padding: 4px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: var(--dsw-radius-sm, 8px);
+  background: var(--dsw-alias-bg-layer-1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .28);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.dcc-seg-menu-item {
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.dcc-seg-menu-item:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
 .dcc-seg[data-active="true"] {
   background: transparent;
   color: var(--dsw-alias-state-business-primary);
@@ -1662,15 +1698,39 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
 
       const findTabs = () => document.querySelector('[data-conversation-tabs]');
       const findHost = () => document.querySelector('[class*="_headerUtilities"]');
+      /* 宿主在放不下时会渲染一个「更多」按钮（我们把它隐藏了，但节点还在）。
+         它的存在就是「当前处于溢出状态」的信号。 */
+      const isOverflowing = () => document.querySelector('[class*="_viewsMore"]') !== null;
+      let compact = false;
+      let segMenu = null;
+      const closeSegMenu = () => {
+        if (segMenu !== null) {
+          segMenu.remove();
+          segMenu = null;
+        }
+      };
 
       const syncActive = () => {
         if (bar === null) return;
         const tabs = findTabs();
         if (tabs === null) return;
         const sources = Array.from(tabs.querySelectorAll('button[role="tab"]'));
+        const activeIndex = sources.findIndex((el) => el.getAttribute('aria-selected') === 'true');
+        if (compact) {
+          /* 紧凑模式下只有两项：激活项和「⋯」，同步文字即可 */
+          const first = bar.querySelector('.dcc-seg:not(.dcc-seg-more)');
+          if (first !== null && sources[activeIndex] !== undefined) {
+            const text = (sources[activeIndex].textContent || '').trim();
+            if (first.textContent !== text) {
+              first.textContent = text;
+              first.dataset.dccIndex = String(activeIndex);
+            }
+          }
+          return;
+        }
         const items = Array.from(bar.querySelectorAll('.dcc-seg'));
         for (let i = 0; i < items.length; i += 1) {
-          const on = sources[i] !== undefined && sources[i].getAttribute('aria-selected') === 'true';
+          const on = i === activeIndex;
           if (on) items[i].setAttribute('data-active', 'true');
           else items[i].removeAttribute('data-active');
         }
@@ -1709,26 +1769,89 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         bar = document.createElement('div');
         bar.className = 'dcc-segmented';
         bar.style.opacity = '0';
+        closeSegMenu();
         const sources = Array.from(tabs.querySelectorAll('button[role="tab"]'));
-        sources.forEach((source, index) => {
+        const activeIndex = sources.findIndex((el) => el.getAttribute('aria-selected') === 'true');
+
+        /* 把点击转发给宿主对应的标签按钮 */
+        const forward = (index) => {
+          const current = findTabs();
+          if (current === null) return;
+          const target = current.querySelectorAll('button[role="tab"]')[index];
+          if (target !== undefined) target.click();
+        };
+
+        const makeSeg = (label, index) => {
           const item = document.createElement('button');
           item.type = 'button';
           item.className = 'dcc-seg';
-          item.textContent = (source.textContent || '').trim();
+          item.textContent = label;
           item.addEventListener('click', () => {
-            /* 先乐观更新选中态，让蓝色在点击瞬间就到位；
-               否则要等 observer 同步 aria-selected（有 350ms 防抖），中间会空一下。 */
             const segs = bar.querySelectorAll('.dcc-seg');
             for (let i = 0; i < segs.length; i += 1) {
               segs[i].dataset.active = i === index ? 'true' : 'false';
             }
-            const current = findTabs();
-            if (current === null) return;
-            const target = current.querySelectorAll('button[role="tab"]')[index];
-            if (target !== undefined) target.click();
+            forward(index);
           });
-          bar.appendChild(item);
-        });
+          return item;
+        };
+
+        if (compact) {
+          /* 只留当前激活项 + 一个「⋯」，其余收进菜单 */
+          const activeIdx = activeIndex >= 0 ? activeIndex : 0;
+          if (sources[activeIdx] !== undefined) {
+            const seg = makeSeg((sources[activeIdx].textContent || '').trim(), activeIdx);
+            seg.dataset.active = 'true';
+            bar.appendChild(seg);
+          }
+          const more = document.createElement('button');
+          more.type = 'button';
+          more.className = 'dcc-seg dcc-seg-more';
+          more.textContent = '⋯';
+          more.setAttribute('aria-label', '更多视图');
+          more.addEventListener('click', (event) => {
+            event.stopPropagation();
+            if (segMenu !== null) { closeSegMenu(); return; }
+            const rect = bar.getBoundingClientRect();
+            const menu = document.createElement('div');
+            menu.className = 'dcc-seg-menu';
+            menu.style.left = Math.max(8, rect.right - 150) + 'px';
+            menu.style.top = rect.bottom + 6 + 'px';
+            const live = findTabs();
+            const list = live === null ? [] : Array.from(live.querySelectorAll('button[role="tab"]'));
+            const act = list.findIndex((el) => el.getAttribute('aria-selected') === 'true');
+            list.forEach((source, index) => {
+              if (index === act) return;
+              const entry = document.createElement('button');
+              entry.type = 'button';
+              entry.className = 'dcc-seg-menu-item';
+              entry.textContent = (source.textContent || '').trim();
+              entry.addEventListener('click', () => {
+                closeSegMenu();
+                forward(index);
+              });
+              menu.appendChild(entry);
+            });
+            document.body.appendChild(menu);
+            segMenu = menu;
+            window.setTimeout(() => {
+              const onDown = (ev) => {
+                if (segMenu !== menu) return;
+                if (menu.contains(ev.target) || more.contains(ev.target)) return;
+                closeSegMenu();
+                document.removeEventListener('pointerdown', onDown, true);
+              };
+              document.addEventListener('pointerdown', onDown, true);
+            }, 0);
+          });
+          bar.appendChild(more);
+        } else {
+          sources.forEach((source, index) => {
+            const seg = makeSeg((source.textContent || '').trim(), index);
+            if (index === activeIndex) seg.dataset.active = 'true';
+            bar.appendChild(seg);
+          });
+        }
         host.insertBefore(bar, host.firstChild);
         window.requestAnimationFrame(() => {
           if (bar !== null) bar.style.opacity = '';
@@ -1760,6 +1883,13 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         /* 控件还在 DOM 里、只是容器换了 → 直接搬过去，不要重建（重建会闪一下） */
         if (bar !== null && bar.isConnected && bar.parentElement !== host) {
           host.insertBefore(bar, host.firstChild);
+        }
+        /* 宿主是否在溢出：变了就切换形态（全量 ⇄ 激活项 + ⋯） */
+        const wantCompact = isOverflowing() && count > 1;
+        if (wantCompact !== compact) {
+          compact = wantCompact;
+          build(tabs, host);
+          return;
         }
         if (bar === null || !bar.isConnected || bar.children.length !== count) {
           build(tabs, host);
