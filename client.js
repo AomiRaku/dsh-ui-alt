@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.157';
+    const VERSION = '0.2.158';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -389,6 +389,10 @@ html[data-dcc-menu-blur="on"] [role="menu"] {
 /* 模糊没了就得有实底，否则会透出后面的内容 */
 html[data-dcc-menu-blur="on"] [data-menu-material] {
   background-color: var(--dsw-alias-bg-layer-1) !important;
+}
+/* 既然弹层已经是不透明底，动画期间就不再需要额外的兜底背景 */
+html[data-dcc-menu-blur="on"] {
+  --dcc-menu-fallback: transparent;
 }
 
 /* 兜底色：动画期间顶替失效的毛玻璃。各弹层的实际背景不一样，
