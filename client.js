@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.261';
+    const VERSION = '0.2.264';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1700,9 +1700,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
 
       const findTabs = () => document.querySelector('[data-conversation-tabs]');
       const findHost = () => document.querySelector('[class*="_headerUtilities"]');
-      /* 视图控件始终折叠：只显示「当前激活」+「⋯」，其余收进菜单。
-         不再依赖任何溢出测量，任何窗口宽度下表现一致。 */
-      let compact = true;
+      /* 视图控件始终折叠：只显示「当前激活」+「⋯」，其余收进菜单。 */
       let segMenu = null;
       let segMenuGuard = null;
       const closeSegMenu = () => {
@@ -1722,23 +1720,11 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         if (tabs === null) return;
         const sources = Array.from(tabs.querySelectorAll('button[role="tab"]'));
         const activeIndex = sources.findIndex((el) => el.getAttribute('aria-selected') === 'true');
-        if (compact) {
-          /* 紧凑模式下只有两项：激活项和「⋯」，同步文字即可 */
-          const first = bar.querySelector('.dcc-seg:not(.dcc-seg-more)');
-          if (first !== null && sources[activeIndex] !== undefined) {
-            const text = (sources[activeIndex].textContent || '').trim();
-            if (first.textContent !== text) {
-              first.textContent = text;
-              first.dataset.dccIndex = String(activeIndex);
-            }
-          }
-          return;
-        }
-        const items = Array.from(bar.querySelectorAll('.dcc-seg'));
-        for (let i = 0; i < items.length; i += 1) {
-          const on = i === activeIndex;
-          if (on) items[i].setAttribute('data-active', 'true');
-          else items[i].removeAttribute('data-active');
+        /* 控件恒定折叠，只有「激活项 + ⋯」，同步文字即可 */
+        const first = bar.querySelector('.dcc-seg:not(.dcc-seg-more)');
+        if (first !== null && sources[activeIndex] !== undefined) {
+          const text = (sources[activeIndex].textContent || '').trim();
+          if (first.textContent !== text) first.textContent = text;
         }
       };
 
@@ -1802,8 +1788,8 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           return item;
         };
 
-        if (compact) {
-          /* 只留当前激活项 + 一个「⋯」，其余收进菜单 */
+        /* 只留当前激活项 + 一个「⋯」，其余收进菜单 */
+        {
           const activeIdx = activeIndex >= 0 ? activeIndex : 0;
           if (sources[activeIdx] !== undefined) {
             const seg = makeSeg((sources[activeIdx].textContent || '').trim(), activeIdx);
@@ -1851,12 +1837,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             }, 0);
           });
           bar.appendChild(more);
-        } else {
-          sources.forEach((source, index) => {
-            const seg = makeSeg((source.textContent || '').trim(), index);
-            if (index === activeIndex) seg.dataset.active = 'true';
-            bar.appendChild(seg);
-          });
         }
         host.insertBefore(bar, host.firstChild);
         window.requestAnimationFrame(() => {
@@ -1890,25 +1870,10 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         if (bar !== null && bar.isConnected && bar.parentElement !== host) {
           host.insertBefore(bar, host.firstChild);
         }
-        /* 是否放不下：变了就切换形态（全量 ⇄ 激活项 + ⋯） */
-        const wantCompact = count > 1;
-        if (wantCompact !== compact) {
-          compact = wantCompact;
-          build(tabs, host);
-          return;
-        }
-        /* 紧凑模式固定只有两项（激活项 + ⋯），不能拿它和标签总数比，
+        /* 控件固定只有两项（激活项 + ⋯），不能拿它和标签总数比，
            否则每次都会判定「数量不一致」→ 反复重建 → 看起来一直在闪。 */
-        if (compact) {
-          if (bar === null || !bar.isConnected) build(tabs, host);
-          else syncActive();
-          return;
-        }
-        if (bar === null || !bar.isConnected || bar.children.length !== count) {
-          build(tabs, host);
-          return;
-        }
-        syncActive();
+        if (bar === null || !bar.isConnected) build(tabs, host);
+        else syncActive();
       };
 
       const schedule = () => {
