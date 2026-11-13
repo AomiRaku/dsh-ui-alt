@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.273';
+    const VERSION = '0.2.274';
     const UPDATED = '2026-11-13';
     const DEFAULTS = {
       radiusDensity: true,
@@ -922,6 +922,10 @@ html[data-dcc-compact-header="off"] .dcc-segmented {
   gap: 2px;
 }
 .dcc-seg-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   height: 32px;
   padding: 0 12px;
   border: 0;
@@ -934,6 +938,35 @@ html[data-dcc-compact-header="off"] .dcc-segmented {
   text-align: left;
   white-space: nowrap;
   cursor: pointer;
+}
+.dcc-seg-menu-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dcc-seg-menu-check {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  opacity: 0;
+  color: var(--dsw-alias-state-business-primary);
+}
+.dcc-seg-menu-check::before {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: currentColor;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5 6.2 11.7 13 4.9' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5 6.2 11.7 13 4.9' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+.dcc-seg-menu-item[data-active="true"] .dcc-seg-menu-check {
+  opacity: 1;
+}
+.dcc-seg-menu-item[data-active="true"] {
+  color: var(--dsw-alias-state-business-primary);
 }
 .dcc-seg-menu-item:hover {
   background: var(--dsw-alias-interactive-bg-hover);
@@ -1839,14 +1872,25 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             const live = findTabs();
             const list = live === null ? [] : Array.from(live.querySelectorAll('button[role="tab"]'));
             const act = list.findIndex((el) => el.getAttribute('aria-selected') === 'true');
+            /* 列出全部视图，当前选中的那项做标记——和标准下拉菜单一致 */
             list.forEach((source, index) => {
-              if (index === act) return;
               const entry = document.createElement('button');
               entry.type = 'button';
               entry.className = 'dcc-seg-menu-item';
-              entry.textContent = (source.textContent || '').trim();
+              const label = document.createElement('span');
+              label.className = 'dcc-seg-menu-label';
+              label.textContent = (source.textContent || '').trim();
+              const check = document.createElement('span');
+              check.className = 'dcc-seg-menu-check';
+              check.setAttribute('aria-hidden', 'true');
+              entry.append(label, check);
+              if (index === act) {
+                entry.dataset.active = 'true';
+                entry.setAttribute('aria-current', 'true');
+              }
               entry.addEventListener('click', () => {
                 closeSegMenu();
+                if (index === act) return;
                 forward(index);
               });
               menu.appendChild(entry);
