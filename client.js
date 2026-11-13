@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.165';
+    const VERSION = '0.2.167';
     const UPDATED = '2026-11-12';
     const DEFAULTS = {
       radiusDensity: true,
@@ -212,8 +212,8 @@ html[data-dcc-new="off"] button[data-dcc-newrow] {
 }
 /* 克隆行直接使用 panelRow 的类，宽度/内边距/行高/焦点环全部来自宿主；
    默认和其它导航行一样是透明底，悬停时统一由下面的导航行规则上色 */
+/* 悬停底色交给克隆时一同复制过来的 panelEntry 类，和别的导航行完全一致 */
 html[data-dcc-new="on"] button[data-dcc-newrow] {
-  background-color: transparent !important;
   color: var(--dsw-alias-label-primary) !important;
 }
 .dcc-newrow-content {
@@ -912,12 +912,6 @@ body:not([data-ds-dark-theme]) [class*="_sessionRow"][class*="_selected"] {
   box-shadow: inset 0 0 0 999px rgba(0, 0, 0, .04) !important;
 }
 
-/* 导航行的悬停 / 选中：新会话行已经是普通导航行的一员，不再单独排除 */
-html[data-dcc-new="on"] nav[class*="_panelList"] [class*="_panelRow"]:hover,
-html[data-dcc-new="on"] nav[class*="_panelList"] [class*="_panelRow"][class*="_panelActive"] {
-  background-color: var(--dsw-alias-interactive-bg-hover) !important;
-  box-shadow: inset 0 0 0 999px rgba(0, 0, 0, .07) !important;
-}
 html[data-dcc-new="on"] body[data-ds-dark-theme] nav[class*="_panelList"] [class*="_panelRow"]:hover,
 html[data-dcc-new="on"] body[data-ds-dark-theme] nav[class*="_panelList"] [class*="_panelRow"][class*="_panelActive"] {
   background-color: var(--dsw-alias-interactive-bg-hover) !important;
