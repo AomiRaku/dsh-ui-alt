@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.295';
+    const VERSION = '0.2.296';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1758,6 +1758,8 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         }
         if (segMenuAnchor !== null) {
           segMenuAnchor.removeAttribute('data-open');
+          /* 主动移除焦点：否则 :focus-within 会一直成立，鼠标移走后控件还留在那里 */
+          if (typeof segMenuAnchor.blur === 'function') segMenuAnchor.blur();
           segMenuAnchor = null;
         }
         if (segMenuGuard !== null) {
