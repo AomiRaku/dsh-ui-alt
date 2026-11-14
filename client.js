@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.365';
+    const VERSION = '0.2.366';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -749,6 +749,12 @@ html[data-dcc-dot="on"] [class*="_sessionRow"]::before {
   background: var(--dsw-alias-label-tertiary);
   opacity: .35;
   pointer-events: none;
+}
+
+/* slot 里已经有状态图标（运行中的加载圈、结束标记之类）时，
+   不再画会话前圆点，避免两个标记并排叠在一起。 */
+html[data-dcc-dot="on"] [class*="_sessionRow"]:has([class*="_slot"] svg)::before {
+  display: none !important;
 }
 /* 与 archive-manager 的收藏星标共存：星标占用的正是同一个 16px 前导位置。
    星标在行悬停时总会出现（未收藏是空心、可点），已收藏则常驻，
