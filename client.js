@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.309';
+    const VERSION = '0.2.310';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -2124,7 +2124,9 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       window.addEventListener('dcc-balance-threshold', onThreshold);
       /* 开关切换后立刻按已拿到的数据重算，不必等下一次轮询 */
       const onPrefs = (event) => {
-        if (event.detail && event.detail.key === 'showBalance') recalc();
+        if (!event.detail) return;
+        /* 小数位数变化也要立刻重算，否则要关掉设置面板才看到效果 */
+        if (event.detail.key === 'showBalance' || event.detail.key === 'balanceDecimals') recalc();
       };
       window.addEventListener('dcc-prefs-changed', onPrefs);
       load();
