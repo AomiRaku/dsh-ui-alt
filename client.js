@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.343';
+    const VERSION = '0.2.344';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -769,6 +769,13 @@ html[data-dcc-dim="on"] [class*="_sessionOverflowButton"] {
 }
 html[data-dcc-dim="on"] [class*="_sessionOverflowButton"]:hover {
   opacity: .9 !important;
+}
+
+/* 工作区文件夹图标收小一点，跟着「减小圆角与间距」走。
+   宿主的图标是 16px，行高 32px，缩到 14px 后与 13px 的标题更协调。 */
+html[data-dcc-radius="on"] [class*="_projectRow"] [class*="_folder"] svg {
+  width: 14px !important;
+  height: 14px !important;
 }
 
 /* ---------- 工作区行：悬停时不换成展开箭头，保持文件夹图标 ---------- */
