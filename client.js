@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.315';
+    const VERSION = '0.2.316';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -22,6 +22,7 @@ window.__ModuleLoader__.load({
       settingsFullscreen: true,
       hideHoverCard: true,
       hideRowButtons: true,
+      headerFade: true,
       compactHeader: true,
       compactAlwaysShow: false,
       navCollapse: true,
@@ -70,6 +71,7 @@ window.__ModuleLoader__.load({
       root.dataset.dccFull = prefs.settingsFullscreen ? 'on' : 'off';
       root.dataset.dccHover = prefs.hideHoverCard ? 'off' : 'on';
       root.dataset.dccRowButtons = prefs.hideRowButtons ? 'on' : 'off';
+      root.dataset.dccHeaderFade = prefs.headerFade ? 'on' : 'off';
       root.dataset.dccCompactHeader = prefs.compactHeader ? 'on' : 'off';
     root.dataset.dccAlwaysShow = prefs.compactAlwaysShow ? 'on' : 'off';
       root.dataset.dccCollapse = prefs.navCollapse ? 'on' : 'off';
@@ -847,13 +849,14 @@ html[data-dcc-compact-header="on"] [class*="_header"]:has([data-conversation-tab
    这一条不受「会话标题栏紧凑化」开关控制——用户关掉「轨迹」后标题栏本来就矮，
    没有标签行可压，但那根线依然不该出现。用 headerUtilities 而不是 tabs 定位，
    保证两种形态（有/无标签行）都能命中。 */
-html[data-dcc-enabled="on"] [class*="_header"]:has([class*="_headerUtilities"]) {
+/* 标题栏去掉硬分割线，改用内容顶部的柔边过渡 */
+html[data-dcc-enabled="on"][data-dcc-header-fade="on"] [class*="_header"]:has([class*="_headerUtilities"]) {
   border-bottom: none !important;
 }
 /* 顶部柔边只给「对话」用：轨迹视图整块都是界面，渐隐会吃掉它自己的表头。
    轨道上没有 data-view 之类的标记，只能借标签页的选中态判断——
    第一个 tab 就是「对话」，它 aria-selected 时才挂 mask。 */
-html[data-dcc-enabled="on"] html:has([data-conversation-tabs] [role="tab"]:first-child[aria-selected="true"]) [data-conversation-scroll] {
+html[data-dcc-enabled="on"][data-dcc-header-fade="on"] html:has([data-conversation-tabs] [role="tab"]:first-child[aria-selected="true"]) [data-conversation-scroll] {
   -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 20px);
   mask-image: linear-gradient(to bottom, transparent 0, #000 20px);
 }
@@ -2706,6 +2709,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
 ),
         h('div', { className: 'dcc-group' },
           h('div', { className: 'dcc-group-title' }, zh ? '会话标题栏' : 'Session header'),
+          h(Row, {
+            title: zh ? '柔化标题栏与绘画区域过渡' : 'Soften the header-to-content transition',
+            desc: zh ? '移除分割线，使用柔化边缘过渡标题栏和会话正文。' : 'Remove the divider and use a soft edge to ease the transition between the header and the conversation.',
+            checked: prefs.headerFade,
+            onChange: update('headerFade'),
+          }),
           h(Row, {
             title: zh ? '会话标题栏紧凑化' : 'Compact session header',
             desc: zh ? '将视图切换按钮移到右上工具按钮处。使会话内容可视范围更大。\n此按钮在对话模式下默认隐藏，鼠标位于标题栏区域时才会显示。' : 'Move the view switcher button to the toolbar buttons in the top-right, giving the conversation more room.\nIn the conversation view it is hidden by default and only appears when the pointer is over the header.',
