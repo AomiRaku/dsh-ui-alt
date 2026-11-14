@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.323';
+    const VERSION = '0.2.324';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -2373,11 +2373,13 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           ? 'dcc-plain-out'
           : 'dcc-menu-out';
         /* 整层统一淡出：这样压暗层和卡片一定同步，不依赖 mask 的类名是否命中 */
-        clone.style.animation = 'dcc-fade-out .12s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) forwards';
+        /* 必须带 important：CSS 里的入场动画是 !important 的，
+           内联样式不加同级就盖不过去，退场会反着放成入场。 */
+        clone.style.setProperty('animation', 'dcc-fade-out .12s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) forwards', 'important');
         /* 卡片在这之上再加缩放 */
         const inner = clone.querySelector('[role="dialog"]');
         if (inner !== null) {
-          inner.style.animation = `${exitAnim} .12s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) forwards`;
+          inner.style.setProperty('animation', `${exitAnim} .12s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) forwards`, 'important');
         }
         document.body.appendChild(clone);
         window.setTimeout(() => clone.remove(), 220);
