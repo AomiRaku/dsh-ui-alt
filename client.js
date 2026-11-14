@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.373';
+    const VERSION = '0.2.374';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -2182,13 +2182,16 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         menu.appendChild(item);
       };
 
+      /* 用 rAF 而不是延时：菜单一出现，下一帧就把项补上，
+         不会出现「菜单先显示、项晚半拍才冒出来」的情况。 */
+      let rafId = 0;
       const schedule = () => {
-        if (timer !== null) return;
-        timer = window.setTimeout(() => {
-          timer = null;
+        if (rafId !== 0) return;
+        rafId = window.requestAnimationFrame(() => {
+          rafId = 0;
           if (document.documentElement.dataset.dccEnabled !== 'on') return;
           addItem();
-        }, 60);
+        });
       };
 
       observer = new MutationObserver(schedule);
@@ -2196,7 +2199,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
 
       return () => {
         observer.disconnect();
-        if (timer !== null) clearTimeout(timer);
+        if (rafId !== 0) window.cancelAnimationFrame(rafId);
         for (const el of document.querySelectorAll('[data-dcc-reload-item]')) el.remove();
       };
     }
