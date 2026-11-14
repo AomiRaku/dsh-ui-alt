@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.376';
+    const VERSION = '0.2.377';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1030,6 +1030,13 @@ html[data-dcc-always-show="on"] .dcc-segmented {
   width: 16px;
   height: 16px;
   flex: none;
+  /* 和宿主菜单项的图标左边缘对齐 */
+  position: relative;
+  left: -1px;
+}
+.dcc-menu-extra > span {
+  position: relative;
+  left: -2px;
 }
 
 .dcc-seg-menu {
