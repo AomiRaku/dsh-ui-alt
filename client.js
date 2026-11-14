@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.342';
+    const VERSION = '0.2.343';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -2044,7 +2044,19 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         attributeFilter: ['aria-selected'],
       });
 
+      /* 紧凑化和完整模式这两个开关变化时重建控件。
+         属性由 applyPrefs 在重渲染时写入，因此延后两帧再建，
+         否则 ensure 读到的还是旧属性值。 */
+      const onPrefs = (event) => {
+        if (!event.detail) return;
+        const key = event.detail.key;
+        if (key !== 'compactHeader' && key !== 'compactHeaderFull') return;
+        window.setTimeout(() => window.requestAnimationFrame(() => ensure()), 0);
+      };
+      window.addEventListener('dcc-prefs-changed', onPrefs);
+
       return () => {
+        window.removeEventListener('dcc-prefs-changed', onPrefs);
         observer.disconnect();
         if (timer !== null) clearTimeout(timer);
         closeSegMenu();
