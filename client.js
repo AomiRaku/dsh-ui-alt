@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.328';
+    const VERSION = '0.2.329';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -650,6 +650,9 @@ html[data-dcc-hover="off"] [class*="_card_"][data-closing] {
    应该跟着外层一起淡出，否则看起来遮罩一直不消失。 */
 [data-dcc-dialog-clone] [class*="_mask"] {
   animation: none !important;
+  /* 快照里这层必须盖满视口，否则淡出过程中边缘会露出背景，看起来是白闪 */
+  position: fixed !important;
+  inset: 0 !important;
 }
 
 /* 压暗遮罩的入场：从透明淡到实，时长与退场的 dcc-fade-out 对齐。
