@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.332';
+    const VERSION = '0.2.333';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -612,7 +612,9 @@ html[data-dcc-menu-blur="on"] [role="menu"] {
   }
   to {
     opacity: 1;
-    transform: none;
+    /* 用 scale(1) 而不是 none：none 会让元素退出合成层，
+       字体重新栅格化时会有 1px 的次像素位移。 */
+    transform: scale(1);
   }
 }
 @keyframes dcc-plain-out {
@@ -704,7 +706,9 @@ html[data-dcc-menu-blur="on"] [data-menu-material][data-menu-phase="dismiss"] {
   }
   to {
     opacity: 1;
-    transform: none;
+    /* 用 scale(1) 而不是 none：none 会让元素退出合成层，
+       字体重新栅格化时会有 1px 的次像素位移。 */
+    transform: scale(1);
     /* 保持兜底到最后一帧：动画没有 forwards，结束即自动回到元素自身样式，
        那时 transform 也消失、backdrop-filter 恢复，衔接无痕。 */
     background-color: var(--dcc-menu-fallback, var(--dsw-alias-bg-layer-1));
