@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.349';
+    const VERSION = '0.2.350';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -762,6 +762,19 @@ html[data-dcc-dot="on"] [class*="_sessionRow"]:has(.dsham_starSlot[data-favorite
 html[data-dcc-enabled="on"] [class*="_sessionRow"] .dsham_starSlot:not([data-favorited="true"]) .dsham_rowStar {
   color: var(--dsw-alias-label-secondary) !important;
 }
+/* 会话行左侧那一串「状态点 / 运行中旋转圈 / 收藏星标」要和
+   工作区行的文件夹图标左边缘对齐。文件夹图标左移了 2px，
+   这里给同列的这些元素补同样的偏移。 */
+html[data-dcc-radius="on"] [class*="_sessionRow"] .dsham_starSlot,
+html[data-dcc-radius="on"] [class*="_sessionRow"] .dsham_rowStar,
+html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_statusDot"],
+html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_runningDot"],
+html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_spinner"],
+html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_status"] svg {
+  position: relative !important;
+  left: -2px !important;
+}
+
 /* 「展开其余 N 个会话 / 收起」比工作区标题更淡 */
 html[data-dcc-dim="on"] [class*="_sessionOverflowButton"] {
   color: var(--dsw-alias-label-tertiary) !important;
