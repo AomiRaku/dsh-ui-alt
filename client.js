@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.333';
+    const VERSION = '0.2.334';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -691,10 +691,10 @@ html[data-dcc-menu-blur="on"] [data-menu-material][data-menu-phase="dismiss"],
 html[data-dcc-menu-blur="on"] [role="menu"]:not([data-menu-phase]),
 html[data-dcc-menu-blur="on"] [role="listbox"]:not([data-menu-phase]),
 html[data-dcc-menu-blur="on"] [role="dialog"]:not([data-menu-phase]) {
-  animation-name: dcc-plain-in;
+  animation-name: dcc-plain-in !important;
 }
 html[data-dcc-menu-blur="on"] [data-menu-material][data-menu-phase="dismiss"] {
-  animation-name: dcc-plain-out;
+  animation-name: dcc-plain-out !important;
 }
 
 
