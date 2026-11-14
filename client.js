@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.314';
+    const VERSION = '0.2.315';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1690,6 +1690,8 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
      * 行内元素之间的移动照常放行，所以按钮的 Tooltip 不受影响。
      */
     function installHoverCardBlocker() {
+      /* 总开关关闭时连监听都不挂，彻底等同禁用插件 */
+      if (document.documentElement.dataset.dccEnabled !== 'on') return () => {};
       const ROW = '[class*="_sessionRow"], [class*="_projectRow"], [class*="_searchResultRow"]';
       /* 最近一次「进入行」的时间戳，供下面的定时器过滤使用 */
       let lastRowHoverAt = 0;
@@ -2261,6 +2263,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
      * 换算成菜单内的相对坐标写进变量，让缩放的锚点落在点下去的地方。
      */
     function installMenuOrigin() {
+      if (document.documentElement.dataset.dccEnabled !== 'on') return () => {};
       let lastX = 0;
       let lastY = 0;
       let observer = null;
@@ -2332,6 +2335,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
      * 原节点照常卸载，不干扰 React 状态。
      */
     function installDialogExit() {
+      if (document.documentElement.dataset.dccEnabled !== 'on') return () => {};
       let observer = null;
       /* 节点被移除时再量尺寸已经晚了——脱离文档的元素 rect 全是 0。
          所以对话框一出现就把位置记下来，移除时直接取这份快照。 */
