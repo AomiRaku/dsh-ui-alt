@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.303';
+    const VERSION = '0.2.304';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -2234,6 +2234,11 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       /* 导航折叠开关本身切换后也要立刻重算，否则箭头和布局要等 400ms 防抖 */
       const onNavPref = (event) => {
         if (event.detail && event.detail.key === 'navCollapse') {
+          /* 重新打开导航折叠时，默认回到收起状态——
+             否则会沿用上一次的展开状态，看起来像开关没生效。 */
+          if (document.documentElement.dataset.dccCollapse === 'on') {
+            document.documentElement.dataset.dccNav = 'collapsed';
+          }
           window.setTimeout(() => ensure(), 0);
         }
       };
