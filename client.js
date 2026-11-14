@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.292';
+    const VERSION = '0.2.293';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -870,7 +870,7 @@ html[data-dcc-compact-header="off"] .dcc-segmented {
 .dcc-trigger {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 6px;
   height: 24px;
   padding: 0 8px;
   border: 0.5px solid var(--dsw-alias-border-l4);
