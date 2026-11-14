@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.304';
+    const VERSION = '0.2.305';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -423,6 +423,12 @@ html[data-dcc-collapse="on"][data-dcc-logo="shown"] [class*="_logoRow"] {
   margin-bottom: 6px !important;
   padding-top: 2px !important;
   padding-bottom: 2px !important;
+}
+
+/* 关闭折叠时 Logo 行回到宿主排布，那圈下边距显得偏大，收一点 */
+html[data-dcc-collapse="off"][data-dcc-logo="shown"] [class*="_logoRow"] {
+  margin-bottom: 2px !important;
+  padding-bottom: 0 !important;
 }
 
 /* 克隆出来的新会话行在 nav 里，滚动时要固定；
