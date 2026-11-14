@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.301';
+    const VERSION = '0.2.302';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -2617,12 +2617,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             onChange: update('radiusDensity'),
           }),
           h(Row, {
-            title: zh ? 'Windows 默认微软雅黑字体' : 'Microsoft YaHei on Windows',
-            desc: zh ? '将 Windows 端默认字体改为微软雅黑。微软雅黑带有 hinting，使文字在显示设置低于 200% 缩放比例下，更加锐利清晰。\n若手动设置了字体，或使用 macOS 端，则不受影响。' : 'Use Microsoft YaHei as the default Windows font. It carries hinting, which keeps text sharp below 200% display scaling.\nHas no effect if you set a font manually, or on macOS.',
-            checked: prefs.winFont,
-            onChange: update('winFont'),
-          }),
-          h(Row, {
             title: zh ? '降低深色模式文字亮度' : 'Soften dark-mode text',
             desc: zh ? '略微降低深色模式文字亮度，避免纯白文字过于刺眼。' : 'Slightly dims text in dark mode so pure white is less harsh.',
             checked: prefs.softenDarkText,
@@ -2645,7 +2639,14 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             desc: zh ? '使用非窗口化的设置页面。' : 'Use a non-windowed settings page.',
             checked: prefs.settingsFullscreen,
             onChange: update('settingsFullscreen'),
-          })),
+          }),
+          h(Row, {
+            title: zh ? 'Windows 默认使用微软雅黑字体' : 'Use Microsoft YaHei by default on Windows',
+            desc: zh ? '将 Windows 端默认字体改为微软雅黑。微软雅黑带有 hinting，使文字在显示设置低于 200% 缩放比例下，更加锐利清晰。\n若手动设置了字体，或使用 macOS 端，则不受影响。' : 'Use Microsoft YaHei as the default Windows font. It carries hinting, which keeps text sharp below 200% display scaling.\nHas no effect if you set a font manually, or on macOS.',
+            checked: prefs.winFont,
+            onChange: update('winFont'),
+          }),
+),
         h('div', { className: 'dcc-group' },
           h('div', { className: 'dcc-group-title' }, zh ? '导航和工作区' : 'Navigation and workspace'),
           h(Row, {
