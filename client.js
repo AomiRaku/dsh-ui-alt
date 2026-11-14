@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.372';
+    const VERSION = '0.2.373';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -2146,14 +2146,23 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       let timer = null;
 
       const findMenu = () => {
-        /* 只认标题栏附近那个菜单：它和「刷新」按钮在同一个工具区 */
+        const host = document.querySelector('[class*="_headerUtilities"]');
+        if (host === null) return null;
+        const hostRect = host.getBoundingClientRect();
         const menus = document.querySelectorAll(MENU);
-        for (let i = menus.length - 1; i >= 0; i -= 1) {
+        for (let i = 0; i < menus.length; i += 1) {
           const menu = menus[i];
-          if (menu.hasAttribute('data-dcc-reload-menu')) return menu;
-          if (menu.querySelector('[data-dcc-reload-item]') !== null) return menu;
+          if (menu.querySelector('[data-dcc-reload-item]') !== null) continue;
+          /* 只认贴在标题栏下方展开的那个菜单：它的顶边要落在工具区的下方附近。
+             头像菜单、子菜单的顶边都在其它位置，会被排除掉。 */
+          const rect = menu.getBoundingClientRect();
+          if (rect.width === 0 || rect.height === 0) continue;
+          if (rect.top < hostRect.top - 4) continue;
+          if (rect.top > hostRect.bottom + 24) continue;
+          if (rect.right < hostRect.left - 8) continue;
+          return menu;
         }
-        return menus.length > 0 ? menus[menus.length - 1] : null;
+        return null;
       };
 
       const addItem = () => {
