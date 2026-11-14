@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.312';
+    const VERSION = '0.2.313';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -2107,37 +2107,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         }
       };
 
-      /* 一轮对话结束后主动刷新一次余额。
-         生成过程中发送按钮会变成「停止」，结束后变回「发送」——
-         就用这个标签的回归当作一轮结束的信号。 */
-      const SEND_LABEL = /发送|send/i;
-      const STOP_LABEL = /停止|stop/i;
-      let finishedObserver = null;
-      const findLabel = (re) => {
-        for (const btn of document.querySelectorAll('button[aria-label]')) {
-          if (re.test(btn.getAttribute('aria-label') || '')) return true;
-        }
-        return false;
-      };
-      const findComposerButton = () => {
-        if (findLabel(STOP_LABEL)) return { stop: true };
-        if (findLabel(SEND_LABEL)) return { stop: false };
-        return null;
-      };
-      const watchFinish = () => {
-        if (finishedObserver !== null) return;
-        finishedObserver = new MutationObserver(() => {
-          const found = findComposerButton();
-          /* 回到「发送」状态就说明上一轮生成结束了 */
-          if (found !== null && !found.stop) load();
-        });
-        finishedObserver.observe(document.body, {
-          attributes: true,
-          attributeFilter: ['aria-label'],
-          subtree: true,
-        });
-      };
-      watchFinish();
 
       window.addEventListener('dcc-balance-threshold', onThreshold);
       /* 开关切换后立刻按已拿到的数据重算，不必等下一次轮询 */
@@ -2148,12 +2117,11 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
       window.addEventListener('dcc-prefs-changed', onPrefs);
       load();
-      refresh = window.setInterval(load, 60000);
+      refresh = window.setInterval(load, 40000);
 
       return () => {
         window.removeEventListener('dcc-balance-threshold', onThreshold);
         window.removeEventListener('dcc-prefs-changed', onPrefs);
-        if (finishedObserver !== null) finishedObserver.disconnect();
         if (refresh !== null) window.clearInterval(refresh);
         document.documentElement.style.removeProperty('--dcc-balance-text');
         delete document.documentElement.dataset.dccBalanceLow;
