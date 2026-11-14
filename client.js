@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.374';
+    const VERSION = '0.2.375';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1024,6 +1024,12 @@ html[data-dcc-always-show="on"] .dcc-segmented {
 }
 .dcc-menu-extra:hover {
   background: var(--dsw-alias-interactive-bg-hover);
+}
+.dcc-menu-extra-icon {
+  display: block;
+  width: 16px;
+  height: 16px;
+  flex: none;
 }
 
 .dcc-seg-menu {
@@ -2174,7 +2180,30 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         item.type = 'button';
         item.setAttribute('data-dcc-reload-item', '');
         item.className = 'dcc-menu-extra';
-        item.textContent = isZh() ? '重载前端界面' : 'Reload frontend';
+
+        /* 刷新图标：一个带箭头的圆，和工具栏那个刷新按钮同一套语义 */
+        const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        icon.setAttribute('viewBox', '0 0 16 16');
+        icon.setAttribute('class', 'dcc-menu-extra-icon');
+        icon.setAttribute('aria-hidden', 'true');
+        const arc = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        arc.setAttribute('d', 'M13 8a5 5 0 1 1-1.46-3.54');
+        arc.setAttribute('fill', 'none');
+        arc.setAttribute('stroke', 'currentColor');
+        arc.setAttribute('stroke-width', '1.4');
+        arc.setAttribute('stroke-linecap', 'round');
+        const tip = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        tip.setAttribute('d', 'M13 2.6V5.2h-2.6');
+        tip.setAttribute('fill', 'none');
+        tip.setAttribute('stroke', 'currentColor');
+        tip.setAttribute('stroke-width', '1.4');
+        tip.setAttribute('stroke-linecap', 'round');
+        tip.setAttribute('stroke-linejoin', 'round');
+        icon.append(arc, tip);
+
+        const label = document.createElement('span');
+        label.textContent = isZh() ? '重载前端界面' : 'Reload frontend';
+        item.append(icon, label);
         item.addEventListener('click', (event) => {
           event.stopPropagation();
           window.setTimeout(() => window.location.reload(), 0);
