@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.287';
+    const VERSION = '0.2.288';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -683,6 +683,13 @@ html[data-dcc-menu-blur="on"] [data-menu-material][data-menu-phase="dismiss"] {
   }
 }
 
+
+/* ---------- 聊天区滚动平滑 ---------- */
+/* scroll-behavior 只影响脚本发起的滚动（生成时追底、发送后跳转），
+   用户自己滚滚轮不受影响。 */
+[data-conversation-scroll] {
+  scroll-behavior: smooth;
+}
 
 /* ---------- 工作区名称更明显，「展开其余」更淡 ---------- */
 html[data-dcc-dim="on"] [class*="_projectRow"] [class*="_title"] {
