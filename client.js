@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.371';
+    const VERSION = '0.2.372';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1003,6 +1003,29 @@ html[data-dcc-always-show="on"] .dcc-segmented {
 }
 
 /* 溢出菜单：对齐宿主菜单的尺寸与层级（圆角 12、内距 6、项高 32、项圆角 8） */
+/* 追加到宿主菜单末尾的「重载前端界面」：外观对齐宿主自己的菜单项，
+   高度、内边距、字号都按它的规格来。 */
+.dcc-menu-extra {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--dsw-radius-sm, 8px);
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.dcc-menu-extra:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
 .dcc-seg-menu {
   position: fixed;
   z-index: 2147483000;
@@ -2113,6 +2136,63 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
     }
 
     /**
+     * 在会话标题栏右上角的「⋯」菜单末尾追加一项「重载前端界面」。
+     * 那个菜单是宿主 React 渲染的，插不进去子节点，只能在它打开后
+     * 往 DOM 里补一个外观一致的按钮，点击等价于 location.reload()。
+     */
+    function installReloadMenuItem() {
+      const MENU = '[role="menu"]';
+      let observer = null;
+      let timer = null;
+
+      const findMenu = () => {
+        /* 只认标题栏附近那个菜单：它和「刷新」按钮在同一个工具区 */
+        const menus = document.querySelectorAll(MENU);
+        for (let i = menus.length - 1; i >= 0; i -= 1) {
+          const menu = menus[i];
+          if (menu.hasAttribute('data-dcc-reload-menu')) return menu;
+          if (menu.querySelector('[data-dcc-reload-item]') !== null) return menu;
+        }
+        return menus.length > 0 ? menus[menus.length - 1] : null;
+      };
+
+      const addItem = () => {
+        const menu = findMenu();
+        if (menu === null) return;
+        if (menu.querySelector('[data-dcc-reload-item]') !== null) return;
+
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.setAttribute('data-dcc-reload-item', '');
+        item.className = 'dcc-menu-extra';
+        item.textContent = isZh() ? '重载前端界面' : 'Reload frontend';
+        item.addEventListener('click', (event) => {
+          event.stopPropagation();
+          window.setTimeout(() => window.location.reload(), 0);
+        });
+        menu.appendChild(item);
+      };
+
+      const schedule = () => {
+        if (timer !== null) return;
+        timer = window.setTimeout(() => {
+          timer = null;
+          if (document.documentElement.dataset.dccEnabled !== 'on') return;
+          addItem();
+        }, 60);
+      };
+
+      observer = new MutationObserver(schedule);
+      observer.observe(document.body, { childList: true, subtree: true });
+
+      return () => {
+        observer.disconnect();
+        if (timer !== null) clearTimeout(timer);
+        for (const el of document.querySelectorAll('[data-dcc-reload-item]')) el.remove();
+      };
+    }
+
+    /**
      * 在输入框下方的状态行里显示账户余额，走宿主的账户接口
      * （ctx.remote.account.getBalance）。取不到就静默不显示，不影响其他功能。
      */
@@ -2949,6 +3029,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const removeBootCover = installBootCover(readPrefs());
           const removePluginPin = installNavToggle();
           const removeMenuOrigin = installMenuOrigin();
+          const removeReloadItem = installReloadMenuItem();
           const removeDialogExit = installDialogExit();
           return () => {
             removeCss();
@@ -2961,6 +3042,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             removeBootCover();
             removePluginPin();
             removeMenuOrigin();
+            removeReloadItem();
             removeDialogExit();
             const root = document.documentElement;
             delete root.dataset.dccRadius;
