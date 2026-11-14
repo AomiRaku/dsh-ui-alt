@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.299';
+    const VERSION = '0.2.300';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -2673,12 +2673,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             onChange: update('dimSessions'),
           }),
           h(Row, {
-            title: zh ? '会话前圆点' : 'Session leading dot',
-            desc: zh ? '会话前显示一个圆点。' : 'Show a dot before each session.',
-            checked: prefs.sessionDot,
-            onChange: update('sessionDot'),
-          }),
-          h(Row, {
             title: zh ? '移除工作区与会话悬停详情卡片' : 'Remove workspace and session hover cards',
             desc: zh ? '悬停在侧栏工作区、会话上时，不再显示详情卡片。使滚动更流畅。' : 'Hovering a workspace or session no longer shows a details card, which keeps scrolling smooth.',
             checked: prefs.hideHoverCard,
@@ -2689,7 +2683,14 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             desc: zh ? '隐藏会话悬停时除了菜单和置顶之外的其他按钮，避免拥挤遮盖过多标题。\n正常情况下这些按钮都已经在右键菜单中包含。若其他插件添加的按钮未在右键菜单包含，可以关闭此功能。' : 'Hide every button on a hovered session row except the "…" menu and pin, so they stop crowding the title.\nThese actions are normally in the right-click menu too; turn this off if a plugin adds a button that is not.',
             checked: prefs.hideRowButtons,
             onChange: update('hideRowButtons'),
-          })),
+          }),
+          h(Row, {
+            title: zh ? '会话前圆点' : 'Session leading dot',
+            desc: zh ? '会话前显示一个圆点。' : 'Show a dot before each session.',
+            checked: prefs.sessionDot,
+            onChange: update('sessionDot'),
+          }),
+),
         h('div', { className: 'dcc-group' },
           h('div', { className: 'dcc-group-title' }, zh ? '会话标题栏' : 'Session header'),
           h(Row, {
