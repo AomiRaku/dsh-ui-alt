@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.357';
+    const VERSION = '0.2.358';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -762,6 +762,16 @@ html[data-dcc-dot="on"] [class*="_sessionRow"]:has(.dsham_starSlot[data-favorite
 html[data-dcc-enabled="on"] [class*="_sessionRow"] .dsham_starSlot:not([data-favorited="true"]) .dsham_rowStar {
   color: var(--dsw-alias-label-secondary) !important;
 }
+/* 运行中的加载圈是绝对定位，不受行内 padding 影响，单独补一点偏移。
+   类名各版本不同，按常见片段覆盖。 */
+html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_spinner"],
+html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_statusDot"],
+html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_runningDot"],
+html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_status"] svg {
+  position: relative !important;
+  left: -2px !important;
+}
+
 /* 工作区行和会话行左侧的图标统一左移 2px。
    宿主用 padding-inline-start + gap 排列行内图标，所以调行的起始内边距
    就能一次对齐这一列——文件夹、圆点、加载圈、星标、第三方插件加的图标
