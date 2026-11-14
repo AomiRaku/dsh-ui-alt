@@ -107,6 +107,7 @@ plugin_manager install_bundle  target=<本仓库绝对路径>
 | `data-dcc-always-show` | `on` / `off` |
 | `data-dcc-stats` | `on` / `off` |
 | `data-dcc-balance` | `on` / `off` |
+| `data-dcc-balance-low` | `on` / `off`（余额低于阈值时由脚本设置）|
 | `data-dcc-pointer` | `on` / `off` |
 | `data-dcc-select` | `on` / `off` |
 
