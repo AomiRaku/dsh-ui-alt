@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.338';
+    const VERSION = '0.2.339';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -606,9 +606,15 @@ html[data-dcc-menu-blur="on"] [role="menu"] {
   to { opacity: 1; }
 }
 @keyframes dcc-plain-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+  from {
+    opacity: 0;
+    transform: scale(.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}}
 @keyframes dcc-plain-out {
   from {
     opacity: 1;
@@ -691,14 +697,15 @@ html[data-dcc-menu-blur="on"] [data-menu-material][data-menu-phase="dismiss"] {
 
 
 @keyframes dcc-menu-in {
-  /* 只动透明度，不动 transform：缩放会让 getBoundingClientRect 变小，
-     宿主据此算子菜单位置时就会偏出去。 */
+  /* 缩放幅度保持 6%：再大宿主按 rect 算子菜单位置就会偏出去 */
   from {
     opacity: 0;
+    transform: scale(.94);
     background-color: var(--dcc-menu-fallback, var(--dsw-alias-bg-layer-1));
   }
   to {
     opacity: 1;
+    transform: scale(1);
     background-color: var(--dcc-menu-fallback, var(--dsw-alias-bg-layer-1));
   }
 }
