@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.306';
+    const VERSION = '0.2.307';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -425,10 +425,11 @@ html[data-dcc-collapse="on"][data-dcc-logo="shown"] [class*="_logoRow"] {
   padding-bottom: 2px !important;
 }
 
-/* 关闭折叠时，「新会话」行上方那块留白偏大，收一点 */
-html[data-dcc-collapse="off"] div[class*="_newSessionRow"] {
+/* 用克隆行替代原版「新会话」按钮时，宿主给滚动区留的 4px 上边距
+   和那点高度补偿都不需要了，直接清零。 */
+html[data-dcc-new="on"] [class*="_scrollRegion"] {
   margin-top: 0 !important;
-  padding-top: 2px !important;
+  height: auto !important;
 }
 
 /* 克隆出来的新会话行在 nav 里，滚动时要固定；
