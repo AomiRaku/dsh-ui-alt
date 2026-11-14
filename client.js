@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.318';
+    const VERSION = '0.2.319';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -856,7 +856,7 @@ html[data-dcc-enabled="on"][data-dcc-header-fade="on"] [class*="_header"]:has([c
 /* 顶部柔边只给「对话」用：轨迹视图整块都是界面，渐隐会吃掉它自己的表头。
    轨道上没有 data-view 之类的标记，只能借标签页的选中态判断——
    第一个 tab 就是「对话」，它 aria-selected 时才挂 mask。 */
-html[data-dcc-enabled="on"][data-dcc-header-fade="on"] html:has([data-conversation-tabs] [role="tab"]:first-child[aria-selected="true"]) [data-conversation-scroll] {
+html[data-dcc-enabled="on"][data-dcc-header-fade="on"]:has([data-conversation-tabs] [role="tab"]:first-child[aria-selected="true"]) [data-conversation-scroll] {
   -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 20px);
   mask-image: linear-gradient(to bottom, transparent 0, #000 20px);
 }
