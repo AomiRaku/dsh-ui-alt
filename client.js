@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.324';
+    const VERSION = '0.2.325';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -601,6 +601,10 @@ html[data-dcc-menu-blur="on"] [role="menu"] {
   from { opacity: 1; }
   to { opacity: 0; }
 }
+@keyframes dcc-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 @keyframes dcc-plain-in {
   from {
     opacity: 0;
@@ -640,6 +644,12 @@ html[data-dcc-enabled="on"] body[data-ds-dark-theme] :where([role="dialog"], [ro
 html[data-dcc-hover="off"] [class*="_card_"][style*="--dsh-hover-preview-fade"],
 html[data-dcc-hover="off"] [class*="_card_"][data-closing] {
   display: none !important;
+}
+
+/* 压暗遮罩的入场：从透明淡到实，时长与退场的 dcc-fade-out 对齐。
+   带 !important，避免被其他插件的通配符动效规则压平。 */
+html[data-dcc-transition="on"] [class*="_mask"] {
+  animation: dcc-fade-in .12s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) !important;
 }
 
 /* 菜单出现/消失：整体从点击处缩放。
