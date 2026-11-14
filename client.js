@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.366';
+    const VERSION = '0.2.367';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -763,10 +763,10 @@ html[data-dcc-dot="on"] [class*="_sessionRow"]:hover:has(.dsham_starSlot)::befor
 html[data-dcc-dot="on"] [class*="_sessionRow"]:has(.dsham_starSlot[data-favorited="true"])::before {
   display: none;
 }
-/* 未收藏时的空心星（悬停才出现）：压到与会话标题同色，不再用偏亮的 label-primary。
-   已收藏的实心金星保持 archive-manager 原色，不做处理。 */
-html[data-dcc-enabled="on"] [class*="_sessionRow"] .dsham_starSlot:not([data-favorited="true"]) .dsham_rowStar {
-  color: var(--dsw-alias-label-secondary) !important;
+/* 悬停时才出现的收藏按钮（未收藏的空心星）跟着「隐藏会话悬停多余按钮」一起隐藏，
+   已收藏的实心星保持显示——那是用户自己点亮的状态，不应该藏起来。 */
+html[data-dcc-row-buttons="on"] [class*="_sessionRow"] .dsham_starSlot:not([data-favorited="true"]) {
+  display: none !important;
 }
 /* 工作区行和会话行左侧的图标统一左移 2px。
    宿主用 padding-inline-start + gap 排列行内图标，所以调行的起始内边距
