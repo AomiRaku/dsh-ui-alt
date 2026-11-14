@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.300';
+    const VERSION = '0.2.301';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -2686,7 +2686,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           }),
           h(Row, {
             title: zh ? '会话前圆点' : 'Session leading dot',
-            desc: zh ? '会话前显示一个圆点。' : 'Show a dot before each session.',
+            desc: zh ? '在侧栏工作区会话前显示一个圆点标记。' : 'Show a dot marker before each session in the sidebar.',
             checked: prefs.sessionDot,
             onChange: update('sessionDot'),
           }),
