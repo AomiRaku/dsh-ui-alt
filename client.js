@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.355';
+    const VERSION = '0.2.356';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -770,8 +770,15 @@ html[data-dcc-radius="on"] [class*="_sessionRow"] .dsham_rowStar {
   position: relative !important;
   left: -2px !important;
 }
+/* 状态一类的点：运行中的圈、结束后的绿点、未读标记等，
+   类名各版本不一样，按常见片段一并覆盖。 */
 html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_statusDot"],
+html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_statusBadge"],
+html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_stateDot"],
 html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_runningDot"],
+html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_doneDot"],
+html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_unreadDot"],
+html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_dot"],
 html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_spinner"],
 html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_status"] svg {
   position: relative !important;
