@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.361';
+    const VERSION = '0.2.362';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -762,16 +762,16 @@ html[data-dcc-dot="on"] [class*="_sessionRow"]:has(.dsham_starSlot[data-favorite
 html[data-dcc-enabled="on"] [class*="_sessionRow"] .dsham_starSlot:not([data-favorited="true"]) .dsham_rowStar {
   color: var(--dsw-alias-label-secondary) !important;
 }
-/* 运行中的加载圈是绝对定位，不受行内 padding 影响，单独补一点偏移。
-   类名各版本不同，按常见片段覆盖。 */
-html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_spinner"],
-html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_statusDot"],
-html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_runningDot"],
-html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_status"] svg {
-  position: relative !important;
-  /* 目标位置落在半像素上，整数位移只能到「偏左」或「偏右」两边，
-     用小数才能落在中间。 */
-  left: -1.5px !important;
+/* 会话行 / 工作区行左侧的图标容器统一成固定宽度并居中。
+   宿主的 StateDot、插件插槽（星标等）都塞在这个 slot 里，
+   给容器定宽居中后，不同尺寸的图标左边缘自然对齐，不用逐个补位移。 */
+html[data-dcc-radius="on"] [class*="_sessionRow"] > [class*="_slot"]:first-child,
+html[data-dcc-radius="on"] [class*="_projectRow"] > [class*="_slot"]:first-child {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  flex: none;
 }
 
 /* 工作区行和会话行左侧的图标统一左移 2px。
