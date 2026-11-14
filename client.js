@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.308';
+    const VERSION = '0.2.309';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -374,6 +374,10 @@ html[data-dcc-new="on"] div[class*="_newSessionRow"] {
 }
 html[data-dcc-new="on"]:has([data-sidebar-collapsed="true"]) div[class*="_newSessionRow"] {
   display: block !important;
+}
+/* 用克隆行时，宿主给滚动区留的 4px 上边距也没有意义了 */
+html[data-dcc-new="on"] [class*="_scrollRegion"] {
+  margin-top: 0 !important;
 }
 html[data-dcc-new="on"]:has([data-sidebar-collapsed="true"]) button[data-dcc-original] {
   display: flex !important;
