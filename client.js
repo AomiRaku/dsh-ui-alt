@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.288';
+    const VERSION = '0.2.289';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1786,8 +1786,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const text = (sources[activeIndex].textContent || '').trim();
           if (first.textContent !== text) first.textContent = text;
         }
-        /* 第一个视图（对话）之外的页面，控件要常驻显示当前视图名 */
-        bar.dataset.pinned = activeIndex > 0 ? 'true' : 'false';
+        /* 第一个视图（对话）之外的页面，控件要常驻显示当前视图名。
+           宿主切视图的中间态可能一个选中项都没有（activeIndex 为 -1），
+           这时保持上一次的状态，不要误判成「回到对话」而闪一下隐藏。 */
+        if (activeIndex >= 0) {
+          bar.dataset.pinned = activeIndex > 0 ? 'true' : 'false';
+        }
       };
 
       const build = (tabs, host) => {
@@ -1928,9 +1932,10 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         syncActive();
         /* 重建后如果这一页需要常驻显示（非对话视图），让它淡入而不是直接跳出来 */
         if (bar.dataset.pinned === 'true') {
-          bar.style.opacity = '0';
+          const fresh = bar;
+          fresh.style.opacity = '0';
           window.requestAnimationFrame(() => {
-            if (bar !== null) bar.style.opacity = '';
+            if (fresh.isConnected) fresh.style.opacity = '';
           });
         }
       };
