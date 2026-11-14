@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.356';
+    const VERSION = '0.2.357';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -762,27 +762,16 @@ html[data-dcc-dot="on"] [class*="_sessionRow"]:has(.dsham_starSlot[data-favorite
 html[data-dcc-enabled="on"] [class*="_sessionRow"] .dsham_starSlot:not([data-favorited="true"]) .dsham_rowStar {
   color: var(--dsw-alias-label-secondary) !important;
 }
-/* 会话行左侧那一串「状态点 / 运行中旋转圈 / 收藏星标」要和
-   工作区行的文件夹图标左边缘对齐。文件夹图标左移了 2px，
-   这里给同列的这些元素补同样的偏移。 */
-html[data-dcc-radius="on"] [class*="_sessionRow"] .dsham_starSlot,
-html[data-dcc-radius="on"] [class*="_sessionRow"] .dsham_rowStar {
-  position: relative !important;
-  left: -2px !important;
-}
-/* 状态一类的点：运行中的圈、结束后的绿点、未读标记等，
-   类名各版本不一样，按常见片段一并覆盖。 */
-html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_statusDot"],
-html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_statusBadge"],
-html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_stateDot"],
-html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_runningDot"],
-html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_doneDot"],
-html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_unreadDot"],
-html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_dot"],
-html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_spinner"],
-html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_status"] svg {
-  position: relative !important;
-  left: -3px !important;
+/* 工作区行和会话行左侧的图标统一左移 2px。
+   宿主用 padding-inline-start + gap 排列行内图标，所以调行的起始内边距
+   就能一次对齐这一列——文件夹、圆点、加载圈、星标、第三方插件加的图标
+   全都跟着走，不用逐个类名去点。 */
+html[data-dcc-radius="on"] [class*="_projectRow"],
+html[data-dcc-radius="on"] [class*="_sessionRow"] {
+  padding-inline-start: calc(
+    var(--dsh-sidebar-row-padding) - var(--dsh-sidebar-paint-inset)
+    + var(--dsh-workspace-indent, 0px) - 2px
+  ) !important;
 }
 
 /* 「展开其余 N 个会话 / 收起」比工作区标题更淡 */
@@ -806,12 +795,9 @@ html[data-dcc-radius="on"] [class*="_projectRow"] [class*="_iconSlot"] svg,
 html[data-dcc-radius="on"] [class*="_projectRow"] [class*="_iconSlot"] img {
   width: 14px !important;
   height: 14px !important;
-  /* 视觉重心：上移 1px、左移 2px 与文字基线对齐 */
+  /* 位置上移 1px 与文字基线对齐（横向由行的 padding 统一处理） */
   position: relative !important;
   top: -1px !important;
-  left: -2px !important;
-  /* 缩小后在右边补 2px，和标题之间不再贴得那么紧 */
-  margin-right: 2px !important;
   /* 非正方形图标按比例缩，不拉伸 */
   object-fit: contain !important;
 }
