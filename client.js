@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.368';
+    const VERSION = '0.2.369';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -766,6 +766,14 @@ html[data-dcc-dot="on"][data-dcc-row-buttons="off"] [class*="_sessionRow"]:hover
 html[data-dcc-dot="on"] [class*="_sessionRow"]:has(.dsham_starSlot[data-favorited="true"])::before {
   display: none;
 }
+/* 收藏星标和文件夹图标在同一列，左移 1px 对齐。
+   挂「减小圆角与间距」——它管的是这一列的整体位置。 */
+html[data-dcc-radius="on"] [class*="_sessionRow"] .dsham_starSlot,
+html[data-dcc-radius="on"] [class*="_sessionRow"] .dsham_rowStar {
+  position: relative !important;
+  left: -1px !important;
+}
+
 /* 悬停时才出现的收藏按钮（未收藏的空心星）跟着「隐藏会话悬停多余按钮」一起隐藏，
    已收藏的实心星保持显示——那是用户自己点亮的状态，不应该藏起来。 */
 html[data-dcc-row-buttons="on"] [class*="_sessionRow"] .dsham_starSlot:not([data-favorited="true"]) {
