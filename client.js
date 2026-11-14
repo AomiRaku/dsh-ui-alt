@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.287';
+    const VERSION = '0.2.288';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1975,7 +1975,20 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
 
       ensure();
-      observer = new MutationObserver(schedule);
+      /* 切视图时 aria-selected 一变就立刻同步，不走 350ms 防抖：
+         否则非对话视图下要等半拍控件才常驻出来。 */
+      const onSelect = () => {
+        if (timer !== null) {
+          clearTimeout(timer);
+          timer = null;
+        }
+        ensure();
+      };
+      observer = new MutationObserver((records) => {
+        const selected = records.some((record) => record.type === 'attributes');
+        if (selected) onSelect();
+        else schedule();
+      });
       observer.observe(document.body, {
         childList: true,
         subtree: true,
