@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.321';
+    const VERSION = '0.2.322';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1693,13 +1693,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
      * 行内元素之间的移动照常放行，所以按钮的 Tooltip 不受影响。
      */
     function installHoverCardBlocker() {
-      /* 总开关关闭时连监听都不挂，彻底等同禁用插件 */
-      if (document.documentElement.dataset.dccEnabled !== 'on') return () => {};
       const ROW = '[class*="_sessionRow"], [class*="_projectRow"], [class*="_searchResultRow"]';
       /* 最近一次「进入行」的时间戳，供下面的定时器过滤使用 */
       let lastRowHoverAt = 0;
 
       const onOver = (event) => {
+        if (document.documentElement.dataset.dccEnabled !== 'on') return;
         if (document.documentElement.dataset.dccHover !== 'off') return;
         const target = event.target;
         if (!(target instanceof Element)) return;
@@ -2266,7 +2265,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
      * 换算成菜单内的相对坐标写进变量，让缩放的锚点落在点下去的地方。
      */
     function installMenuOrigin() {
-      if (document.documentElement.dataset.dccEnabled !== 'on') return () => {};
       let lastX = 0;
       let lastY = 0;
       let observer = null;
@@ -2286,6 +2284,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           if (menu.hasAttribute('data-dcc-menu-seq')) continue;
           seq += 1;
           menu.setAttribute('data-dcc-menu-seq', String(seq));
+          if (document.documentElement.dataset.dccEnabled !== 'on') continue;
           if (document.documentElement.dataset.dccTransition !== 'on') continue;
           const rect = menu.getBoundingClientRect();
           if (rect.width <= 0 || rect.height <= 0) continue;
@@ -2338,7 +2337,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
      * 原节点照常卸载，不干扰 React 状态。
      */
     function installDialogExit() {
-      if (document.documentElement.dataset.dccEnabled !== 'on') return () => {};
       let observer = null;
       /* 节点被移除时再量尺寸已经晚了——脱离文档的元素 rect 全是 0。
          所以对话框一出现就把位置记下来，移除时直接取这份快照。 */
@@ -2353,6 +2351,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
 
       const playExit = (dialog) => {
+        if (document.documentElement.dataset.dccEnabled !== 'on') return;
         if (document.documentElement.dataset.dccTransition !== 'on') return;
         /* 快照自己也是 role="dialog"，不排除的话它的移除会再触发一轮快照，无限循环 */
         /* 标记打在克隆的遮罩层上，卡片只是它的子孙，所以用 closest 向上找 */
