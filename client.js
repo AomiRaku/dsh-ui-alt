@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.296';
+    const VERSION = '0.2.297';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -23,6 +23,7 @@ window.__ModuleLoader__.load({
       hideHoverCard: true,
       hideRowButtons: true,
       compactHeader: true,
+      compactAlwaysShow: false,
       navCollapse: true,
       optimizeStatsLayout: true,
       showBalance: true,
@@ -70,6 +71,7 @@ window.__ModuleLoader__.load({
       root.dataset.dccHover = prefs.hideHoverCard ? 'off' : 'on';
       root.dataset.dccRowButtons = prefs.hideRowButtons ? 'on' : 'off';
       root.dataset.dccCompactHeader = prefs.compactHeader ? 'on' : 'off';
+    root.dataset.dccAlwaysShow = prefs.compactAlwaysShow ? 'on' : 'off';
       root.dataset.dccCollapse = prefs.navCollapse ? 'on' : 'off';
       root.dataset.dccStats = prefs.optimizeStatsLayout ? 'on' : 'off';
       root.dataset.dccBalance = prefs.showBalance ? 'on' : 'off';
@@ -113,6 +115,11 @@ html[data-dcc-font="on"][data-windows-titlebar] body {
 .dcc-group { display: flex; flex-direction: column; padding: 6px 20px; border: 1px solid var(--dsw-alias-border-l2); border-radius: var(--dsw-radius-lg); background: var(--dsw-alias-bg-layer-1); }
 /* 分组标题统一降为次要色：它是分区标签，不该和设置项标题抢注意力 */
 .dcc-group-title { padding: 14px 2px 4px; font-size: 13px; line-height: 20px; font-weight: 500; color: var(--dsw-alias-label-secondary); }
+/* 依赖项未开启时置灰 */
+.dcc-row-disabled {
+  opacity: .45;
+  pointer-events: none;
+}
 .dcc-row { display: flex; align-items: center; gap: 16px; padding: 14px 2px; border-top: 1px solid var(--dsw-alias-border-l1); }
 .dcc-group-title + .dcc-row { border-top: none; }
 /* 无组名的组（总开关那一块）没有标题，首行同样不该有分隔线 */
@@ -864,6 +871,10 @@ html[data-dcc-compact-header="off"] .dcc-segmented {
   opacity: 1;
 }
 /* 不在「对话」视图时，控件常驻显示当前视图名 */
+/* 开关打开时，对话视图下也不再自动隐藏 */
+html[data-dcc-always-show="on"] .dcc-segmented {
+  opacity: 1;
+}
 .dcc-segmented[data-pinned="true"] {
   opacity: 1;
 }
@@ -2506,11 +2517,15 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
     }
 
     function Row(props) {
-      return h('div', { className: 'dcc-row' },
+      return h('div', { className: props.disabled ? 'dcc-row dcc-row-disabled' : 'dcc-row' },
         h('div', { className: 'dcc-row-text' },
           h('div', { className: 'dcc-row-title' }, props.title),
           props.desc ? h('div', { className: 'dcc-row-desc' }, props.desc) : null),
-        h(Switch, { checked: props.checked, onChange: props.onChange, title: props.title }));
+        h(Switch, {
+          checked: props.checked,
+          onChange: props.disabled ? () => {} : props.onChange,
+          title: props.title,
+        }));
     }
 
     /* 纯告知行：右侧没有任何控件，内容按纯文本渲染（换行由 pre-line 处理） */
@@ -2682,6 +2697,13 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             desc: zh ? '将视图切换按钮移到右上工具按钮处。使会话内容可视范围更大。\n此按钮在对话模式下默认隐藏，鼠标位于标题栏区域时才会显示。' : 'Move the view switcher button to the toolbar buttons in the top-right, giving the conversation more room.\nIn the conversation view it is hidden by default and only appears when the pointer is over the header.',
             checked: prefs.compactHeader,
             onChange: update('compactHeader'),
+          }),
+          h(Row, {
+            title: zh ? '紧凑标题栏始终显示视图切换控件' : 'Always show view switcher',
+            desc: zh ? '在对话视图下也不再自动隐藏视图切换控件。\n仅在「会话标题栏紧凑化」开启时可用。' : 'Keep the view switcher visible in the conversation view instead of hiding it until hover.\nOnly available when the session header is compact.',
+            checked: prefs.compactAlwaysShow,
+            disabled: !prefs.compactHeader,
+            onChange: update('compactAlwaysShow'),
           })),
         h('div', { className: 'dcc-group' },
           h('div', { className: 'dcc-group-title' }, zh ? '性能与用量信息' : 'Performance and usage'),
