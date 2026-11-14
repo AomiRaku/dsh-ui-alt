@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.364';
+    const VERSION = '0.2.365';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -762,28 +762,6 @@ html[data-dcc-dot="on"] [class*="_sessionRow"]:has(.dsham_starSlot[data-favorite
 html[data-dcc-enabled="on"] [class*="_sessionRow"] .dsham_starSlot:not([data-favorited="true"]) .dsham_rowStar {
   color: var(--dsw-alias-label-secondary) !important;
 }
-/* 会话行 / 工作区行左侧的图标容器统一成固定宽度并居中。
-   宿主的 StateDot、插件插槽（星标等）都塞在这个 slot 里，
-   给容器定宽居中后，不同尺寸的图标左边缘自然对齐，不用逐个补位移。 */
-html[data-dcc-radius="on"] [class*="_sessionRow"] > [class*="_slot"]:first-child,
-html[data-dcc-radius="on"] [class*="_projectRow"] > [class*="_slot"]:first-child {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  flex: none;
-}
-/* 容器内的图标本身不能带外边距，否则居中会被它抵掉（不同状态的
-   圆点尺寸不同，宿主可能给它们配了不同的 margin）。
-   SVG 默认是 inline，按基线对齐会往下一截，这里一并压成块级。 */
-html[data-dcc-radius="on"] [class*="_sessionRow"] > [class*="_slot"]:first-child > *,
-html[data-dcc-radius="on"] [class*="_projectRow"] > [class*="_slot"]:first-child > * {
-  margin: 0 !important;
-  flex: none !important;
-  display: block !important;
-  vertical-align: middle !important;
-}
-
 /* 工作区行和会话行左侧的图标统一左移 2px。
    宿主用 padding-inline-start + gap 排列行内图标，所以调行的起始内边距
    就能一次对齐这一列——文件夹、圆点、加载圈、星标、第三方插件加的图标
