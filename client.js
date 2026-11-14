@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.320';
+    const VERSION = '0.2.321';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1601,9 +1601,9 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       observer.observe(document.body, { childList: true, subtree: true });
       document.addEventListener('click', onClick, true);
       document.addEventListener('mousemove', onMove, true);
-      /* 紧凑化开关切换后立刻重建分段控件 */
+      /* 设置面板全屏 / 窗口模式切换后，返回按钮要重新对齐位置 */
       const onPrefs = (event) => {
-        if (event.detail && event.detail.key === 'compactHeader') ensure();
+        if (event.detail && event.detail.key === 'settingsFullscreen') ensure();
       };
       window.addEventListener('dcc-prefs-changed', onPrefs);
 
