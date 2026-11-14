@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.322';
+    const VERSION = '0.2.323';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -209,7 +209,7 @@ body[data-ds-dark-theme] .dcc-boot-cover {
   border-radius: var(--dsw-radius-lg, 12px);
   background: var(--dsw-alias-bg-layer-1);
   box-shadow: 0 16px 48px rgba(0, 0, 0, .35);
-  animation: dcc-plain-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
+  animation: dcc-plain-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) !important;
 }
 .dcc-modal-content {
   padding: 18px 20px 4px;
@@ -647,11 +647,11 @@ html[data-dcc-hover="off"] [class*="_card_"][data-closing] {
    用一层近似底色的背景兜住，避免那 130ms 出现「透明」的观感。 */
 html[data-dcc-transition="on"] [data-menu-material][data-menu-phase="enter"] {
   transform-origin: var(--dcc-menu-origin, 50% 50%);
-  animation: dcc-menu-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
+  animation: dcc-menu-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) !important;
 }
 html[data-dcc-transition="on"] [data-menu-material][data-menu-phase="dismiss"] {
   transform-origin: var(--dcc-menu-origin, 50% 50%);
-  animation: dcc-menu-out .12s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) forwards;
+  animation: dcc-menu-out .12s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) forwards !important;
 }
 /* 子菜单、列表选择器这些没有 data-menu-phase 的弹出层，
    用 role 单独命中，套同一组入场动画。对话框单独处理：
@@ -659,11 +659,11 @@ html[data-dcc-transition="on"] [data-menu-material][data-menu-phase="dismiss"] {
 html[data-dcc-transition="on"] [role="menu"]:not([data-menu-phase]),
 html[data-dcc-transition="on"] [role="listbox"]:not([data-menu-phase]) {
   transform-origin: var(--dcc-menu-origin, left center);
-  animation: dcc-menu-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
+  animation: dcc-menu-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) !important;
 }
 html[data-dcc-transition="on"] [role="dialog"]:not([data-menu-phase]) {
   transform-origin: 50% 50%;
-  animation: dcc-menu-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
+  animation: dcc-menu-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) !important;
 }
 /* animation 简写会把 name 重置回 dcc-menu-in，所以这条必须写在它之后 */
 html[data-dcc-menu-blur="on"] [data-menu-material][data-menu-phase="enter"],
