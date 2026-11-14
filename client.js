@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.367';
+    const VERSION = '0.2.368';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -759,7 +759,10 @@ html[data-dcc-dot="on"] [class*="_sessionRow"]:has([class*="_slot"] svg)::before
 /* 与 archive-manager 的收藏星标共存：星标占用的正是同一个 16px 前导位置。
    星标在行悬停时总会出现（未收藏是空心、可点），已收藏则常驻，
    两种情况下都不再画自身的小圆点，避免与星标叠在一起。 */
-html[data-dcc-dot="on"] [class*="_sessionRow"]:hover:has(.dsham_starSlot)::before,
+/* 悬停规避只在「隐藏会话悬停多余按钮」关着时才需要——
+   那个开关打开后，未收藏的星标根本不会出现，圆点不必让位。
+   已收藏的星标是常驻的，所以这一条不受开关影响。 */
+html[data-dcc-dot="on"][data-dcc-row-buttons="off"] [class*="_sessionRow"]:hover:has(.dsham_starSlot)::before,
 html[data-dcc-dot="on"] [class*="_sessionRow"]:has(.dsham_starSlot[data-favorited="true"])::before {
   display: none;
 }
