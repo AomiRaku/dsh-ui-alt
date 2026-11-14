@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.380';
+    const VERSION = '0.2.381';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -3006,6 +3006,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
                 '- 选择题弹窗细节优化。',
                 '- 避免界面加载时跳变添加的过渡遮罩。',
                 '- 修复二级右键菜单消失延迟。',
+                '- 顶栏三点菜单内增加刷新前端界面按钮，卡顿时可以刷新，不影响正在运行的任务。',
               ].join('\n')
               : [
                 'These small fixes and improvements are always on unless the master switch is off.',
@@ -3015,6 +3016,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
                 '- Multiple-choice dialog details refined.',
                 '- A transition cover added to avoid layout jumps on startup.',
                 '- Fixed the delay when closing a second-level context menu.',
+                '- Added a reload button to the top-bar overflow menu, so you can refresh when the UI lags without interrupting running tasks.',
               ].join('\n'),
           })),
         h('div', { className: 'dcc-meta-row' },
