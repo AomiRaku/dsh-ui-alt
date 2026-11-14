@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.307';
+    const VERSION = '0.2.308';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -367,6 +367,14 @@ html[data-dcc-radius="on"] [class*="_media_"] {
 html[data-dcc-new="on"] button[data-dcc-original] {
   display: none !important;
 }
+/* 原版按钮被隐藏后，它外面那层容器仍然占着高度，形成一块空白。
+   用克隆行时把整层一并收掉；侧栏收窄到只剩图标时再放出来。 */
+html[data-dcc-new="on"] div[class*="_newSessionRow"] {
+  display: none !important;
+}
+html[data-dcc-new="on"]:has([data-sidebar-collapsed="true"]) div[class*="_newSessionRow"] {
+  display: block !important;
+}
 html[data-dcc-new="on"]:has([data-sidebar-collapsed="true"]) button[data-dcc-original] {
   display: flex !important;
 }
@@ -425,12 +433,6 @@ html[data-dcc-collapse="on"][data-dcc-logo="shown"] [class*="_logoRow"] {
   padding-bottom: 2px !important;
 }
 
-/* 用克隆行替代原版「新会话」按钮时，宿主给滚动区留的 4px 上边距
-   和那点高度补偿都不需要了，直接清零。 */
-html[data-dcc-new="on"] [class*="_scrollRegion"] {
-  margin-top: 0 !important;
-  height: auto !important;
-}
 
 /* 克隆出来的新会话行在 nav 里，滚动时要固定；
    原按钮不在这里处理——它在 nav 外面本来就固定，加 sticky 和背景
