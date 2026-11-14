@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.290';
+    const VERSION = '0.2.291';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -846,27 +846,16 @@ html [class*="_viewsMoreAnchor"] {
 html[data-dcc-compact-header="off"] .dcc-segmented {
   display: none !important;
 }
-/* 分组按钮：与顶部官方按钮对齐——box-sizing 让 height 含边框，
-   圆角用 sm(8px) 而不是 md(12px)，描边用更浅的 l1。 */
+/* 视图控件：一个普通的下拉按钮（当前视图名 + 箭头），点整块展开菜单。 */
 .dcc-segmented {
   box-sizing: border-box;
-  /* 默认隐藏，鼠标进入标题栏时浮现。用 opacity 而不是 display，
-     保留占位，浮现时不会把右侧按钮挤开。 */
-  opacity: 0;
-  transition: opacity .2s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
   display: inline-flex;
   align-items: stretch;
   height: 24px;
-  /* 视图变多时向左长：不让自己被压缩，宽度由内容决定 */
   flex: none;
-  /* 宿主给 headerUtilities 的 gap 是 8px；我们这层带 0.5px 描边和圆角，
-     视觉上边界内缩、显得比别的元素远一点，补 2px 回来 */
   margin-right: 2px;
-  padding: 0;
-  border: 0.5px solid var(--dsw-alias-border-l4);
-  border-radius: var(--dsw-radius-sm, 8px);
-  background: var(--dsw-alias-bg-layer-1);
-  overflow: hidden;
+  opacity: 0;
+  transition: opacity .2s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
 }
 /* 悬停整个标题栏区域时浮现；鼠标直接落在控件上也保持可见 */
 [class*="_header"]:hover .dcc-segmented,
@@ -878,46 +867,47 @@ html[data-dcc-compact-header="off"] .dcc-segmented {
 .dcc-segmented[data-pinned="true"] {
   opacity: 1;
 }
-/* 单个分段也不压缩，标签文字保持完整 */
-.dcc-seg {
-  flex: none;
-  white-space: nowrap;
+.dcc-trigger {
   display: inline-flex;
   align-items: center;
-  border: 0;
-  background: transparent;
-  color: var(--dsw-alias-label-tertiary);
+  gap: 3px;
+  height: 24px;
+  padding: 0 8px;
+  border: 0.5px solid var(--dsw-alias-border-l4);
+  border-radius: var(--dsw-radius-sm, 8px);
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-secondary);
   font: inherit;
   font-size: 12px;
   line-height: 1;
-  padding: 0 8px;
+  white-space: nowrap;
   cursor: pointer;
   transition: background-color .12s, color .12s;
 }
-.dcc-seg:hover:not([data-active="true"]) {
+.dcc-trigger:hover {
   background: var(--dsw-alias-interactive-bg-hover);
   color: var(--dsw-alias-label-primary);
 }
-/* 菜单展开期间，三个点保持悬停时的样式 */
-.dcc-seg-more[data-open="true"] {
+.dcc-trigger[data-open="true"] {
   background: var(--dsw-alias-interactive-bg-hover);
   color: var(--dsw-alias-label-primary);
 }
-/* 「更多」不再是三个点，而是一个下拉箭头，展开时转 180 度 */
-.dcc-seg-more {
-  min-width: 20px;
-  justify-content: center;
-  padding: 0 6px;
+.dcc-trigger-label {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.dcc-seg-more svg {
+.dcc-trigger-arrow {
   display: block;
   width: 12px;
   height: 12px;
+  flex: none;
   transition: transform .15s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
 }
-.dcc-seg-more[data-open="true"] svg {
+.dcc-trigger[data-open="true"] .dcc-trigger-arrow {
   transform: rotate(180deg);
 }
+
 /* 溢出菜单：对齐宿主菜单的尺寸与层级（圆角 12、内距 6、项高 32、项圆角 8） */
 .dcc-seg-menu {
   position: fixed;
@@ -982,11 +972,6 @@ html[data-dcc-compact-header="off"] .dcc-segmented {
 }
 .dcc-seg-menu-item:hover {
   background: var(--dsw-alias-interactive-bg-hover);
-}
-.dcc-seg[data-active="true"] {
-  background: transparent;
-  color: var(--dsw-alias-state-business-primary);
-  font-weight: 500;
 }
 
 /* ---------- 输入框下方状态行：速率/缓存靠左，上下文环推到最右 ---------- */
@@ -1786,11 +1771,11 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         if (tabs === null) return;
         const sources = Array.from(tabs.querySelectorAll('button[role="tab"]'));
         const activeIndex = sources.findIndex((el) => el.getAttribute('aria-selected') === 'true');
-        /* 控件恒定折叠，只有「激活项 + ⋯」，同步文字即可 */
-        const first = bar.querySelector('.dcc-seg:not(.dcc-seg-more)');
-        if (first !== null && sources[activeIndex] !== undefined) {
+        /* 按钮上显示当前视图名 */
+        const label = bar.querySelector('.dcc-trigger-label');
+        if (label !== null && sources[activeIndex] !== undefined) {
           const text = (sources[activeIndex].textContent || '').trim();
-          if (first.textContent !== text) first.textContent = text;
+          if (label.textContent !== text) label.textContent = text;
         }
         /* 第一个视图（对话）之外的页面，控件要常驻显示当前视图名。
            宿主切视图的中间态可能一个选中项都没有（activeIndex 为 -1），
@@ -1863,19 +1848,22 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           return item;
         };
 
-        /* 只留当前激活项 + 一个「⋯」，其余收进菜单 */
+        /* 控件就是一个普通的下拉按钮：当前视图名 + 箭头，点整块展开菜单 */
         {
           const activeIdx = activeIndex >= 0 ? activeIndex : 0;
-          if (sources[activeIdx] !== undefined) {
-            const seg = makeSeg((sources[activeIdx].textContent || '').trim(), activeIdx);
-            seg.dataset.active = 'true';
-            bar.appendChild(seg);
-          }
-          const more = document.createElement('button');
-          more.type = 'button';
-          more.className = 'dcc-seg dcc-seg-more';
-          /* 用箭头代替三个点：视觉上更像下拉菜单 */
+          const trigger = document.createElement('button');
+          trigger.type = 'button';
+          trigger.className = 'dcc-trigger';
+          trigger.setAttribute('aria-haspopup', 'menu');
+          const textNode = document.createElement('span');
+          textNode.className = 'dcc-trigger-label';
+          textNode.textContent = sources[activeIdx] === undefined
+            ? ''
+            : (sources[activeIdx].textContent || '').trim();
+          trigger.appendChild(textNode);
+
           const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          arrow.setAttribute('class', 'dcc-trigger-arrow');
           arrow.setAttribute('viewBox', '0 0 16 16');
           arrow.setAttribute('aria-hidden', 'true');
           const arrowPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -1886,8 +1874,10 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           arrowPath.setAttribute('stroke-linecap', 'round');
           arrowPath.setAttribute('stroke-linejoin', 'round');
           arrow.appendChild(arrowPath);
-          more.appendChild(arrow);
-          more.setAttribute('aria-label', '更多视图');
+          trigger.appendChild(arrow);
+          bar.appendChild(trigger);
+
+          const more = trigger;
           more.addEventListener('click', (event) => {
             event.stopPropagation();
             if (segMenu !== null) { closeSegMenu(); return; }
@@ -1944,7 +1934,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
               segMenuGuard = onDown;
             }, 0);
           });
-          bar.appendChild(more);
         }
         host.insertBefore(bar, host.firstChild);
         syncActive();
