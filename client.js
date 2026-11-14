@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.289';
+    const VERSION = '0.2.290';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -894,9 +894,6 @@ html[data-dcc-compact-header="off"] .dcc-segmented {
   cursor: pointer;
   transition: background-color .12s, color .12s;
 }
-.dcc-seg + .dcc-seg {
-  border-left: 0.5px solid var(--dsw-alias-border-l4);
-}
 .dcc-seg:hover:not([data-active="true"]) {
   background: var(--dsw-alias-interactive-bg-hover);
   color: var(--dsw-alias-label-primary);
@@ -906,11 +903,20 @@ html[data-dcc-compact-header="off"] .dcc-segmented {
   background: var(--dsw-alias-interactive-bg-hover);
   color: var(--dsw-alias-label-primary);
 }
+/* 「更多」不再是三个点，而是一个下拉箭头，展开时转 180 度 */
 .dcc-seg-more {
-  min-width: 18px;
+  min-width: 20px;
   justify-content: center;
-  font-size: 13px;
-  letter-spacing: 0;
+  padding: 0 6px;
+}
+.dcc-seg-more svg {
+  display: block;
+  width: 12px;
+  height: 12px;
+  transition: transform .15s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
+}
+.dcc-seg-more[data-open="true"] svg {
+  transform: rotate(180deg);
 }
 /* 溢出菜单：对齐宿主菜单的尺寸与层级（圆角 12、内距 6、项高 32、项圆角 8） */
 .dcc-seg-menu {
@@ -1868,7 +1874,19 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const more = document.createElement('button');
           more.type = 'button';
           more.className = 'dcc-seg dcc-seg-more';
-          more.textContent = '⋯';
+          /* 用箭头代替三个点：视觉上更像下拉菜单 */
+          const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          arrow.setAttribute('viewBox', '0 0 16 16');
+          arrow.setAttribute('aria-hidden', 'true');
+          const arrowPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          arrowPath.setAttribute('d', 'M4 6.5 8 10.5 12 6.5');
+          arrowPath.setAttribute('fill', 'none');
+          arrowPath.setAttribute('stroke', 'currentColor');
+          arrowPath.setAttribute('stroke-width', '1.6');
+          arrowPath.setAttribute('stroke-linecap', 'round');
+          arrowPath.setAttribute('stroke-linejoin', 'round');
+          arrow.appendChild(arrowPath);
+          more.appendChild(arrow);
           more.setAttribute('aria-label', '更多视图');
           more.addEventListener('click', (event) => {
             event.stopPropagation();
