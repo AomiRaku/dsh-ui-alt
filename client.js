@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.311';
+    const VERSION = '0.2.312';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1861,20 +1861,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           if (target !== undefined) target.click();
         };
 
-        const makeSeg = (label, index) => {
-          const item = document.createElement('button');
-          item.type = 'button';
-          item.className = 'dcc-seg';
-          item.textContent = label;
-          item.addEventListener('click', () => {
-            const segs = bar.querySelectorAll('.dcc-seg');
-            for (let i = 0; i < segs.length; i += 1) {
-              segs[i].dataset.active = i === index ? 'true' : 'false';
-            }
-            forward(index);
-          });
-          return item;
-        };
 
         /* 控件就是一个普通的下拉按钮：当前视图名 + 箭头，点整块展开菜单 */
         {
@@ -2127,16 +2113,15 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       const SEND_LABEL = /发送|send/i;
       const STOP_LABEL = /停止|stop/i;
       let finishedObserver = null;
+      const findLabel = (re) => {
+        for (const btn of document.querySelectorAll('button[aria-label]')) {
+          if (re.test(btn.getAttribute('aria-label') || '')) return true;
+        }
+        return false;
+      };
       const findComposerButton = () => {
-        const buttons = document.querySelectorAll('button[aria-label]');
-        for (const btn of buttons) {
-          const label = btn.getAttribute('aria-label') || '';
-          if (STOP_LABEL.test(label)) return { btn, stop: true };
-        }
-        for (const btn of buttons) {
-          const label = btn.getAttribute('aria-label') || '';
-          if (SEND_LABEL.test(label)) return { btn, stop: false };
-        }
+        if (findLabel(STOP_LABEL)) return { stop: true };
+        if (findLabel(SEND_LABEL)) return { stop: false };
         return null;
       };
       const watchFinish = () => {
