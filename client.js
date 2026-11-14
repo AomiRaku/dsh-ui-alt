@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.286';
+    const VERSION = '0.2.287';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -791,6 +791,12 @@ html[data-dcc-hover="off"] [class*="_bridge_bgejw"] {
    分不出谁是谁，所以保留哪几个由脚本按 data-context-menu-trigger / aria-label 判定，
    再打上 data-dcc-hidden，这里只负责隐藏。 */
 html[data-dcc-row-buttons="on"] [class*="_sessionRow"] [class*="_rowActions"] button[data-dcc-hidden] {
+  display: none !important;
+}
+/* 兜底：不等脚本标记，按按钮身份直接隐藏。
+   悬停行时「菜单」和「置顶」保留，其余立刻不可见——
+   脚本晚一拍也不会先闪出一排按钮。 */
+html[data-dcc-row-buttons="on"] [class*="_sessionRow"]:hover [class*="_rowActions"] button:not([data-context-menu-trigger]):not([aria-label*="置顶"]):not([aria-label*="pin" i]):not([aria-label*="取消置顶"]):not([aria-label*="unpin" i]) {
   display: none !important;
 }
 
