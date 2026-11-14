@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.330';
+    const VERSION = '0.2.331';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -648,11 +648,10 @@ html[data-dcc-hover="off"] [class*="_card_"][data-closing] {
 
 /* 快照里的遮罩不要重播淡入——它是退场快照的一部分，
    应该跟着外层一起淡出，否则看起来遮罩一直不消失。 */
-/* 特异性必须压过下面那条入场规则，否则快照里的遮罩会重播淡入、闪出白底 */
+/* 特异性必须压过下面那条入场规则，否则快照里的遮罩会重播淡入、闪出白底。
+   不要改它的定位——原遮罩只盖标题栏以下，铺满视口会盖住标题区。 */
 html[data-dcc-transition="on"] [data-dcc-dialog-clone] [class*="_mask"] {
   animation: none !important;
-  position: fixed !important;
-  inset: 0 !important;
 }
 
 /* 压暗遮罩的入场：从透明淡到实，时长与退场的 dcc-fade-out 对齐。
