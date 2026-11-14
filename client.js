@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.377';
+    const VERSION = '0.2.378';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -2215,7 +2215,9 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           event.stopPropagation();
           window.setTimeout(() => window.location.reload(), 0);
         });
-        menu.appendChild(item);
+        /* 宿主的菜单项都在内层滚动容器里，加在外层会错位。 */
+        const viewport = menu.querySelector('[class*="_viewport"]') || menu;
+        viewport.appendChild(item);
       };
 
       /* 用 rAF 而不是延时：菜单一出现，下一帧就把项补上，
