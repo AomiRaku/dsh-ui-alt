@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.340';
+    const VERSION = '0.2.341';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -612,7 +612,7 @@ html[data-dcc-menu-blur="on"] [role="menu"] {
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: none;
   }
 }
 @keyframes dcc-plain-out {
@@ -705,7 +705,9 @@ html[data-dcc-menu-blur="on"] [data-menu-material][data-menu-phase="dismiss"] {
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    /* 必须是 none 而不是 scale(1)：任何非 none 的 transform 都会创建包含块，
+       position: fixed 的后代（子菜单）会改为相对它定位，长菜单因此错位。 */
+    transform: none;
     background-color: var(--dcc-menu-fallback, var(--dsw-alias-bg-layer-1));
   }
 }
