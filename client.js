@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.297';
+    const VERSION = '0.2.298';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -2700,7 +2700,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           }),
           h(Row, {
             title: zh ? '紧凑标题栏始终显示视图切换控件' : 'Always show view switcher',
-            desc: zh ? '在对话视图下也不再自动隐藏视图切换控件。\n仅在「会话标题栏紧凑化」开启时可用。' : 'Keep the view switcher visible in the conversation view instead of hiding it until hover.\nOnly available when the session header is compact.',
+            desc: zh ? '在对话视图下也不再自动隐藏视图切换控件。' : 'Keep the view switcher visible in the conversation view instead of hiding it until hover.',
             checked: prefs.compactAlwaysShow,
             disabled: !prefs.compactHeader,
             onChange: update('compactAlwaysShow'),
