@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.363';
+    const VERSION = '0.2.364';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -774,11 +774,14 @@ html[data-dcc-radius="on"] [class*="_projectRow"] > [class*="_slot"]:first-child
   flex: none;
 }
 /* 容器内的图标本身不能带外边距，否则居中会被它抵掉（不同状态的
-   圆点尺寸不同，宿主可能给它们配了不同的 margin）。 */
+   圆点尺寸不同，宿主可能给它们配了不同的 margin）。
+   SVG 默认是 inline，按基线对齐会往下一截，这里一并压成块级。 */
 html[data-dcc-radius="on"] [class*="_sessionRow"] > [class*="_slot"]:first-child > *,
 html[data-dcc-radius="on"] [class*="_projectRow"] > [class*="_slot"]:first-child > * {
   margin: 0 !important;
   flex: none !important;
+  display: block !important;
+  vertical-align: middle !important;
 }
 
 /* 工作区行和会话行左侧的图标统一左移 2px。
