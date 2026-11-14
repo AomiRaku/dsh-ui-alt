@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.360';
+    const VERSION = '0.2.361';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -769,7 +769,9 @@ html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_statusDot"],
 html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_runningDot"],
 html[data-dcc-radius="on"] [class*="_sessionRow"] [class*="_status"] svg {
   position: relative !important;
-  left: -2px !important;
+  /* 目标位置落在半像素上，整数位移只能到「偏左」或「偏右」两边，
+     用小数才能落在中间。 */
+  left: -1.5px !important;
 }
 
 /* 工作区行和会话行左侧的图标统一左移 2px。
