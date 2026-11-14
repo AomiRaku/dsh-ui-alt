@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.290';
+    const VERSION = '0.2.291';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -683,16 +683,6 @@ html[data-dcc-menu-blur="on"] [data-menu-material][data-menu-phase="dismiss"] {
   }
 }
 
-
-/* ---------- 流式文本淡入 ---------- */
-/* 生成过程中新出现的块级元素淡入；同一个块只播一次，后续追加文字不再触发。 */
-.dcc-stream-fade {
-  animation: dcc-stream-in .28s cubic-bezier(.4, 0, .2, 1);
-}
-@keyframes dcc-stream-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
 
 /* ---------- 工作区名称更明显，「展开其余」更淡 ---------- */
 html[data-dcc-dim="on"] [class*="_projectRow"] [class*="_title"] {
@@ -1606,45 +1596,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         document.removeEventListener('mousemove', onMove, true);
         if (cursorTitle !== null) clearHot();
         if (btn !== null) btn.remove();
-      };
-    }
-
-    /**
-     * 流式生成时，新出现的文本块（段落、列表项、代码块等）淡入。
-     * 用 WeakSet 记录已处理过的元素，流式过程中同一个块只会动画一次。
-     */
-    function installStreamFade() {
-      const BLOCKS = 'p, li, pre, h1, h2, h3, h4, h5, h6, blockquote, td, th';
-      const seen = new WeakSet();
-      let observer = null;
-      let timer = null;
-
-      const mark = () => {
-        const host = document.querySelector('[data-conversation-scroll]');
-        if (host === null) return;
-        const blocks = host.querySelectorAll(BLOCKS);
-        for (const block of blocks) {
-          if (seen.has(block)) continue;
-          seen.add(block);
-          block.classList.add('dcc-stream-fade');
-        }
-      };
-
-      const schedule = () => {
-        if (timer !== null) return;
-        timer = window.setTimeout(() => {
-          timer = null;
-          mark();
-        }, 60);
-      };
-
-      mark();
-      observer = new MutationObserver(schedule);
-      observer.observe(document.body, { childList: true, subtree: true });
-
-      return () => {
-        observer.disconnect();
-        if (timer !== null) clearTimeout(timer);
       };
     }
 
@@ -2844,7 +2795,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const removeNewSessionRow = installNewSessionRow();
           const removeSettingsBack = installSettingsBackButton();
           const removeRowActionFilter = installRowActionFilter();
-          const removeStreamFade = installStreamFade();
           const removeHoverCardBlocker = installHoverCardBlocker();
           const removeViewSwitcher = installViewSwitcher();
           const removeBalance = installBalancePill(ctx);
@@ -2857,7 +2807,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             removeNewSessionRow();
             removeSettingsBack();
             removeRowActionFilter();
-            removeStreamFade();
             removeHoverCardBlocker();
             removeViewSwitcher();
             removeBalance();
