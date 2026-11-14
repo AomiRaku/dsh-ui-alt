@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.319';
+    const VERSION = '0.2.320';
     const UPDATED = '2026-11-14';
     const DEFAULTS = {
       radiusDensity: true,
@@ -312,13 +312,13 @@ html[data-dcc-radius="on"][data-windows-titlebar] [class*="_frame"] {
   --dsh-windows-content-radius: 6px !important;
 }
 /* 选择题：选中项的序号用高亮反色（和勾选框一致） */
-html[data-dcc-enabled="on"] html [class*="_optionRow"][class*="_optionSelected"] [class*="_number"] {
+html[data-dcc-enabled="on"] [class*="_optionRow"][class*="_optionSelected"] [class*="_number"] {
   background-color: var(--dsw-alias-label-primary) !important;
   color: var(--dsw-alias-label-primary-foreground) !important;
   font-weight: 600 !important;
 }
 /* 悬停选项时序号数字更明显，但序号底色不变（选中项由上面的反色规则接管） */
-html[data-dcc-enabled="on"] html [class*="_optionRow"]:not([class*="_optionSelected"]):hover [class*="_number"] {
+html[data-dcc-enabled="on"] [class*="_optionRow"]:not([class*="_optionSelected"]):hover [class*="_number"] {
   color: var(--dsw-alias-label-primary) !important;
 }
 
@@ -740,7 +740,7 @@ html[data-dcc-dot="on"] [class*="_sessionRow"]:has(.dsham_starSlot[data-favorite
 }
 /* 未收藏时的空心星（悬停才出现）：压到与会话标题同色，不再用偏亮的 label-primary。
    已收藏的实心金星保持 archive-manager 原色，不做处理。 */
-html[data-dcc-enabled="on"] html [class*="_sessionRow"] .dsham_starSlot:not([data-favorited="true"]) .dsham_rowStar {
+html[data-dcc-enabled="on"] [class*="_sessionRow"] .dsham_starSlot:not([data-favorited="true"]) .dsham_rowStar {
   color: var(--dsw-alias-label-secondary) !important;
 }
 /* 「展开其余 N 个会话 / 收起」比工作区标题更淡 */
@@ -754,10 +754,10 @@ html[data-dcc-dim="on"] [class*="_sessionOverflowButton"]:hover {
 
 /* ---------- 工作区行：悬停时不换成展开箭头，保持文件夹图标 ---------- */
 /* 宿主默认：hover 时 .chevron 显示、.folder 隐藏（Rows.module.css）。这里反着压回去。 */
-html[data-dcc-enabled="on"] html [class*="_projectRow"]:hover [class*="_folder"] {
+html[data-dcc-enabled="on"] [class*="_projectRow"]:hover [class*="_folder"] {
   display: inline-flex !important;
 }
-html[data-dcc-enabled="on"] html [class*="_projectRow"]:hover [class*="_chevron"] {
+html[data-dcc-enabled="on"] [class*="_projectRow"]:hover [class*="_chevron"] {
   display: none !important;
 }
 
@@ -862,7 +862,7 @@ html[data-dcc-enabled="on"][data-dcc-header-fade="on"]:has([data-conversation-ta
 }
 /* 宿主自带的「更多」按钮始终隐藏：标签行已被本插件的分段控件取代，
    它的下拉菜单也不再需要（当前可见的视图都能直接点）。 */
-html[data-dcc-enabled="on"] html [class*="_viewsMoreAnchor"] {
+html[data-dcc-enabled="on"] [class*="_viewsMoreAnchor"] {
   display: none !important;
 }
 /* 开关关掉时，自绘的分段控件不出现，标签行恢复原样 */
@@ -1198,7 +1198,7 @@ html[data-dcc-select="on"] body [class*="_crumb"] * {
 }
 
 /* ---------- 已归档会话：标题画删除线 ---------- */
-html[data-dcc-enabled="on"] html [class*="_sessionRow"][class*="_archived"] [class*="_title"] {
+html[data-dcc-enabled="on"] [class*="_sessionRow"][class*="_archived"] [class*="_title"] {
   text-decoration: line-through;
   text-decoration-thickness: 1px;
 }
