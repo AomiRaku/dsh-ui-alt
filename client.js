@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.388';
+    const VERSION = '0.2.389';
     const UPDATED = '2026-11-15';
     const DEFAULTS = {
       radiusDensity: true,
@@ -2213,11 +2213,17 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           hint.style.top = '50%';
           hint.style.left = '50%';
           hint.style.transform = 'translate(-50%, -50%)';
+          /* 宽松匹配：元素文字里出现 HARNESS 就藏掉。
+             之前用全等比较，文字带空格或标点时匹配不上。 */
           for (const el of boot.querySelectorAll('*')) {
-            if (el.children.length > 0) continue;
-            if ((el.textContent || '').trim() === 'HARNESS') {
-              el.style.display = 'none';
-            }
+            const text = (el.textContent || '').trim();
+            if (!/HARNESS/i.test(text)) continue;
+            /* 只藏最内层那个，避免把整个容器一起藏掉 */
+            const inner = [...el.querySelectorAll('*')].filter(
+              (c) => /HARNESS/i.test((c.textContent || '').trim()),
+            );
+            if (inner.length > 0) continue;
+            el.style.display = 'none';
           }
         }
         center(hint);
