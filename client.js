@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.383';
+    const VERSION = '0.2.384';
     const UPDATED = '2026-11-15';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1007,8 +1007,7 @@ html[data-dcc-always-show="on"] .dcc-segmented {
    文字内容由宿主写入，这里只改排版，不替换文案。 */
 html[data-dcc-enabled="on"] [class*="_hint"] {
   position: fixed !important;
-  top: 50% !important;
-  left: 50% !important;
+  /* left/top 由脚本按正文区域的中心算出来写上去 */
   transform: translate(-50%, -50%) !important;
   display: flex !important;
   flex-direction: column !important;
@@ -2198,6 +2197,16 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         shape.setAttribute('fill', darkNow ? '#ffffff' : '#000000');
         svg.appendChild(shape);
         hint.insertBefore(svg, hint.firstChild);
+        center(hint);
+      };
+      /* 按正文区域（而不是视口）的中心定位：侧栏展开时两者差一截。 */
+      const center = (hint) => {
+        const host = document.querySelector('[data-conversation-scroll]');
+        if (host === null) return;
+        const rect = host.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) return;
+        hint.style.left = rect.left + rect.width / 2 + 'px';
+        hint.style.top = rect.top + rect.height / 2 + 'px';
       };
 
       const schedule = () => {
