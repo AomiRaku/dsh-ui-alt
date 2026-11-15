@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.390';
+    const VERSION = '0.2.391';
     const UPDATED = '2026-11-15';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1006,6 +1006,20 @@ html[data-dcc-always-show="on"] .dcc-segmented {
 /* ===== BOOT-HINT: 宿主加载页适配（高耦合，见 installBootHint 的注释）=====
    只藏旋转圈。hint 居中和 HARNESS 隐藏必须在同一帧完成，放在脚本里做。
    宿主加载页若改版，整块删掉即可，不影响其它样式。 */
+/* 脚本处理完之前先整体不可见：宿主第一帧渲染的是原始布局，
+   如果直接可见会露出一瞬的 HARNESS + Loading 并排。空一帧比错一帧好。
+   处理完由脚本打上 data-dcc-boot-ready，恢复正常显示。 */
+html[data-dcc-enabled="on"] [data-dsh-boot]:not([data-dcc-boot-ready]) {
+  visibility: hidden;
+}
+/* 兜底：万一脚本没跑（插件未加载等），两秒后无论如何都显示出来，
+   避免加载页永久不可见。 */
+html[data-dcc-enabled="on"] [data-dsh-boot] {
+  animation: dcc-boot-reveal 0s linear 2s forwards;
+}
+@keyframes dcc-boot-reveal {
+  to { visibility: visible; }
+}
 html[data-dcc-enabled="on"] [data-dsh-boot] [data-dsh-boot-spinner],
 html[data-dcc-enabled="on"] [data-dsh-boot] [class*="_spinner"] {
   display: none !important;
@@ -2297,6 +2311,9 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           el.setAttribute('data-dcc-boot-brand', '');
           el.style.display = 'none';
         }
+
+        /* 处理完了，放行显示 */
+        boot.setAttribute('data-dcc-boot-ready', '');
       };
 
       const schedule = () => {
@@ -2325,6 +2342,9 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         for (const el of document.querySelectorAll('[data-dcc-boot-brand]')) {
           el.removeAttribute('data-dcc-boot-brand');
           el.style.display = '';
+        }
+        for (const el of document.querySelectorAll('[data-dcc-boot-ready]')) {
+          el.removeAttribute('data-dcc-boot-ready');
         }
       };
     }
