@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.395';
+    const VERSION = '0.2.396';
     const UPDATED = '2026-11-15';
     const DEFAULTS = {
       radiusDensity: true,
@@ -2269,8 +2269,10 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
 
       const watchHint = () => {
+        /* 只看会话界面里的提示——加载页也有同一个 _hint，它消失不表示
+           正文就位，跟着触发会白跑一次（虽然 targets 为空会直接返回）。 */
         const hint = document.querySelector('[class*="_hint"]');
-        const hasHint = hint !== null;
+        const hasHint = hint !== null && hint.closest('[data-dsh-boot]') === null;
         /* 由「有提示」变成「没提示」，说明这一轮内容已经就位 */
         if (lastHadHint && !hasHint) replayFade();
         lastHadHint = hasHint;
