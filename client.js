@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.392';
+    const VERSION = '0.2.393';
     const UPDATED = '2026-11-15';
     const DEFAULTS = {
       radiusDensity: true,
@@ -3222,7 +3222,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
                 '- 工作区文件夹悬停时保留图标。',
                 '- 已归档会话显示删除线。',
                 '- 选择题弹窗细节优化。',
-                '- 避免界面加载时跳变添加的过渡遮罩。',
+                '- 优化加载界面。',
                 '- 修复二级右键菜单消失延迟。',
                 '- 顶栏三点菜单内增加刷新前端界面按钮，卡顿时可以刷新，不影响正在运行的任务。',
               ].join('\n')
@@ -3232,7 +3232,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
                 '- Workspace folder icons stay visible on hover.',
                 '- Archived sessions show a strikethrough.',
                 '- Multiple-choice dialog details refined.',
-                '- A transition cover added to avoid layout jumps on startup.',
+                '- Refined the loading screen.',
                 '- Fixed the delay when closing a second-level context menu.',
                 '- Added a reload button to the top-bar overflow menu, so you can refresh when the UI lags without interrupting running tasks.',
               ].join('\n'),
