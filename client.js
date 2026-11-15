@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.393';
+    const VERSION = '0.2.394';
     const UPDATED = '2026-11-15';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1003,6 +1003,16 @@ html[data-dcc-always-show="on"] .dcc-segmented {
 }
 
 /* 溢出菜单：对齐宿主菜单的尺寸与层级（圆角 12、内距 6、项高 32、项圆角 8） */
+/* 会话正文渐显：切换会话后，正文列和轮次标记一起淡入。
+   由脚本在加载提示消失后重播——容器本身不重建，单靠 CSS 动画只播一次。 */
+html[data-dcc-enabled="on"][data-dcc-transition="on"] [data-dcc-fade-in] {
+  animation: dcc-content-in .26s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
+}
+@keyframes dcc-content-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 /* ===== BOOT-HINT: 宿主加载页适配（高耦合，见 installBootHint 的注释）=====
    只藏旋转圈。hint 居中和 HARNESS 隐藏必须在同一帧完成，放在脚本里做。
    宿主加载页若改版，整块删掉即可，不影响其它样式。 */
@@ -2240,12 +2250,38 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         hint.style.top = rect.top + rect.height / 2 - 64 + 'px';
       };
 
+      /* 切换会话时正文是整体换掉的，但容器本身常驻，
+         animation 只播一次，之后再切就看不到了。这里在提示消失后
+         手动重播一次：先摘掉动画类、强制重排、再挂回去。 */
+      let lastHadHint = false;
+      const replayFade = () => {
+        if (document.documentElement.dataset.dccTransition !== 'on') return;
+        const targets = [
+          document.querySelector('[class*="_column"]'),
+          document.querySelector('[class*="_marks"]'),
+        ].filter((el) => el !== null && el.getBoundingClientRect().height > 0);
+        if (targets.length === 0) return;
+        for (const el of targets) el.removeAttribute('data-dcc-fade-in');
+        /* 读一次布局，让移除生效，再挂回去才会重播 */
+        void document.body.offsetHeight;
+        for (const el of targets) el.setAttribute('data-dcc-fade-in', '');
+      };
+
+      const watchHint = () => {
+        const hint = document.querySelector('[class*="_hint"]');
+        const hasHint = hint !== null;
+        /* 由「有提示」变成「没提示」，说明这一轮内容已经就位 */
+        if (lastHadHint && !hasHint) replayFade();
+        lastHadHint = hasHint;
+      };
+
       const schedule = () => {
         if (rafId !== 0) return;
         rafId = window.requestAnimationFrame(() => {
           rafId = 0;
           if (document.documentElement.dataset.dccEnabled !== 'on') return;
           decorate();
+          watchHint();
         });
       };
 
@@ -2256,6 +2292,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         observer.disconnect();
         if (rafId !== 0) window.cancelAnimationFrame(rafId);
         for (const el of document.querySelectorAll('[data-dcc-hint-fish]')) el.remove();
+        for (const el of document.querySelectorAll('[data-dcc-fade-in]')) el.removeAttribute('data-dcc-fade-in');
       };
     }
 
