@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.386';
+    const VERSION = '0.2.387';
     const UPDATED = '2026-11-15';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1003,6 +1003,19 @@ html[data-dcc-always-show="on"] .dcc-segmented {
 }
 
 /* 溢出菜单：对齐宿主菜单的尺寸与层级（圆角 12、内距 6、项高 32、项圆角 8） */
+/* 宿主自己的加载页也用同一个 _hint。那里没有「正文区」的概念，
+   直接用视口中心；同时把 HARNESS 字样和旋转圈藏掉，只留鲸鱼和提示文字。 */
+html[data-dcc-enabled="on"] [data-dsh-boot] [class*="_hint"] {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}
+html[data-dcc-enabled="on"] [data-dsh-boot] [data-dsh-boot-spinner],
+html[data-dcc-enabled="on"] [data-dsh-boot] [class*="_spinner"] {
+  display: none !important;
+}
+
 /* 会话切换时的「载入历史」提示：挪到正文中心，鲸鱼在上、文字在下。
    文字内容由宿主写入，这里只改排版，不替换文案。 */
 html[data-dcc-enabled="on"] [class*="_hint"] {
@@ -2197,10 +2210,24 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         shape.setAttribute('fill', darkNow ? '#ffffff' : '#000000');
         svg.appendChild(shape);
         hint.insertBefore(svg, hint.firstChild);
+
+        /* 加载页上还有一个 HARNESS 字样，按文字内容找出来藏掉，
+           不改其它元素，避免误伤。 */
+        const boot = hint.closest('[data-dsh-boot]');
+        if (boot !== null) {
+          for (const el of boot.querySelectorAll('*')) {
+            if (el.children.length > 0) continue;
+            if ((el.textContent || '').trim() === 'HARNESS') {
+              el.style.display = 'none';
+            }
+          }
+        }
         center(hint);
       };
       /* 按正文区域（而不是视口）的中心定位：侧栏展开时两者差一截。 */
       const center = (hint) => {
+        /* 宿主加载页里的 hint 由 CSS 定位到视口中心，这里跳过。 */
+        if (hint.closest('[data-dsh-boot]') !== null) return;
         const host = document.querySelector('[data-conversation-scroll]');
         if (host === null) return;
         const rect = host.getBoundingClientRect();
