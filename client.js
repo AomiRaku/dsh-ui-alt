@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.403';
+    const VERSION = '0.2.404';
     const UPDATED = '2026-11-15';
     const DEFAULTS = {
       radiusDensity: true,
@@ -973,7 +973,9 @@ html[data-dcc-always-show="on"] .dcc-segmented {
   color: var(--dsw-alias-label-secondary);
   font: inherit;
   font-size: 12px;
-  line-height: 1;
+  /* 行高不能是 1：中文字体的下方部分会超出行盒，被 label 的
+     overflow: hidden 裁掉一截。留一点余量。 */
+  line-height: 1.35;
   white-space: nowrap;
   cursor: pointer;
   transition: background-color .12s, color .12s;
