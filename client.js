@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.387';
+    const VERSION = '0.2.388';
     const UPDATED = '2026-11-15';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1003,14 +1003,8 @@ html[data-dcc-always-show="on"] .dcc-segmented {
 }
 
 /* 溢出菜单：对齐宿主菜单的尺寸与层级（圆角 12、内距 6、项高 32、项圆角 8） */
-/* 宿主自己的加载页也用同一个 _hint。那里没有「正文区」的概念，
-   直接用视口中心；同时把 HARNESS 字样和旋转圈藏掉，只留鲸鱼和提示文字。 */
-html[data-dcc-enabled="on"] [data-dsh-boot] [class*="_hint"] {
-  position: fixed !important;
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) !important;
-}
+/* 宿主加载页里的旋转圈直接藏掉；hint 的居中要和 HARNESS 的隐藏
+   在同一帧完成，否则会看到两者重叠一瞬，所以放到脚本里做。 */
 html[data-dcc-enabled="on"] [data-dsh-boot] [data-dsh-boot-spinner],
 html[data-dcc-enabled="on"] [data-dsh-boot] [class*="_spinner"] {
   display: none !important;
@@ -2211,10 +2205,14 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         svg.appendChild(shape);
         hint.insertBefore(svg, hint.firstChild);
 
-        /* 加载页上还有一个 HARNESS 字样，按文字内容找出来藏掉，
-           不改其它元素，避免误伤。 */
+        /* 加载页里 hint 和 HARNESS 是并排的。两者必须同一帧处理完：
+           先居中 hint 再藏 HARNESS，中间不会露出重叠。 */
         const boot = hint.closest('[data-dsh-boot]');
         if (boot !== null) {
+          hint.style.position = 'fixed';
+          hint.style.top = '50%';
+          hint.style.left = '50%';
+          hint.style.transform = 'translate(-50%, -50%)';
           for (const el of boot.querySelectorAll('*')) {
             if (el.children.length > 0) continue;
             if ((el.textContent || '').trim() === 'HARNESS') {
