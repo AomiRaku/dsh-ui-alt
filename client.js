@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.394';
+    const VERSION = '0.2.395';
     const UPDATED = '2026-11-15';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1004,8 +1004,9 @@ html[data-dcc-always-show="on"] .dcc-segmented {
 
 /* 溢出菜单：对齐宿主菜单的尺寸与层级（圆角 12、内距 6、项高 32、项圆角 8） */
 /* 会话正文渐显：切换会话后，正文列和轮次标记一起淡入。
-   由脚本在加载提示消失后重播——容器本身不重建，单靠 CSS 动画只播一次。 */
-html[data-dcc-enabled="on"][data-dcc-transition="on"] [data-dcc-fade-in] {
+   由脚本在加载提示消失后重播——容器本身不重建，单靠 CSS 动画只播一次。
+   归在「优化加载界面」里，属始终开启项，不受动画开关控制。 */
+html[data-dcc-enabled="on"] [data-dcc-fade-in] {
   animation: dcc-content-in .26s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
 }
 @keyframes dcc-content-in {
@@ -2255,7 +2256,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
          手动重播一次：先摘掉动画类、强制重排、再挂回去。 */
       let lastHadHint = false;
       const replayFade = () => {
-        if (document.documentElement.dataset.dccTransition !== 'on') return;
+
         const targets = [
           document.querySelector('[class*="_column"]'),
           document.querySelector('[class*="_marks"]'),
@@ -3259,7 +3260,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
                 '- 工作区文件夹悬停时保留图标。',
                 '- 已归档会话显示删除线。',
                 '- 选择题弹窗细节优化。',
-                '- 优化加载界面。',
+                '- 优化加载界面，正文切换时渐显。',
                 '- 修复二级右键菜单消失延迟。',
                 '- 顶栏三点菜单内增加刷新前端界面按钮，卡顿时可以刷新，不影响正在运行的任务。',
               ].join('\n')
@@ -3269,7 +3270,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
                 '- Workspace folder icons stay visible on hover.',
                 '- Archived sessions show a strikethrough.',
                 '- Multiple-choice dialog details refined.',
-                '- Refined the loading screen.',
+                '- Refined the loading screen and added a fade-in when the conversation content changes.',
                 '- Fixed the delay when closing a second-level context menu.',
                 '- Added a reload button to the top-bar overflow menu, so you can refresh when the UI lags without interrupting running tasks.',
               ].join('\n'),
