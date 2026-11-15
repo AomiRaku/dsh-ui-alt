@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.401';
+    const VERSION = '0.2.402';
     const UPDATED = '2026-11-15';
     const DEFAULTS = {
       radiusDensity: true,
@@ -440,14 +440,15 @@ html[data-dcc-collapse="on"][data-dcc-logo="shown"] [class*="_logoRow"] {
 }
 
 
-/* 克隆出来的新会话行在 nav 里，滚动时要固定；
-   原按钮不在这里处理——它在 nav 外面本来就固定，加 sticky 和背景
-   反而会让关闭开关后的外观和宿主原版不一样。 */
+/* 克隆出来的新会话行在 nav 里，滚动时要固定。
+   背景必须跟侧栏底色一致——mac 的侧栏是半透明的，写死一个不透明底色
+   会露出一块方形的底。这里直接用宿主自己的侧栏底色变量，
+   它不存在时退回透明，和普通导航按钮完全一致。 */
 [data-dcc-newrow] {
   position: sticky;
   top: 0;
   z-index: 3;
-  background: var(--dsw-specific-sidebar-fill, var(--dsw-alias-bg-layer-1));
+  background: var(--dsw-specific-sidebar-fill, transparent);
 }
 
 /* 侧栏滚动下放：整块滚动容器不再滚动，改成纵向布局；
