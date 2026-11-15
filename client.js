@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.400';
+    const VERSION = '0.2.401';
     const UPDATED = '2026-11-15';
     const DEFAULTS = {
       radiusDensity: true,
@@ -3264,7 +3264,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
                 '- 选择题弹窗细节优化。',
                 '- 优化加载界面，正文切换时渐显。',
                 '- 修复二级右键菜单消失延迟。',
-                '- 顶栏更多菜单添加「重载前端界面」按钮，卡顿时可重载界面，不会中断任务。',
+                '- 顶栏更多菜单添加"重载前端界面"按钮，卡顿时可重载界面，不会中断任务。',
               ].join('\n')
               : [
                 'These small fixes and improvements are always on unless the master switch is off.',
