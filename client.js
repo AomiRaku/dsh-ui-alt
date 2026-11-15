@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.382';
+    const VERSION = '0.2.383';
     const UPDATED = '2026-11-15';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1003,6 +1003,30 @@ html[data-dcc-always-show="on"] .dcc-segmented {
 }
 
 /* 溢出菜单：对齐宿主菜单的尺寸与层级（圆角 12、内距 6、项高 32、项圆角 8） */
+/* 会话切换时的「载入历史」提示：挪到正文中心，鲸鱼在上、文字在下。
+   文字内容由宿主写入，这里只改排版，不替换文案。 */
+html[data-dcc-enabled="on"] [class*="_hint"] {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin: 0 !important;
+  color: var(--dsw-alias-label-tertiary) !important;
+  font-size: 13px !important;
+  white-space: nowrap !important;
+  pointer-events: none !important;
+}
+html[data-dcc-enabled="on"] [data-dcc-hint-fish] {
+  width: 56px;
+  height: auto;
+  opacity: .32;
+  flex: none;
+}
+
 /* 追加到宿主菜单末尾的「重载前端界面」：外观对齐宿主自己的菜单项，
    高度、内边距、字号都按它的规格来。 */
 .dcc-menu-extra {
@@ -2150,6 +2174,52 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
     }
 
     /**
+     * 切换会话时正文会短暂显示一行「载入历史」提示（宿主的 _hint）。
+     * 它默认贴在左上角，这里把它挪到正文中心，并在文字上方加一个鲸鱼图标，
+     * 和启动遮罩的观感统一。文字内容不写死——只包一层容器，原文照读。
+     */
+    function installHistoryHint() {
+      let observer = null;
+      let rafId = 0;
+
+      const decorate = () => {
+        const hint = document.querySelector('[class*="_hint"]');
+        if (hint === null) return;
+        if (hint.querySelector('[data-dcc-hint-fish]') !== null) return;
+
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 23.16 17.04');
+        svg.setAttribute('data-dcc-hint-fish', '');
+        svg.setAttribute('aria-hidden', 'true');
+        const shape = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        shape.setAttribute('d', FISH_LOGO_PATH);
+        const darkNow = document.body.hasAttribute('data-ds-dark-theme')
+          || document.documentElement.hasAttribute('data-ds-dark-theme');
+        shape.setAttribute('fill', darkNow ? '#ffffff' : '#000000');
+        svg.appendChild(shape);
+        hint.insertBefore(svg, hint.firstChild);
+      };
+
+      const schedule = () => {
+        if (rafId !== 0) return;
+        rafId = window.requestAnimationFrame(() => {
+          rafId = 0;
+          if (document.documentElement.dataset.dccEnabled !== 'on') return;
+          decorate();
+        });
+      };
+
+      observer = new MutationObserver(schedule);
+      observer.observe(document.body, { childList: true, subtree: true });
+
+      return () => {
+        observer.disconnect();
+        if (rafId !== 0) window.cancelAnimationFrame(rafId);
+        for (const el of document.querySelectorAll('[data-dcc-hint-fish]')) el.remove();
+      };
+    }
+
+    /**
      * 在会话标题栏右上角的「⋯」菜单末尾追加一项「重载前端界面」。
      * 那个菜单是宿主 React 渲染的，插不进去子节点，只能在它打开后
      * 往 DOM 里补一个外观一致的按钮，点击等价于 location.reload()。
@@ -3083,6 +3153,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const removePluginPin = installNavToggle();
           const removeMenuOrigin = installMenuOrigin();
           const removeReloadItem = installReloadMenuItem();
+          const removeHistoryHint = installHistoryHint();
           const removeDialogExit = installDialogExit();
           return () => {
             removeCss();
@@ -3096,6 +3167,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             removePluginPin();
             removeMenuOrigin();
             removeReloadItem();
+            removeHistoryHint();
             removeDialogExit();
             const root = document.documentElement;
             delete root.dataset.dccRadius;
