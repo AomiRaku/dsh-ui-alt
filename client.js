@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.389';
+    const VERSION = '0.2.390';
     const UPDATED = '2026-11-15';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1003,12 +1003,14 @@ html[data-dcc-always-show="on"] .dcc-segmented {
 }
 
 /* 溢出菜单：对齐宿主菜单的尺寸与层级（圆角 12、内距 6、项高 32、项圆角 8） */
-/* 宿主加载页里的旋转圈直接藏掉；hint 的居中要和 HARNESS 的隐藏
-   在同一帧完成，否则会看到两者重叠一瞬，所以放到脚本里做。 */
+/* ===== BOOT-HINT: 宿主加载页适配（高耦合，见 installBootHint 的注释）=====
+   只藏旋转圈。hint 居中和 HARNESS 隐藏必须在同一帧完成，放在脚本里做。
+   宿主加载页若改版，整块删掉即可，不影响其它样式。 */
 html[data-dcc-enabled="on"] [data-dsh-boot] [data-dsh-boot-spinner],
 html[data-dcc-enabled="on"] [data-dsh-boot] [class*="_spinner"] {
   display: none !important;
 }
+/* ===== BOOT-HINT END ===== */
 
 /* 会话切换时的「载入历史」提示：挪到正文中心，鲸鱼在上、文字在下。
    文字内容由宿主写入，这里只改排版，不替换文案。 */
@@ -2205,27 +2207,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         svg.appendChild(shape);
         hint.insertBefore(svg, hint.firstChild);
 
-        /* 加载页里 hint 和 HARNESS 是并排的。两者必须同一帧处理完：
-           先居中 hint 再藏 HARNESS，中间不会露出重叠。 */
-        const boot = hint.closest('[data-dsh-boot]');
-        if (boot !== null) {
-          hint.style.position = 'fixed';
-          hint.style.top = '50%';
-          hint.style.left = '50%';
-          hint.style.transform = 'translate(-50%, -50%)';
-          /* 宽松匹配：元素文字里出现 HARNESS 就藏掉。
-             之前用全等比较，文字带空格或标点时匹配不上。 */
-          for (const el of boot.querySelectorAll('*')) {
-            const text = (el.textContent || '').trim();
-            if (!/HARNESS/i.test(text)) continue;
-            /* 只藏最内层那个，避免把整个容器一起藏掉 */
-            const inner = [...el.querySelectorAll('*')].filter(
-              (c) => /HARNESS/i.test((c.textContent || '').trim()),
-            );
-            if (inner.length > 0) continue;
-            el.style.display = 'none';
-          }
-        }
+        /* 宿主加载页的适配在 installBootHint 里独立处理，这里只负责会话界面的情况 */
         center(hint);
       };
       /* 按正文区域（而不是视口）的中心定位：侧栏展开时两者差一截。 */
@@ -2257,6 +2239,93 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         observer.disconnect();
         if (rafId !== 0) window.cancelAnimationFrame(rafId);
         for (const el of document.querySelectorAll('[data-dcc-hint-fish]')) el.remove();
+      };
+    }
+
+    /**
+     * 宿主加载页（开机时的 "Loading plugins…" 那一屏）的外观适配。
+     *
+     * ⚠️ 这是一块**高耦合**的补丁，和下面这些宿主实现细节绑死：
+     *
+     *   | 依赖                     | 用途                             |
+     *   | ------------------------ | -------------------------------- |
+     *   | [data-dsh-boot]          | 加载页根节点，用来界定作用范围     |
+     *   | [class*="_hint"]         | 提示文字，和会话界面的载入提示共用 |
+     *   | [data-dsh-boot-spinner]  | 旋转圈                           |
+     *   | [class*="_spinner"]      | 旋转圈（备用选择器）              |
+     *   | 文本含 "HARNESS"         | 要隐藏的品牌字样                  |
+     *
+     * 做两件事：
+     *   1. 把提示文字挪到视口正中（宿主原本让它和 HARNESS 并排）
+     *   2. 隐藏 HARNESS 字样和旋转圈，只留鲸鱼 + 提示文字
+     *
+     * 第 1 点必须和 HARNESS 的隐藏**同一帧**完成——如果只把文字改成
+     * fixed 居中、HARNESS 晚一帧才藏，中间会露出两者叠在屏幕中间一瞬间。
+     *
+     * 失效表现：宿主改版后，加载页恢复原样，不报错，也不影响其它功能。
+     *
+     * 要整体移除时：删掉本函数 + 调用处 removeBootHint + 下面对应的
+     * CSS（搜 BOOT-HINT），不会牵连别的模块。
+     */
+    function installBootHint() {
+      let observer = null;
+      let rafId = 0;
+
+      const apply = () => {
+        const boot = document.querySelector('[data-dsh-boot]');
+        if (boot === null) return;
+
+        const hint = boot.querySelector('[class*="_hint"]');
+        if (hint !== null && hint.getAttribute('data-dcc-boot-hint') === null) {
+          hint.setAttribute('data-dcc-boot-hint', '');
+          hint.style.position = 'fixed';
+          hint.style.top = '50%';
+          hint.style.left = '50%';
+          hint.style.transform = 'translate(-50%, -50%)';
+        }
+
+        /* HARNESS 按文字内容匹配，不认类名——它没有稳定的类名可用。
+           用正则而非全等：实际的 textContent 常带空格或标点。 */
+        for (const el of boot.querySelectorAll('*')) {
+          if (el.getAttribute('data-dcc-boot-brand') !== null) continue;
+          if (!/HARNESS/i.test(el.textContent || '')) continue;
+          /* 只藏最内层那个，避免把整块容器一起藏掉 */
+          const inner = [...el.querySelectorAll('*')].filter(
+            (c) => /HARNESS/i.test(c.textContent || ''),
+          );
+          if (inner.length > 0) continue;
+          el.setAttribute('data-dcc-boot-brand', '');
+          el.style.display = 'none';
+        }
+      };
+
+      const schedule = () => {
+        if (rafId !== 0) return;
+        rafId = window.requestAnimationFrame(() => {
+          rafId = 0;
+          if (document.documentElement.dataset.dccEnabled !== 'on') return;
+          apply();
+        });
+      };
+
+      observer = new MutationObserver(schedule);
+      observer.observe(document.body, { childList: true, subtree: true });
+
+      return () => {
+        observer.disconnect();
+        if (rafId !== 0) window.cancelAnimationFrame(rafId);
+        /* 还原被本模块改过的东西，避免卸载后留下半截样式 */
+        for (const el of document.querySelectorAll('[data-dcc-boot-hint]')) {
+          el.removeAttribute('data-dcc-boot-hint');
+          el.style.position = '';
+          el.style.top = '';
+          el.style.left = '';
+          el.style.transform = '';
+        }
+        for (const el of document.querySelectorAll('[data-dcc-boot-brand]')) {
+          el.removeAttribute('data-dcc-boot-brand');
+          el.style.display = '';
+        }
       };
     }
 
@@ -3195,6 +3264,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const removeMenuOrigin = installMenuOrigin();
           const removeReloadItem = installReloadMenuItem();
           const removeHistoryHint = installHistoryHint();
+          const removeBootHint = installBootHint();
           const removeDialogExit = installDialogExit();
           return () => {
             removeCss();
@@ -3209,6 +3279,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             removeMenuOrigin();
             removeReloadItem();
             removeHistoryHint();
+            removeBootHint();
             removeDialogExit();
             const root = document.documentElement;
             delete root.dataset.dccRadius;
