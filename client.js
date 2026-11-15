@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.391';
+    const VERSION = '0.2.392';
     const UPDATED = '2026-11-15';
     const DEFAULTS = {
       radiusDensity: true,
@@ -2207,6 +2207,9 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       const decorate = () => {
         const hint = document.querySelector('[class*="_hint"]');
         if (hint === null) return;
+        /* 加载页的 hint 归 installBootHint 管，这里跳过，避免两个模块
+           对同一个元素各改一半。 */
+        if (hint.closest('[data-dsh-boot]') !== null) return;
         if (hint.querySelector('[data-dcc-hint-fish]') !== null) return;
 
         const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -2226,7 +2229,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
       /* 按正文区域（而不是视口）的中心定位：侧栏展开时两者差一截。 */
       const center = (hint) => {
-        /* 宿主加载页里的 hint 由 CSS 定位到视口中心，这里跳过。 */
+        /* 加载页里的 hint 由 installBootHint 单独居中，这里跳过。 */
         if (hint.closest('[data-dsh-boot]') !== null) return;
         const host = document.querySelector('[data-conversation-scroll]');
         if (host === null) return;
@@ -2292,6 +2295,20 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         const hint = boot.querySelector('[class*="_hint"]');
         if (hint !== null && hint.getAttribute('data-dcc-boot-hint') === null) {
           hint.setAttribute('data-dcc-boot-hint', '');
+
+          /* 鲸鱼图标放在提示文字上方，和会话界面的载入提示同一套做法 */
+          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svg.setAttribute('viewBox', '0 0 23.16 17.04');
+          svg.setAttribute('data-dcc-hint-fish', '');
+          svg.setAttribute('aria-hidden', 'true');
+          const shape = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          shape.setAttribute('d', FISH_LOGO_PATH);
+          const darkNow = document.body.hasAttribute('data-ds-dark-theme')
+            || document.documentElement.hasAttribute('data-ds-dark-theme');
+          shape.setAttribute('fill', darkNow ? '#ffffff' : '#000000');
+          svg.appendChild(shape);
+          hint.insertBefore(svg, hint.firstChild);
+
           hint.style.position = 'fixed';
           hint.style.top = '50%';
           hint.style.left = '50%';
@@ -2346,6 +2363,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         for (const el of document.querySelectorAll('[data-dcc-boot-ready]')) {
           el.removeAttribute('data-dcc-boot-ready');
         }
+        for (const el of document.querySelectorAll('[data-dcc-hint-fish]')) el.remove();
       };
     }
 
