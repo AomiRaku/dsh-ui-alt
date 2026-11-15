@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.384';
+    const VERSION = '0.2.385';
     const UPDATED = '2026-11-15';
     const DEFAULTS = {
       radiusDensity: true,
@@ -2206,7 +2206,8 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         const rect = host.getBoundingClientRect();
         if (rect.width === 0 || rect.height === 0) return;
         hint.style.left = rect.left + rect.width / 2 + 'px';
-        hint.style.top = rect.top + rect.height / 2 + 'px';
+        /* 正文区的几何中心偏下——底部有输入框占位，视觉中心要高一些 */
+        hint.style.top = rect.top + rect.height / 2 - 40 + 'px';
       };
 
       const schedule = () => {
