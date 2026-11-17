@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.416';
+    const VERSION = '0.2.417';
     const UPDATED = '2026-11-15';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1529,33 +1529,25 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         if (wrapper !== null) wrapper.remove();
         if (clone !== null) clone.remove();
 
-        /* 外层：照抄宿主导航项外层的类（悬停底色、圆角、间距都在这一层）。
-           _panelEntryActive / _panelEntryWide 要排除：
-           前者会让克隆行常亮（那是「当前页面」的标记，新会话不是页面），
-           后者是给带「取消固定」按钮的行留右侧空位的。 */
+        /* 外层：完整照抄宿主导航项外层的类。
+           之前排除了 panelEntryActive（怕常亮）和 panelEntryWide（以为没用），
+           结果是布局对不上——panelEntryWide 决定了行的宽度和右侧留白，
+           少了它整行都错位。active 类只在别处加，克隆时本来就不会有。 */
         const entry = row.parentElement;
         wrapper = document.createElement('div');
         if (entry !== null) {
-          for (const name of entry.classList) {
-            if (name.includes('_panelEntryActive')) continue;
-            if (name.includes('_panelEntryWide')) continue;
-            wrapper.classList.add(name);
-          }
+          for (const name of entry.classList) wrapper.classList.add(name);
         }
         wrapper.setAttribute('data-dcc-newrow-wrap', '');
 
-        /* 内层：只保留按钮本体的类，同样排除 active / wide */
+        /* 内层：完整照抄按钮本体的类 */
         clone = document.createElement('button');
         clone.type = 'button';
         clone.setAttribute('data-dcc-newrow', '');
-        clone.className = [...row.classList]
-          .filter((name) => !name.includes('_panelRowActive') && !name.includes('_panelRowWide'))
-          .join(' ') + ' dcc-newrow';
+        clone.className = [...row.classList].join(' ') + ' dcc-newrow';
         const aria = orig.getAttribute('aria-label');
         if (aria !== null) clone.setAttribute('aria-label', aria);
-        /* 图标要有独立的包裹层：宿主用 _panelGlyph 控制尺寸和居中，
-           少了它 svg 直接参与弹性布局，宽度和对齐都会偏。
-           包裹层的类名从同一行的图标节点上取，不硬编码哈希。 */
+        /* 图标包裹层：完整照抄 panelGlyph 的类，尺寸和居中都在它身上 */
         const icon = orig.querySelector('svg');
         if (icon !== null) {
           const source = row.querySelector('[class*="_panelGlyph"]');
@@ -1570,8 +1562,13 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           clone.appendChild(glyph);
         }
 
+        /* 标题也用宿主的 panelTitle 类——字号、颜色、溢出省略都在它身上 */
         const label = document.createElement('span');
-        label.className = 'dcc-newrow-label';
+        const titleSource = row.querySelector('[class*="_panelTitle"]');
+        if (titleSource !== null) {
+          for (const name of titleSource.classList) label.classList.add(name);
+        }
+        if (label.classList.length === 0) label.className = 'dcc-newrow-label';
         const text = orig.querySelector('[class*="_newSessionLabel"]');
         label.textContent = text !== null && text.textContent !== '' ? text.textContent : (isZh() ? '新会话' : 'New session');
         clone.appendChild(label);
