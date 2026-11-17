@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.417';
+    const VERSION = '0.2.418';
     const UPDATED = '2026-11-15';
     const DEFAULTS = {
       radiusDensity: true,
@@ -387,26 +387,12 @@ html[data-dcc-new="on"]:has([data-sidebar-collapsed="true"]) [data-dcc-newrow-wr
 html[data-dcc-new="off"] [data-dcc-newrow-wrap] {
   display: none !important;
 }
-/* 克隆行直接使用 panelRow 的类，宽度/内边距/行高/焦点环全部来自宿主；
-   图标的包裹层也用宿主的 panelGlyph，所以这里的元素排布和别的导航行一致。
-   悬停底色由 wrapper 上的 panelEntry 类负责。 */
-html[data-dcc-new="on"] button[data-dcc-newrow] {
-  color: var(--dsw-alias-label-primary) !important;
-}
 /* 原版新会话的图标是 14px，其它导航项是 16px。
    图标小、包裹层就窄，整行的图标和文字都跟着左移或右偏。
    最省事的办法就是把图标放大到 16px，尺寸和别的行完全一致。 */
 html[data-dcc-new="on"] button[data-dcc-newrow] svg {
   width: 16px !important;
   height: 16px !important;
-}
-/* 宿主在 @media(hover:hover) 里给 _panelRow:hover 也上了底色，
-   靠 ._panelEntry ._panelRow:hover { background: 0 0 } 抵消。
-   我们的克隆行外层是 _panelEntry、内层是 _panelRow，理论上也会被抵消，
-   但 _panelRow 的 background 简写有时会残留。这里直接钉死透明，
-   底色只由外层 _panelEntry:hover 一处负责。 */
-html[data-dcc-new="on"] button[data-dcc-newrow] {
-  background: transparent !important;
 }
 .dcc-newrow-glyph {
   display: inline-flex;
