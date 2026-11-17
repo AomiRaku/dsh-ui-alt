@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.410';
+    const VERSION = '0.2.411';
     const UPDATED = '2026-11-15';
     const DEFAULTS = {
       radiusDensity: true,
@@ -444,7 +444,12 @@ html[data-dcc-collapse="on"][data-dcc-logo="shown"] [class*="_logoRow"] {
    这里不要声明 background：宿主的 _panelEntry 本身不设背景（默认透明），
    悬停底色来自它自己的 :hover 规则。加一句 !important 的 transparent
    会把那条规则整个压掉，悬停就只剩按钮本体那点变化，比别的行暗一档。 */
-[data-dcc-newrow-wrap] {
+/* 只有「导航折叠」开启时才需要 sticky。
+   那时 _panelList 不参与滚动（滚动收在 _listArea 里），这一行本来就不会跑掉，
+   sticky 只是保险。折叠关闭时侧栏是整块滚动的，sticky 会让这一行悬在
+   滚过去的内容之上——它没有背景，下方文字会直接穿过来。
+   那种情况下让它跟着滚，和宿主原版行为一致。 */
+html[data-dcc-collapse="on"] [data-dcc-newrow-wrap] {
   position: sticky;
   top: 0;
   z-index: 3;
@@ -1506,19 +1511,28 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         if (wrapper !== null) wrapper.remove();
         if (clone !== null) clone.remove();
 
-        /* 外层：照抄宿主导航项外层的类（悬停底色、圆角、间距都在这一层） */
+        /* 外层：照抄宿主导航项外层的类（悬停底色、圆角、间距都在这一层）。
+           _panelEntryActive / _panelEntryWide 要排除：
+           前者会让克隆行常亮（那是「当前页面」的标记，新会话不是页面），
+           后者是给带「取消固定」按钮的行留右侧空位的。 */
         const entry = row.parentElement;
         wrapper = document.createElement('div');
         if (entry !== null) {
-          for (const name of entry.classList) wrapper.classList.add(name);
+          for (const name of entry.classList) {
+            if (name.includes('_panelEntryActive')) continue;
+            if (name.includes('_panelEntryWide')) continue;
+            wrapper.classList.add(name);
+          }
         }
         wrapper.setAttribute('data-dcc-newrow-wrap', '');
 
-        /* 内层：只保留按钮本体的类，不再掺入外层的 */
+        /* 内层：只保留按钮本体的类，同样排除 active / wide */
         clone = document.createElement('button');
         clone.type = 'button';
         clone.setAttribute('data-dcc-newrow', '');
-        clone.className = [...row.classList].join(' ') + ' dcc-newrow';
+        clone.className = [...row.classList]
+          .filter((name) => !name.includes('_panelRowActive') && !name.includes('_panelRowWide'))
+          .join(' ') + ' dcc-newrow';
         const aria = orig.getAttribute('aria-label');
         if (aria !== null) clone.setAttribute('aria-label', aria);
         const content = document.createElement('span');
