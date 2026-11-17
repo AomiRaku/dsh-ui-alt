@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.408';
+    const VERSION = '0.2.409';
     const UPDATED = '2026-11-15';
     const DEFAULTS = {
       radiusDensity: true,
@@ -381,15 +381,15 @@ html[data-dcc-new="on"] [class*="_scrollRegion"] {
 html[data-dcc-new="on"]:has([data-sidebar-collapsed="true"]) button[data-dcc-original] {
   display: flex !important;
 }
-html[data-dcc-new="on"]:has([data-sidebar-collapsed="true"]) button[data-dcc-newrow] {
+html[data-dcc-new="on"]:has([data-sidebar-collapsed="true"]) [data-dcc-newrow-wrap] {
   display: none !important;
 }
-html[data-dcc-new="off"] button[data-dcc-newrow] {
+html[data-dcc-new="off"] [data-dcc-newrow-wrap] {
   display: none !important;
 }
 /* 克隆行直接使用 panelRow 的类，宽度/内边距/行高/焦点环全部来自宿主；
    默认和其它导航行一样是透明底，悬停时统一由下面的导航行规则上色 */
-/* 悬停底色交给克隆时一同复制过来的 panelEntry 类，和别的导航行完全一致 */
+/* 悬停底色由 wrapper 上的 panelEntry 类负责，和别的导航行完全一致 */
 html[data-dcc-new="on"] button[data-dcc-newrow] {
   color: var(--dsw-alias-label-primary) !important;
 }
@@ -438,9 +438,10 @@ html[data-dcc-collapse="on"][data-dcc-logo="shown"] [class*="_logoRow"] {
 
 
 /* 克隆出来的新会话行在 nav 里，滚动时要固定。
-   背景必须是透明——要和其它导航按钮完全一致。mac 的侧栏本身是半透明的，
-   任何一层不透明底色都会显出一块方形。 */
-[data-dcc-newrow] {
+   sticky 和外层类都挂在 wrapper 上——宿主的悬停底色、圆角、间距
+   本来就在 _panelEntry 那一层，克隆保持同样层级才能和别的导航行一致。
+   背景保持透明：mac 的侧栏本身是半透明的，任何不透明底色都会显出一块方形。 */
+[data-dcc-newrow-wrap] {
   position: sticky;
   top: 0;
   z-index: 3;
@@ -1489,6 +1490,10 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       const findNav = () => document.querySelector('nav[class*="_panelList"]');
       const findOriginal = () => document.querySelector('button[class*="_newSession"]');
       let clone = null;
+      /* 宿主的导航项是两层：外层 _panelEntry 负责悬停底色和圆角，
+         内层 _panelRow 是按钮本体。克隆必须保持同样的层级，
+         把两层的类压在同一个元素上市，悬停底色会画错位置。 */
+      let wrapper = null;
       let observer = null;
       let timer = null;
       let rafId = 0;
@@ -1496,20 +1501,22 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       const build = (nav, orig) => {
         const row = nav.querySelector('button[class*="_panelRow"]');
         if (row === null) return false;
+        if (wrapper !== null) wrapper.remove();
         if (clone !== null) clone.remove();
+
+        /* 外层：照抄宿主导航项外层的类（悬停底色、圆角、间距都在这一层） */
+        const entry = row.parentElement;
+        wrapper = document.createElement('div');
+        if (entry !== null) {
+          for (const name of entry.classList) wrapper.classList.add(name);
+        }
+        wrapper.setAttribute('data-dcc-newrow-wrap', '');
+
+        /* 内层：只保留按钮本体的类，不再掺入外层的 */
         clone = document.createElement('button');
         clone.type = 'button';
         clone.setAttribute('data-dcc-newrow', '');
-        /* 宿主的悬停底色画在 _panelEntry 上、行本身是透明的。
-           克隆行是裸 button，少了这层包裹，悬停就会比别的导航行浅一档，
-           所以把父级的 panelEntry 类一并复制过来。 */
-        const entry = row.parentElement;
-        const entryClasses = entry === null
-          ? []
-          : [...entry.classList].filter((name) => name.includes('_panelEntry'));
-        clone.className = [...row.classList].join(' ')
-          + ' dcc-newrow'
-          + (entryClasses.length > 0 ? ' ' + entryClasses.join(' ') : '');
+        clone.className = [...row.classList].join(' ') + ' dcc-newrow';
         const aria = orig.getAttribute('aria-label');
         if (aria !== null) clone.setAttribute('aria-label', aria);
         const content = document.createElement('span');
@@ -1527,7 +1534,8 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const current = findOriginal();
           if (current !== null) current.click();
         });
-        nav.insertBefore(clone, nav.firstElementChild);
+        wrapper.appendChild(clone);
+        nav.insertBefore(wrapper, nav.firstElementChild);
         return true;
       };
 
@@ -1538,6 +1546,10 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         /* 开关关掉时彻底还原：移除克隆行、去掉原按钮上的标记，
            让它回到宿主本来的样子，而不是仅靠 CSS 隐藏 */
         if (document.documentElement.dataset.dccEnabled !== 'on' || document.documentElement.dataset.dccNew !== 'on') {
+          if (wrapper !== null) {
+            wrapper.remove();
+            wrapper = null;
+          }
           if (clone !== null) {
             clone.remove();
             clone = null;
@@ -1546,8 +1558,8 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           return false;
         }
         if (orig.getAttribute('data-dcc-original') === null) orig.setAttribute('data-dcc-original', '');
-        if (clone === null || !clone.isConnected) return build(nav, orig);
-        if (!nav.contains(clone)) nav.insertBefore(clone, nav.firstElementChild);
+        if (wrapper === null || clone === null || !wrapper.isConnected) return build(nav, orig);
+        if (!nav.contains(wrapper)) nav.insertBefore(wrapper, nav.firstElementChild);
         /* 宿主文字（语言切换等）变化时，克隆行跟着更新 */
         const label = clone.querySelector('.dcc-newrow-label');
         const text = orig.querySelector('[class*="_newSessionLabel"]');
@@ -1590,6 +1602,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         window.removeEventListener('dcc-newsession-pref', onPref);
         if (timer !== null) clearTimeout(timer);
         if (rafId !== 0) window.cancelAnimationFrame(rafId);
+        if (wrapper !== null) wrapper.remove();
         if (clone !== null) clone.remove();
         const orig = findOriginal();
         if (orig !== null) orig.removeAttribute('data-dcc-original');
