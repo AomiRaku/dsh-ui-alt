@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.418';
+    const VERSION = '0.2.419';
     const UPDATED = '2026-11-15';
     const DEFAULTS = {
       radiusDensity: true,
@@ -440,14 +440,6 @@ html[data-dcc-collapse="on"][data-dcc-logo="shown"] [class*="_logoRow"] {
    这里不要声明 background：宿主的 _panelEntry 本身不设背景（默认透明），
    悬停底色来自它自己的 :hover 规则。加一句 !important 的 transparent
    会把那条规则整个压掉，悬停就只剩按钮本体那点变化，比别的行暗一档。 */
-/* wrapper 是原生 div，靠 nav 的 align-items: stretch 才撑满整行。
-   如果 nav 的交叉轴对齐不是 stretch，它会缩到内容宽度，
-   悬停底色就只铺左半边。这里显式撑满。 */
-[data-dcc-newrow-wrap] {
-  width: 100%;
-  box-sizing: border-box;
-}
-
 /* 只有「导航折叠」开启时才需要 sticky。
    那时 _panelList 不参与滚动（滚动收在 _listArea 里），这一行本来就不会跑掉，
    sticky 只是保险。折叠关闭时侧栏是整块滚动的，sticky 会让这一行悬在
