@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.407';
+    const VERSION = '0.2.408';
     const UPDATED = '2026-11-15';
     const DEFAULTS = {
       radiusDensity: true,
@@ -925,7 +925,9 @@ html[data-dcc-enabled="on"][data-dcc-header-fade="on"]:has([data-conversation-ta
 /* 宿主自带的「更多」按钮：只在紧凑化开启时隐藏——那时标签行被本插件的
    下拉按钮取代，宿主这个按钮用不上。紧凑化关闭时标签行是原版的，
    这个按钮必须留着，否则视图被裁掉后无法访问。 */
-html[data-dcc-enabled="on"][data-dcc-compact-header="on"] [class*="_viewsMoreAnchor"] {
+/* 限定在会话标题栏内：_viewsMoreAnchor 是宿主标签行专用的类，
+   但同一套渲染也可能被别处复用，加上 :has 限定确保只作用于有标签行的标题栏。 */
+html[data-dcc-enabled="on"][data-dcc-compact-header="on"] [class*="_header"]:has([data-conversation-tabs]) [class*="_viewsMoreAnchor"] {
   display: none !important;
 }
 /* 开关关掉时，自绘的分段控件不出现，标签行恢复原样 */
