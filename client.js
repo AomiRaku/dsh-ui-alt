@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.409';
+    const VERSION = '0.2.410';
     const UPDATED = '2026-11-15';
     const DEFAULTS = {
       radiusDensity: true,
@@ -440,12 +440,14 @@ html[data-dcc-collapse="on"][data-dcc-logo="shown"] [class*="_logoRow"] {
 /* 克隆出来的新会话行在 nav 里，滚动时要固定。
    sticky 和外层类都挂在 wrapper 上——宿主的悬停底色、圆角、间距
    本来就在 _panelEntry 那一层，克隆保持同样层级才能和别的导航行一致。
-   背景保持透明：mac 的侧栏本身是半透明的，任何不透明底色都会显出一块方形。 */
+
+   这里不要声明 background：宿主的 _panelEntry 本身不设背景（默认透明），
+   悬停底色来自它自己的 :hover 规则。加一句 !important 的 transparent
+   会把那条规则整个压掉，悬停就只剩按钮本体那点变化，比别的行暗一档。 */
 [data-dcc-newrow-wrap] {
   position: sticky;
   top: 0;
   z-index: 3;
-  background: transparent !important;
 }
 
 /* 侧栏滚动下放：整块滚动容器不再滚动，改成纵向布局；
