@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.406';
+    const VERSION = '0.2.407';
     const UPDATED = '2026-11-15';
     const DEFAULTS = {
       radiusDensity: true,
@@ -335,16 +335,10 @@ html[data-dcc-radius="on"] [class*="_trailing"] > [class*="_primary"] svg {
 }
 /* 输入框左下角的「+」：宿主是 999px 圆形，同样收成小圆角方形；
    底色也去掉，只在悬停时给出来（宿主的原始底色就是这一档）。 */
-/* 只针对输入框左下角那个「+」。_add 这个片段太短，会连带命中
-   工具栏里的 _addPrimary（添加插件）；它是个带底色的实体按钮，
-   底色被清掉就看不见了。这里把工具栏那一族全部排除。 */
-html[data-dcc-radius="on"] button[class*="_add"]:not([class*="_addGroup"]):not([class*="_addPrimary"]):not([class*="_toolbar"]) {
-  border-radius: var(--dsw-radius-md) !important;
-  background: transparent !important;
-}
-html[data-dcc-radius="on"] button[class*="_add"]:not([class*="_addGroup"]):not([class*="_addPrimary"]):not([class*="_toolbar"]):hover {
-  background: var(--dsw-specific-selector) !important;
-}
+/* 输入框左下角「+」按钮的圆角与底色收尾已移除。
+   _add 这个片段太泛滥：宿主的工具栏用的是 _addGroup / _addPrimary / _addMore，
+   全都含 _add，逐个排除既啰嗦又容易漏（_addMore 就漏过一次）。
+   这个按钮只是个小细节，不值得为它承担误伤工具栏的风险。
 
 /* 主内容区左上角的大圆角（Windows 标题栏） */
 html[data-dcc-radius="on"][data-windows-titlebar] [class*="_centerCol"] {
