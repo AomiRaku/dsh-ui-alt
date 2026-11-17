@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.419';
+    const VERSION = '0.2.420';
     const UPDATED = '2026-11-15';
     const DEFAULTS = {
       radiusDensity: true,
@@ -433,17 +433,10 @@ html[data-dcc-collapse="on"][data-dcc-logo="shown"] [class*="_logoRow"] {
 }
 
 
-/* 克隆出来的新会话行在 nav 里，滚动时要固定。
-   sticky 和外层类都挂在 wrapper 上——宿主的悬停底色、圆角、间距
-   本来就在 _panelEntry 那一层，克隆保持同样层级才能和别的导航行一致。
-
-   这里不要声明 background：宿主的 _panelEntry 本身不设背景（默认透明），
-   悬停底色来自它自己的 :hover 规则。加一句 !important 的 transparent
-   会把那条规则整个压掉，悬停就只剩按钮本体那点变化，比别的行暗一档。 */
-/* 只有「导航折叠」开启时才需要 sticky。
-   那时 _panelList 不参与滚动（滚动收在 _listArea 里），这一行本来就不会跑掉，
-   sticky 只是保险。折叠关闭时侧栏是整块滚动的，sticky 会让这一行悬在
-   滚过去的内容之上——它没有背景，下方文字会直接穿过来。
+/* sticky 只在「导航折叠」开启时生效。
+   那时 _panelList 不参与滚动（滚动收在 _listArea 里），这一行本来也不会跑掉，
+   sticky 只是保险。折叠关闭时侧栏整块滚动，而这一行没有自己的背景
+   （底色交给宿主的 _panelEntry），sticky 会让下方内容从它下面穿过去——
    那种情况下让它跟着滚，和宿主原版行为一致。 */
 html[data-dcc-collapse="on"] [data-dcc-newrow-wrap] {
   position: sticky;
