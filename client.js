@@ -6,8 +6,8 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.420';
-    const UPDATED = '2026-11-15';
+    const VERSION = '0.2.421';
+    const UPDATED = '2026-11-17';
     const DEFAULTS = {
       radiusDensity: true,
       invertNewSession: true,
@@ -1959,6 +1959,8 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       let bar = null;
       let observer = null;
       let timer = null;
+      let prefTimer = null;
+      let rafId = 0;
       /* 正在淡出的旧控件被临时挂到 body 上，卸载时要一起收走 */
       const ghosts = new Set();
 
@@ -2219,7 +2221,14 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         if (!event.detail) return;
         const key = event.detail.key;
         if (key !== 'compactHeader' && key !== 'compactHeaderFull') return;
-        window.setTimeout(() => window.requestAnimationFrame(() => ensure()), 0);
+        if (prefTimer !== null) clearTimeout(prefTimer);
+        prefTimer = window.setTimeout(() => {
+          prefTimer = null;
+          rafId = window.requestAnimationFrame(() => {
+            rafId = 0;
+            ensure();
+          });
+        }, 0);
       };
       window.addEventListener('dcc-prefs-changed', onPrefs);
 
@@ -2227,6 +2236,8 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         window.removeEventListener('dcc-prefs-changed', onPrefs);
         observer.disconnect();
         if (timer !== null) clearTimeout(timer);
+        if (prefTimer !== null) clearTimeout(prefTimer);
+        if (rafId !== 0) window.cancelAnimationFrame(rafId);
         closeSegMenu();
         if (bar !== null) bar.remove();
         for (const ghost of ghosts) ghost.remove();
