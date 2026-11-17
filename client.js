@@ -397,7 +397,7 @@ html[data-dcc-new="on"] button[data-dcc-newrow] {
    原版新会话的图标是 14px、其它导航项是 16px，包裹层若按内容收缩，
    窄图标居中后左边缘会往右缩 1px，整行的图标和文字跟着偏。
    这里把宽度钉成 16px，图标在里面居中，左边缘就对齐了。 */
-html[data-dcc-new=on] button[data-dcc-newrow] [class*=_panelGlyph],
+html[data-dcc-new="on"] button[data-dcc-newrow] [class*="_panelGlyph"],
 .dcc-newrow-glyph {
   display: inline-flex;
   align-items: center;
