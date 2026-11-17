@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.411';
+    const VERSION = '0.2.412';
     const UPDATED = '2026-11-15';
     const DEFAULTS = {
       radiusDensity: true,
@@ -388,23 +388,21 @@ html[data-dcc-new="off"] [data-dcc-newrow-wrap] {
   display: none !important;
 }
 /* 克隆行直接使用 panelRow 的类，宽度/内边距/行高/焦点环全部来自宿主；
-   默认和其它导航行一样是透明底，悬停时统一由下面的导航行规则上色 */
-/* 悬停底色由 wrapper 上的 panelEntry 类负责，和别的导航行完全一致 */
+   图标的包裹层也用宿主的 panelGlyph，所以这里的元素排布和别的导航行一致。
+   悬停底色由 wrapper 上的 panelEntry 类负责。 */
 html[data-dcc-new="on"] button[data-dcc-newrow] {
   color: var(--dsw-alias-label-primary) !important;
 }
-.dcc-newrow-content {
-  display: flex;
+/* 后备：万一取不到宿主的 panelGlyph 类名，用这条保证图标尺寸不崩 */
+.dcc-newrow-glyph {
+  display: inline-flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: calc(var(--dsh-sidebar-label-gap) + 2px);
-  flex: 1;
-  min-width: 0;
+  justify-content: center;
+  flex: none;
 }
-.dcc-newrow-content svg {
+.dcc-newrow-glyph svg {
   width: 16px;
   height: 16px;
-  flex: none;
   color: inherit;
 }
 .dcc-newrow-label {
@@ -1535,16 +1533,28 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           .join(' ') + ' dcc-newrow';
         const aria = orig.getAttribute('aria-label');
         if (aria !== null) clone.setAttribute('aria-label', aria);
-        const content = document.createElement('span');
-        content.className = 'dcc-newrow-content';
+        /* 图标要有独立的包裹层：宿主用 _panelGlyph 控制尺寸和居中，
+           少了它 svg 直接参与弹性布局，宽度和对齐都会偏。
+           包裹层的类名从同一行的图标节点上取，不硬编码哈希。 */
         const icon = orig.querySelector('svg');
-        if (icon !== null) content.appendChild(icon.cloneNode(true));
+        if (icon !== null) {
+          const source = row.querySelector('[class*="_panelGlyph"]');
+          const glyph = document.createElement('span');
+          if (source !== null) {
+            for (const name of source.classList) glyph.classList.add(name);
+          } else {
+            glyph.className = 'dcc-newrow-glyph';
+          }
+          glyph.setAttribute('aria-hidden', 'true');
+          glyph.appendChild(icon.cloneNode(true));
+          clone.appendChild(glyph);
+        }
+
         const label = document.createElement('span');
         label.className = 'dcc-newrow-label';
         const text = orig.querySelector('[class*="_newSessionLabel"]');
         label.textContent = text !== null && text.textContent !== '' ? text.textContent : (isZh() ? '新会话' : 'New session');
-        content.appendChild(label);
-        clone.appendChild(content);
+        clone.appendChild(label);
         clone.addEventListener('click', (event) => {
           event.preventDefault();
           const current = findOriginal();
