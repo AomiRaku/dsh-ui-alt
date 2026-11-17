@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.412';
+    const VERSION = '0.2.413';
     const UPDATED = '2026-11-15';
     const DEFAULTS = {
       radiusDensity: true,
@@ -393,16 +393,20 @@ html[data-dcc-new="off"] [data-dcc-newrow-wrap] {
 html[data-dcc-new="on"] button[data-dcc-newrow] {
   color: var(--dsw-alias-label-primary) !important;
 }
-/* 后备：万一取不到宿主的 panelGlyph 类名，用这条保证图标尺寸不崩 */
+/* 图标包裹层和宿主导航行保持同一宽度。
+   原版新会话的图标是 14px、其它导航项是 16px，包裹层若按内容收缩，
+   窄图标居中后左边缘会往右缩 1px，整行的图标和文字跟着偏。
+   这里把宽度钉成 16px，图标在里面居中，左边缘就对齐了。 */
+html[data-dcc-new=on] button[data-dcc-newrow] [class*=_panelGlyph],
 .dcc-newrow-glyph {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex: none;
+  width: 16px;
+  min-width: 16px;
 }
 .dcc-newrow-glyph svg {
-  width: 16px;
-  height: 16px;
   color: inherit;
 }
 .dcc-newrow-label {
