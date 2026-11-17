@@ -129,7 +129,7 @@ dsh-ui-alt/
 
 - 预置数据：`STORAGE_KEY`、`DEFAULTS`、`readPrefs()` / `applyPrefs()` / `savePrefs()`。
 - 一大段 `css` 字符串，全部按 `html[data-dcc-*]` 条件生效；设置页自身样式用 `.dcc-*` 前缀。
-- 十一个 DOM 注入函数，各自带总开关守卫；需要跟随宿主重渲染的还带一个监听 `body` 的 `MutationObserver`（350–400ms 防抖）：
+- 十三个 DOM 注入函数，各自带总开关守卫；需要跟随宿主重渲染的还带一个监听 `body` 的 `MutationObserver`（350–400ms 防抖）：
   - `installNewSessionRow()`：克隆宿主的「新会话」按钮成导航行，点击转发给原按钮。
   - `installNavToggle()`：导航下方插入展开/收起箭头，点击切换 `data-dcc-nav` 并写回偏好。
   - `installSettingsBackButton()`：设置面板左上角插入返回按钮，点击触发原关闭按钮。
@@ -141,6 +141,8 @@ dsh-ui-alt/
   - `installDialogExit()`：接管对话框移除，补一段退场动画。
   - `installBootCover()`：启动时的过渡遮罩。
   - `installReloadMenuItem()`：在标题栏三点菜单末尾追加「重载前端界面」项。
+  - `installHistoryHint()`：会话切换时把「载入历史」提示移到正文中心，并在文字上方加鲸鱼图标。
+  - `installBootHint()`：宿主加载页适配——提示文字居中、隐藏品牌字样与旋转圈。
 - 设置页组件：`Section`（标题 + 说明 + 开关行）、`Switch`、`Row`、`SectionIcon`。
 
 ## 开发
