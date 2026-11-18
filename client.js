@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.423';
+    const VERSION = '0.2.424';
     const UPDATED = '2026-11-17';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1032,6 +1032,17 @@ html[data-dcc-enabled="on"] [data-dsh-boot] {
 html[data-dcc-enabled="on"] [data-dsh-boot] [data-dsh-boot-spinner],
 html[data-dcc-enabled="on"] [data-dsh-boot] [class*="_spinner"] {
   display: none !important;
+}
+/* 加载页的提示也改成纵向：鲸鱼在上、文字在下，和会话页的观感一致。
+   宿主的原始排布是横向的，去掉 HARNESS 之后如果不改方向，
+   鲸鱼会和文字并排站着。 */
+html[data-dcc-enabled="on"] [data-dsh-boot] [class*="_hint"] {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin: 0 !important;
+  white-space: nowrap !important;
 }
 /* ===== BOOT-HINT END ===== */
 
