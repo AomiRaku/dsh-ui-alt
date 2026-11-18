@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.422';
+    const VERSION = '0.2.423';
     const UPDATED = '2026-11-17';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1036,8 +1036,14 @@ html[data-dcc-enabled="on"] [data-dsh-boot] [class*="_spinner"] {
 /* ===== BOOT-HINT END ===== */
 
 /* 会话切换时的「载入历史」提示：挪到正文中心，鲸鱼在上、文字在下。
-   文字内容由宿主写入，这里只改排版，不替换文案。 */
-html[data-dcc-enabled="on"] [class*="_hint"] {
+   文字内容由宿主写入，这里只改排版，不替换文案。
+
+   _hint 这个类名在宿主的其它地方也复用（内置插件的详情页就有一处），
+   所以这里用白名单限定，只处理两个容器内的：
+     · [data-conversation-scroll]  会话正文区
+     · [data-dsh-boot]             宿主加载页（那条在 BOOT-HINT 段里单独处理）
+   其它位置的 _hint 一律不碰。 */
+html[data-dcc-enabled="on"] [data-conversation-scroll] [class*="_hint"] {
   position: fixed !important;
   /* left/top 由脚本按正文区域的中心算出来写上去 */
   transform: translate(-50%, -50%) !important;
@@ -1051,7 +1057,8 @@ html[data-dcc-enabled="on"] [class*="_hint"] {
   white-space: nowrap !important;
   pointer-events: none !important;
 }
-html[data-dcc-enabled="on"] [data-dcc-hint-fish] {
+html[data-dcc-enabled="on"] [data-conversation-scroll] [data-dcc-hint-fish],
+html[data-dcc-enabled="on"] [data-dsh-boot] [data-dcc-hint-fish] {
   width: 56px;
   height: auto;
   opacity: .32;
@@ -2255,11 +2262,13 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       let rafId = 0;
 
       const decorate = () => {
-        const hint = document.querySelector('[class*="_hint"]');
+        /* 白名单：只在会话正文区里找 _hint。
+           宿主在别处也用了同一个类名（内置插件详情页就有一处），
+           全局 querySelector 会抓错地方。 */
+        const host = document.querySelector('[data-conversation-scroll]');
+        if (host === null) return;
+        const hint = host.querySelector('[class*="_hint"]');
         if (hint === null) return;
-        /* 加载页的 hint 归 installBootHint 管，这里跳过，避免两个模块
-           对同一个元素各改一半。 */
-        if (hint.closest('[data-dsh-boot]') !== null) return;
         if (hint.querySelector('[data-dcc-hint-fish]') !== null) return;
 
         const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -2279,8 +2288,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
       /* 按正文区域（而不是视口）的中心定位：侧栏展开时两者差一截。 */
       const center = (hint) => {
-        /* 加载页里的 hint 由 installBootHint 单独居中，这里跳过。 */
-        if (hint.closest('[data-dsh-boot]') !== null) return;
         const host = document.querySelector('[data-conversation-scroll]');
         if (host === null) return;
         const rect = host.getBoundingClientRect();
@@ -2295,10 +2302,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
          手动重播一次：先摘掉动画类、强制重排、再挂回去。 */
       let lastHadHint = false;
       const replayFade = () => {
-
+        /* 同样限定在正文区内——_column / _marks 这些名字在别处也可能出现 */
+        const area = document.querySelector('[data-conversation-scroll]');
+        if (area === null) return;
         const targets = [
-          document.querySelector('[class*="_column"]'),
-          document.querySelector('[class*="_marks"]'),
+          area.querySelector('[class*="_column"]'),
+          area.querySelector('[class*="_marks"]'),
         ].filter((el) => el !== null && el.getBoundingClientRect().height > 0);
         if (targets.length === 0) return;
         for (const el of targets) el.removeAttribute('data-dcc-fade-in');
@@ -2308,10 +2317,10 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
 
       const watchHint = () => {
-        /* 只看会话界面里的提示——加载页也有同一个 _hint，它消失不表示
-           正文就位，跟着触发会白跑一次（虽然 targets 为空会直接返回）。 */
-        const hint = document.querySelector('[class*="_hint"]');
-        const hasHint = hint !== null && hint.closest('[data-dsh-boot]') === null;
+        /* 和 decorate 一样只看正文区的提示 */
+        const host = document.querySelector('[data-conversation-scroll]');
+        const hint = host === null ? null : host.querySelector('[class*="_hint"]');
+        const hasHint = hint !== null;
         /* 由「有提示」变成「没提示」，说明这一轮内容已经就位 */
         if (lastHadHint && !hasHint) replayFade();
         lastHadHint = hasHint;
