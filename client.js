@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.441';
+    const VERSION = '0.2.442';
     const UPDATED = '2026-11-19';
     const DEFAULTS = {
       radiusDensity: true,
@@ -2176,8 +2176,28 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       if (last === VERSION) return () => {};
 
       let modal = null;
-      /* 首次加载时宿主还没画完，等启动遮罩收走再弹 */
-      let timer = window.setTimeout(show, 2500);
+      let timer = 0;
+
+      /* 界面是否真的画出来了。启动遮罩和这个弹窗都靠它判断——
+         遮罩还没收走（宿主的加载页还在）时弹窗会浮在一片空黑上，
+         看不到被压暗的界面，观感像「背景是纯黑」。 */
+      const ready = () => {
+        const sidebar = document.querySelector('[class*="_root"]:has(nav[class*="_panelList"])');
+        if (sidebar === null) return false;
+        const rect = sidebar.getBoundingClientRect();
+        return rect.width > 100 && rect.height > 100;
+      };
+
+      /* 轮询等待界面就绪，最多等 20 秒；超时也弹，总比一直不提示好 */
+      let waited = 0;
+      const waitReady = () => {
+        timer = 0;
+        if (modal !== null) return;
+        if (ready() || waited >= 20000) { show(); return; }
+        waited += 200;
+        timer = window.setTimeout(waitReady, 200);
+      };
+      timer = window.setTimeout(waitReady, 1000);
 
       const close = () => {
         if (modal !== null) { modal.remove(); modal = null; }
@@ -2214,8 +2234,8 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         const body = document.createElement('div');
         body.className = 'dcc-modal-body';
         body.textContent = isZh()
-          ? '安装/更新完成。需要重新载入一次前端界面，确保功能正常生效。\n（此操作不会影响运行中的任务。）'
-          : 'Installed/updated. Reload the frontend once so every feature takes effect.\n(Running tasks are not affected.)';
+          ? '安装/更新完成。需要重新载入一次前端界面，确保功能正常生效。\n此操作不会影响运行中的任务。'
+          : 'Installed/updated. Reload the frontend once so every feature takes effect.\nRunning tasks are not affected.';
 
         content.append(title, body);
 
