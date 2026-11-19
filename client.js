@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.445';
+    const VERSION = '0.2.446';
     const UPDATED = '2026-11-19';
     const DEFAULTS = {
       radiusDensity: true,
@@ -2078,37 +2078,11 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
      */
     function installHistoryHint() {
       let observer = null;
-      let rafId = 0;
+      let timer = 0;
+      let lastHadHint = false;
 
-      const decorate = () => {
-        /* 白名单：只在会话正文区里找 _hint。
-           宿主在别处也用了同一个类名（内置插件详情页就有一处），
-           全局 querySelector 会抓错地方。 */
-        const host = document.querySelector('[data-conversation-scroll]');
-        if (host === null) return;
-        const hint = host.querySelector('[class*="_hint"]');
-        if (hint === null) return;
-        if (hint.querySelector('[data-dcc-hint-fish]') !== null) return;
-
-        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('viewBox', '0 0 23.16 17.04');
-        svg.setAttribute('data-dcc-hint-fish', '');
-        svg.setAttribute('aria-hidden', 'true');
-        const shape = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        shape.setAttribute('d', FISH_LOGO_PATH);
-        const darkNow = document.body.hasAttribute('data-ds-dark-theme')
-          || document.documentElement.hasAttribute('data-ds-dark-theme');
-        shape.setAttribute('fill', darkNow ? '#ffffff' : '#000000');
-        svg.appendChild(shape);
-        hint.insertBefore(svg, hint.firstChild);
-
-        /* 宿主加载页的适配在 installBootHint 里独立处理，这里只负责会话界面的情况 */
-        center(hint);
-      };
       /* 按正文区域（而不是视口）的中心定位：侧栏展开时两者差一截。 */
-      const center = (hint) => {
-        const host = document.querySelector('[data-conversation-scroll]');
-        if (host === null) return;
+      const center = (host, hint) => {
         const rect = host.getBoundingClientRect();
         if (rect.width === 0 || rect.height === 0) return;
         hint.style.left = rect.left + rect.width / 2 + 'px';
@@ -2119,11 +2093,8 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       /* 切换会话时正文是整体换掉的，但容器本身常驻，
          animation 只播一次，之后再切就看不到了。这里在提示消失后
          手动重播一次：先摘掉动画类、强制重排、再挂回去。 */
-      let lastHadHint = false;
-      const replayFade = () => {
+      const replayFade = (area) => {
         /* 同样限定在正文区内——_column / _marks 这些名字在别处也可能出现 */
-        const area = document.querySelector('[data-conversation-scroll]');
-        if (area === null) return;
         const targets = [
           area.querySelector('[class*="_column"]'),
           area.querySelector('[class*="_marks"]'),
@@ -2135,32 +2106,56 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         for (const el of targets) el.setAttribute('data-dcc-fade-in', '');
       };
 
-      const watchHint = () => {
-        /* 和 decorate 一样只看正文区的提示 */
+      const tick = () => {
+        if (document.documentElement.dataset.dccEnabled !== 'on') return;
+        /* 白名单：只在会话正文区里找 _hint。
+           宿主在别处也用了同一个类名（内置插件详情页就有一处），
+           全局 querySelector 会抓错地方。 */
         const host = document.querySelector('[data-conversation-scroll]');
-        const hint = host === null ? null : host.querySelector('[class*="_hint"]');
+        if (host === null) {
+          lastHadHint = false;
+          return;
+        }
+        const hint = host.querySelector('[class*="_hint"]');
+        if (hint !== null && hint.querySelector('[data-dcc-hint-fish]') === null) {
+          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svg.setAttribute('viewBox', '0 0 23.16 17.04');
+          svg.setAttribute('data-dcc-hint-fish', '');
+          svg.setAttribute('aria-hidden', 'true');
+          const shape = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          shape.setAttribute('d', FISH_LOGO_PATH);
+          const darkNow = document.body.hasAttribute('data-ds-dark-theme')
+            || document.documentElement.hasAttribute('data-ds-dark-theme');
+          shape.setAttribute('fill', darkNow ? '#ffffff' : '#000000');
+          svg.appendChild(shape);
+          hint.insertBefore(svg, hint.firstChild);
+          /* 宿主加载页的适配在 installBootHint 里独立处理，这里只负责会话界面的情况 */
+          center(host, hint);
+        }
         const hasHint = hint !== null;
         /* 由「有提示」变成「没提示」，说明这一轮内容已经就位 */
-        if (lastHadHint && !hasHint) replayFade();
+        if (lastHadHint && !hasHint) replayFade(host);
         lastHadHint = hasHint;
       };
 
+      /* 原先每个 rAF 都扫一遍正文；流式输出时每帧一次，长会话下
+         光找 _hint 就要遍历整棵消息树。改成 ~100ms 合并一次，
+         既够及时，又把常驻扫描成本压到原来的十分之一。 */
       const schedule = () => {
-        if (rafId !== 0) return;
-        rafId = window.requestAnimationFrame(() => {
-          rafId = 0;
-          if (document.documentElement.dataset.dccEnabled !== 'on') return;
-          decorate();
-          watchHint();
-        });
+        if (timer !== 0) return;
+        timer = window.setTimeout(() => {
+          timer = 0;
+          tick();
+        }, 96);
       };
 
       observer = new MutationObserver(schedule);
       observer.observe(document.body, { childList: true, subtree: true });
+      tick();
 
       return () => {
         observer.disconnect();
-        if (rafId !== 0) window.cancelAnimationFrame(rafId);
+        if (timer !== 0) window.clearTimeout(timer);
         for (const el of document.querySelectorAll('[data-dcc-hint-fish]')) el.remove();
         for (const el of document.querySelectorAll('[data-dcc-fade-in]')) el.removeAttribute('data-dcc-fade-in');
       };
@@ -2725,6 +2720,8 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       let lastX = 0;
       let lastY = 0;
       let observer = null;
+      let rafId = 0;
+      const MENU_SELECTOR = '[role="menu"], [role="listbox"], [role="dialog"]';
       /* 每出现一个新菜单就递增编号，用来判断「谁是最后出现的」。
          不能用 DOM 顺序：子菜单是 portal 节点，先出现的可能排在后面。 */
       let seq = 0;
@@ -2735,7 +2732,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
 
       const mark = () => {
-        const menus = document.querySelectorAll('[role="menu"], [role="listbox"], [role="dialog"]');
+        const menus = document.querySelectorAll(MENU_SELECTOR);
         for (let i = 0; i < menus.length; i += 1) {
           const menu = menus[i];
           if (menu.hasAttribute('data-dcc-menu-seq')) continue;
@@ -2777,14 +2774,53 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         }
       };
 
+      /* 只有菜单相关的节点增删才需要重新扫描。
+         原先每次 DOM 变动都全文档扫一遍；流式输出时长会话每秒变几十次，
+         主线程被这些扫描占住，点菜单要等空闲才响应。
+         菜单都是 portal 到 body 的根（role 打在根上，或包一层容器），
+         所以只查一层直接子级就够，不碰消息子树。 */
+      const isMenuNode = (node) => {
+        if (!(node instanceof Element)) return false;
+        if (node.matches(MENU_SELECTOR)) return true;
+        for (let i = 0; i < node.children.length; i += 1) {
+          const role = node.children[i].getAttribute('role');
+          if (role === 'menu' || role === 'listbox' || role === 'dialog') return true;
+        }
+        return false;
+      };
+      const hasMenuChange = (records) => {
+        for (let i = 0; i < records.length; i += 1) {
+          const added = records[i].addedNodes;
+          for (let j = 0; j < added.length; j += 1) {
+            if (isMenuNode(added[j])) return true;
+          }
+          const removed = records[i].removedNodes;
+          for (let j = 0; j < removed.length; j += 1) {
+            if (isMenuNode(removed[j])) return true;
+          }
+        }
+        return false;
+      };
+      /* 一次点击可能连续插入菜单根和子菜单，合并到一帧里只扫一次 */
+      const schedule = () => {
+        if (rafId !== 0) return;
+        rafId = window.requestAnimationFrame(() => {
+          rafId = 0;
+          mark();
+        });
+      };
+
       window.addEventListener('pointerdown', onDown, true);
-      observer = new MutationObserver(mark);
+      observer = new MutationObserver((records) => {
+        if (hasMenuChange(records)) schedule();
+      });
       observer.observe(document.body, { childList: true, subtree: true });
       mark();
 
       return () => {
         observer.disconnect();
         window.removeEventListener('pointerdown', onDown, true);
+        if (rafId !== 0) window.cancelAnimationFrame(rafId);
       };
     }
 
@@ -2799,9 +2835,19 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
          所以对话框一出现就把位置记下来，移除时直接取这份快照。 */
       const rects = new WeakMap();
 
+      /* 宿主的弹层都是 createPortal 到 body：Modal 是 root > mask + dialog，
+         设置面板是 overlay > mask + panel[dialog]，dialog 都在根的直接子级。
+         不再对每个新增节点做整棵子树 querySelector——流式输出时那会反复
+         遍历长会话的 DOM，点击要等扫描结束。 */
+      const findDialog = (root, requirePortalRoot) => {
+        if (root.matches('[role="dialog"]')) return root;
+        if (requirePortalRoot && root.parentElement !== document.body) return null;
+        return root.querySelector(':scope > [role="dialog"]');
+      };
+
       const remember = (root) => {
         if (root.hasAttribute('data-dcc-dialog-clone')) return;
-        const dialog = root.matches('[role="dialog"]') ? root : root.querySelector('[role="dialog"]');
+        const dialog = findDialog(root, true);
         if (dialog === null || rects.has(dialog)) return;
         const rect = dialog.getBoundingClientRect();
         if (rect.width > 0 && rect.height > 0) rects.set(dialog, rect);
@@ -2853,9 +2899,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           for (let j = 0; j < removed.length; j += 1) {
             const node = removed[j];
             if (!(node instanceof Element)) continue;
-            const dialog = node.matches('[role="dialog"]')
-              ? node
-              : node.querySelector('[role="dialog"]');
+            const dialog = findDialog(node, false);
             if (dialog !== null) playExit(dialog);
           }
         }
