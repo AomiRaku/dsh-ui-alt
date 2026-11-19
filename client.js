@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.427';
+    const VERSION = '0.2.428';
     const UPDATED = '2026-11-19';
     const DEFAULTS = {
       radiusDensity: true,
@@ -3084,8 +3084,8 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           h('p', { className: 'dcc-meta' },
             /* 中文之间用一个全角空格（\u3000）分隔，比两个半角空格更稳 */
             zh
-              ? `版本：${VERSION}\u3000更新日期：${UPDATED}\n此版本基于 DSH v0.2.2-rc.3 测试`
-              : `Version: ${VERSION}  Updated: ${UPDATED}\nTested on DSH v0.2.2-rc.3`),
+              ? `版本：${VERSION}\u3000更新日期：${UPDATED}\n此版本基于 DSH v0.2.2-rc.5 测试`
+              : `Version: ${VERSION}  Updated: ${UPDATED}\nTested on DSH v0.2.2-rc.5`),
           h('button', {
             type: 'button',
             className: 'dcc-reset',
