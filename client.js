@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.440';
+    const VERSION = '0.2.441';
     const UPDATED = '2026-11-19';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1090,58 +1090,6 @@ html[data-dcc-enabled="on"] [data-dsh-boot] [data-dcc-hint-fish] {
   flex: none;
 }
 
-/* 首次安装提示：贴在底部中间，不遮住正文，也不抢焦点。
-   用 fixed + z-index，但低于启动遮罩（2147483000），
-   这样首次启动的遮罩还没收走时不会浮在它上面。 */
-.dcc-firstrun {
-  position: fixed;
-  left: 50%;
-  bottom: 28px;
-  transform: translateX(-50%);
-  z-index: 2147482000;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  max-width: min(560px, calc(100vw - 48px));
-  padding: 10px 12px 10px 16px;
-  border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: var(--dsw-radius-lg, 12px);
-  background: var(--dsw-alias-bg-layer-1);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
-  font-size: 13px;
-  line-height: 20px;
-  color: var(--dsw-alias-label-primary);
-  animation: dcc-firstrun-in .22s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
-}
-@keyframes dcc-firstrun-in {
-  from { opacity: 0; transform: translate(-50%, 8px); }
-  to   { opacity: 1; transform: translate(-50%, 0); }
-}
-.dcc-firstrun-text {
-  min-width: 0;
-  flex: 1;
-}
-.dcc-firstrun-action {
-  flex: none;
-  height: 28px;
-  padding: 0 12px;
-  border: 1px solid var(--dsw-alias-border-l3);
-  border-radius: var(--dsw-radius-sm, 8px);
-  background: transparent;
-  color: var(--dsw-alias-label-primary);
-  font: inherit;
-  font-size: 12px;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: background-color .12s;
-}
-.dcc-firstrun-action:hover {
-  background: var(--dsw-alias-interactive-bg-hover);
-}
-.dcc-firstrun-action + .dcc-firstrun-action {
-  border-color: transparent;
-  color: var(--dsw-alias-label-secondary);
-}
 
 /* 追加到宿主菜单末尾的「重载前端界面」：外观对齐宿主自己的菜单项，
    高度、内边距、字号都按它的规格来。 */
