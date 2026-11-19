@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.439';
+    const VERSION = '0.2.440';
     const UPDATED = '2026-11-19';
     const DEFAULTS = {
       radiusDensity: true,
@@ -225,6 +225,8 @@ body[data-ds-dark-theme] .dcc-boot-cover {
   font-size: 13px;
   line-height: 20px;
   color: var(--dsw-alias-label-secondary);
+  /* 文案里用 \n 分段，需要它才真的换行 */
+  white-space: pre-line;
 }
 .dcc-modal-actions {
   display: flex;
@@ -244,6 +246,16 @@ body[data-ds-dark-theme] .dcc-boot-cover {
   cursor: pointer;
 }
 .dcc-modal-btn:hover { background: var(--dsw-alias-interactive-bg-hover); }
+/* 主操作：实底强调色，和宿主的主按钮一致 */
+.dcc-modal-cta {
+  border-color: transparent;
+  background: var(--dsw-alias-label-primary);
+  color: var(--dsw-alias-label-primary-foreground);
+}
+.dcc-modal-cta:hover {
+  background: var(--dsw-alias-label-primary);
+  opacity: .88;
+}
 /* 破坏性操作：常态无底色、文字红；悬停补一层淡红 */
 .dcc-modal-primary {
   border-color: transparent;
@@ -2189,69 +2201,105 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
     }
 
     /**
-     * 首次安装提示。
+     * 安装/更新/降级后的重载提示。
      *
      * 插件是运行期动态注入的，有些宿主元素在注入那一刻还没渲染出来，
-     * 少数依赖它们的模块（视图切换控件、新会话行克隆）可能来不及建立，
-     * 重启一次界面就都正常了。
+     * 少数依赖它们的模块（视图切换控件、新会话行克隆）可能来不及建立。
+     * 重新载入一次就都正常了。
      *
-     * 这里不自动刷新——那样会在用户正用着的时候把页面抽走。
-     * 改成弹一条提示，把重不重启的决定权交回给用户。
+     * 判定用 localStorage 里的版本标记：
+     *   标记缺失      → 首次安装
+     *   标记不等于当前 → 升级或降级
+     * 两种情况都提示；标记相同则不打扰。
      *
-     * 判定「首次安装」用 localStorage 里有没有版本标记：
-     * 标记不存在 = 从没成功加载过本插件。
+     * 不自动刷新——那会在用户正用着的时候把页面抽走。
+     * 弹一个对话框，把决定权交回给用户。
      */
     function installFirstRunNotice() {
       const KEY = 'dsh-ui-alt:installed';
-      let first = false;
+      let last = null;
       try {
-        first = localStorage.getItem(KEY) === null;
+        last = localStorage.getItem(KEY);
         localStorage.setItem(KEY, VERSION);
       } catch {
-        /* 存储不可用时就不提示，也不影响其它功能 */
+        /* 存储不可用时不提示，也不影响其它功能 */
         return () => {};
       }
-      if (!first) return () => {};
-      /* 首次加载时宿主可能还没画完，等一会儿再弹，别和启动遮罩抢焦点 */
+      if (last === VERSION) return () => {};
+
+      let modal = null;
+      /* 首次加载时宿主还没画完，等启动遮罩收走再弹 */
       let timer = window.setTimeout(show, 2500);
-      let bar = null;
+
+      const close = () => {
+        if (modal !== null) { modal.remove(); modal = null; }
+        document.removeEventListener('keydown', onKey, true);
+      };
+
+      const onKey = (event) => {
+        if (event.key === 'Escape') close();
+      };
 
       function show() {
         timer = 0;
-        if (bar !== null) return;
-        bar = document.createElement('div');
-        bar.className = 'dcc-firstrun';
-        bar.setAttribute('role', 'status');
+        if (modal !== null) return;
 
-        const text = document.createElement('span');
-        text.className = 'dcc-firstrun-text';
-        text.textContent = isZh()
-          ? '首次安装完成。重启一次前端界面可以确保所有功能正常生效。'
-          : 'Installed. Restart the frontend once so every feature takes effect.';
+        modal = document.createElement('div');
+        modal.className = 'dcc-modal';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-label', isZh() ? 'UI 改进' : 'UI improvements');
+
+        const mask = document.createElement('div');
+        mask.className = 'dcc-modal-mask';
+
+        const card = document.createElement('div');
+        card.className = 'dcc-modal-card';
+
+        const content = document.createElement('div');
+        content.className = 'dcc-modal-content';
+
+        const title = document.createElement('div');
+        title.className = 'dcc-modal-title';
+        title.textContent = isZh() ? 'UI 改进' : 'UI improvements';
+
+        const body = document.createElement('div');
+        body.className = 'dcc-modal-body';
+        body.textContent = isZh()
+          ? '安装/更新完成。需要重新载入一次前端界面，确保功能正常生效。\n（此操作不会影响运行中的任务。）'
+          : 'Installed/updated. Reload the frontend once so every feature takes effect.\n(Running tasks are not affected.)';
+
+        content.append(title, body);
+
+        const actions = document.createElement('div');
+        actions.className = 'dcc-modal-actions';
+
+        const later = document.createElement('button');
+        later.type = 'button';
+        later.className = 'dcc-modal-btn';
+        later.textContent = isZh() ? '稍后自行重启' : 'Restart later';
+        later.addEventListener('click', close);
 
         const reload = document.createElement('button');
         reload.type = 'button';
-        reload.className = 'dcc-firstrun-action';
-        reload.textContent = isZh() ? '立即重启' : 'Restart now';
+        reload.className = 'dcc-modal-btn dcc-modal-cta';
+        reload.textContent = isZh() ? '立即重载' : 'Reload now';
         reload.addEventListener('click', () => {
           window.location.reload();
         });
 
-        const close = document.createElement('button');
-        close.type = 'button';
-        close.className = 'dcc-firstrun-action';
-        close.textContent = isZh() ? '稍后' : 'Later';
-        close.addEventListener('click', () => {
-          if (bar !== null) { bar.remove(); bar = null; }
-        });
-
-        bar.append(text, reload, close);
-        document.body.appendChild(bar);
+        actions.append(later, reload);
+        card.append(content, actions);
+        modal.append(mask, card);
+        document.body.appendChild(modal);
+        /* Esc 关闭：用捕获阶段，先于宿主自己的 Esc 处理 */
+        document.addEventListener('keydown', onKey, true);
+        reload.focus();
       }
 
       return () => {
         if (timer !== 0) window.clearTimeout(timer);
-        if (bar !== null) { bar.remove(); bar = null; }
+        close();
       };
     }
 
