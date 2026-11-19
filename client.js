@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.429';
+    const VERSION = '0.2.430';
     const UPDATED = '2026-11-19';
     const DEFAULTS = {
       radiusDensity: true,
@@ -647,8 +647,13 @@ html[data-dcc-transition="on"] [data-dcc-dialog-clone] [class*="_mask"] {
 }
 
 /* 压暗遮罩的入场：从透明淡到实，时长与退场的 dcc-fade-out 对齐。
-   带 !important，避免被其他插件的通配符动效规则压平。 */
-html[data-dcc-transition="on"] [class*="_mask"] {
+   带 !important，避免被其他插件的通配符动效规则压平。
+
+   _mask 这个类名在宿主的 6 个以上模块里都有（对话、附件、聊天…），
+   只对「紧挨着 dialog 的那一个」生效——Modal 的结构是
+   <div class=root><div class=mask/><div class=dialog/></div>，
+   用相邻兄弟选择器锁定，别的 mask 不碰。 */
+html[data-dcc-transition="on"] [class*="_mask"]:has(+ [role="dialog"]) {
   animation: dcc-fade-in .2s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) !important;
 }
 
@@ -797,12 +802,10 @@ html[data-dcc-dim="on"] [class*="_sessionOverflowButton"]:hover {
 html[data-dcc-radius="on"] [class*="_projectRow"] [class*="_folder"] svg,
 html[data-dcc-radius="on"] [class*="_projectRow"] [class*="_folder"] img,
 html[data-dcc-radius="on"] [class*="_projectRow"] [class*="_leading"] svg,
-html[data-dcc-radius="on"] [class*="_projectRow"] [class*="_leading"] img,
-html[data-dcc-radius="on"] [class*="_projectRow"] [class*="_iconSlot"] svg,
-html[data-dcc-radius="on"] [class*="_projectRow"] [class*="_iconSlot"] img {
+html[data-dcc-radius="on"] [class*="_projectRow"] [class*="_leading"] img {
   width: 14px !important;
   height: 14px !important;
-  /* 位置上移 1px 与文字基线对齐（横向由行的 padding 统一处理） */
+  /* 上移 1px 与文字基线对齐 */
   position: relative !important;
   top: -1px !important;
   /* 非正方形图标按比例缩，不拉伸 */
@@ -820,8 +823,10 @@ html[data-dcc-enabled="on"] [class*="_projectRow"]:hover [class*="_chevron"] {
 
 /* ---------- 工作区：标题与会话都小一号，并同步收一点行高 ----------
    归在「紧凑圆角与密度」开关下：密度本来就是一整套，字号不再单独开一项。 */
-/* 「工作区」分组标题：更小、更弱，并与下方项目行左对齐 */
-html[data-dcc-radius="on"] [class*="_sectionHeader"] {
+/* 「工作区」分组标题：更小、更弱，并与下方项目行左对齐。
+   _sectionHeader 在宿主的任务页、模型设置页也用了同一个名字，
+   限定在侧栏的滚动区域内，避免误伤那两处。 */
+html[data-dcc-radius="on"] [data-sidebar-scrollport] [class*="_sectionHeader"] {
   height: 30px !important;
   margin-bottom: 2px !important;
 }
@@ -856,13 +861,9 @@ html[data-dcc-radius="on"] [class*="_trigger"][data-signed-out="false"] [class*=
 }
 
 /* ---------- 工作区 / 会话行的悬停提示卡片 ---------- */
-/* 宿主把卡片挂在 body 下（_card / _preview / _bridge 三段），fixed + z-index:100。
-   打开「移除悬停提示」后直接不渲染，滑动侧栏时不再闪出卡片，也不会因定位计算掉帧。 */
-html[data-dcc-hover="off"] [class*="_card_bgejw"],
-html[data-dcc-hover="off"] [class*="_preview_bgejw"],
-html[data-dcc-hover="off"] [class*="_bridge_bgejw"] {
-  display: none !important;
-}
+/* 隐藏规则在上面的 [style*="--dsh-hover-preview-fade"] 处，
+   那条用宿主自带的 CSS 变量定位，比类名稳定——
+   宿主 HoverCard 的哈希（bgejw）会随构建变化，写死迟早失效。 */
 
 /* ---------- 会话行悬停按钮 ---------- */
 /* 悬停时行尾会冒出一排按钮：「…」菜单在 rowActions 里，其余（宿主归档、以及各插件
