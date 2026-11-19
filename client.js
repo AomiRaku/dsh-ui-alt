@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.437';
+    const VERSION = '0.2.438';
     const UPDATED = '2026-11-19';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1471,14 +1471,22 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         if (wrapper !== null) wrapper.remove();
         if (clone !== null) clone.remove();
 
-        /* 外层：完整照抄宿主导航项外层的类。
-           之前排除了 panelEntryActive（怕常亮）和 panelEntryWide（以为没用），
-           结果是布局对不上——panelEntryWide 决定了行的宽度和右侧留白，
-           少了它整行都错位。active 类只在别处加，克隆时本来就不会有。 */
+        /* 外层：照抄宿主导航项外层的类。
+           panelEntryWide 必须带上——它决定行的宽度和右侧留白，少了整行错位。
+
+           但 panelEntryActive 要排除：那是「当前页面」的标记，
+           取决于克隆时停在哪个页面。如果当时停在插件页，
+           「插件」那一行带这个类，抄过来会让新会话行常亮
+           （.panelEntryActive 的 background-color 是 interactive-bg-hover）。
+           这个 bug 只在「插件页是新会话行创建时的当前页」时出现，
+           所以看起来像随机发作。 */
         const entry = row.parentElement;
         wrapper = document.createElement('div');
         if (entry !== null) {
-          for (const name of entry.classList) wrapper.classList.add(name);
+          for (const name of entry.classList) {
+            if (name.includes('_panelEntryActive')) continue;
+            wrapper.classList.add(name);
+          }
         }
         wrapper.setAttribute('data-dcc-newrow-wrap', '');
 
