@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.431';
+    const VERSION = '0.2.432';
     const UPDATED = '2026-11-19';
     const DEFAULTS = {
       radiusDensity: true,
@@ -31,6 +31,7 @@ window.__ModuleLoader__.load({
       balanceDecimals: 2,
       pointerNormalize: true,
       textSelectLimit: true,
+      settingsWide: false,
     };
 
     const isZh = () => {
@@ -64,6 +65,7 @@ window.__ModuleLoader__.load({
       root.dataset.dccLogo = prefs.hideLogo ? 'hidden' : 'shown';
       root.dataset.dccDot = prefs.sessionDot ? 'on' : 'off';
       root.dataset.dccFont = prefs.winFont ? 'on' : 'off';
+      root.dataset.dccSettingsWide = prefs.settingsWide ? 'on' : 'off';
       root.dataset.dccTextDim = prefs.softenDarkText ? 'on' : 'off';
       root.dataset.dccTransition = prefs.uiTransition ? 'on' : 'off';
       root.dataset.dccMenuBlur = prefs.disableMenuBlur ? 'on' : 'off';
@@ -1411,11 +1413,11 @@ html[data-dcc-enabled="on"] body:not([data-ds-dark-theme]) nav[class*="_panelLis
 }
 
 /* 设置面板默认 800px 宽（宿主 SettingsRoot.module.css 里写死的），
-   放宽到 1040px，长描述和表单不再频繁换行。
+   打开这个开关后放宽到 1040px，长描述和表单不再频繁换行。
    高度交给宿主——它按视口算，跟着窗口走。
    最大宽度也要一起放宽：宿主原值是 calc(100vw - 48px)，
    不改的话窄窗口下会被这条先钳住，宽度的改动看不出效果。 */
-html[data-dcc-radius="on"] [class*="_overlay"]:has([class*="_navTitle"]) > [class*="_panel"] {
+html[data-dcc-settings-wide="on"] [class*="_overlay"]:has([class*="_navTitle"]) > [class*="_panel"] {
   width: 1040px !important;
   max-width: calc(100vw - 96px) !important;
 }
@@ -2937,6 +2939,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             desc: zh ? '禁用原版菜单聊胜于无的模糊效果，增加流畅度和整体感。' : 'Drops the stock menu blur for smoother rendering and a more unified look.',
             checked: prefs.disableMenuBlur,
             onChange: update('disableMenuBlur'),
+          }),
+          h(Row, {
+            title: zh ? '增加设置窗口宽度' : 'Wider settings panel',
+            desc: zh ? '增加设置窗口的最大宽度上限，增加可视范围。' : 'Raises the settings panel maximum width cap for more visible content.',
+            checked: prefs.settingsWide,
+            onChange: update('settingsWide'),
           }),
           h(Row, {
             title: zh ? 'Windows 默认使用微软雅黑字体' : 'Use Microsoft YaHei by default on Windows',
