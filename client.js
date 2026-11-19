@@ -6,8 +6,8 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.426';
-    const UPDATED = '2026-11-18';
+    const VERSION = '0.2.427';
+    const UPDATED = '2026-11-19';
     const DEFAULTS = {
       radiusDensity: true,
       invertNewSession: true,
@@ -19,8 +19,6 @@ window.__ModuleLoader__.load({
       uiTransition: true,
       disableMenuBlur: true,
       sessionDot: false,
-      /* DEPRECATED: 宿主 v0.2.2-rc5 起设置面板已内置全屏，此项将在下一版移除 */
-      settingsFullscreen: false,
       hideHoverCard: true,
       hideRowButtons: true,
       headerFade: true,
@@ -69,8 +67,6 @@ window.__ModuleLoader__.load({
       root.dataset.dccTextDim = prefs.softenDarkText ? 'on' : 'off';
       root.dataset.dccTransition = prefs.uiTransition ? 'on' : 'off';
       root.dataset.dccMenuBlur = prefs.disableMenuBlur ? 'on' : 'off';
-      /* DEPRECATED: 对应 settingsFullscreen，随该开关一并移除 */
-      root.dataset.dccFull = prefs.settingsFullscreen ? 'on' : 'off';
       root.dataset.dccHover = prefs.hideHoverCard ? 'off' : 'on';
       root.dataset.dccRowButtons = prefs.hideRowButtons ? 'on' : 'off';
       root.dataset.dccHeaderFade = prefs.headerFade ? 'on' : 'off';
@@ -1412,41 +1408,6 @@ html[data-dcc-enabled="on"] body:not([data-ds-dark-theme]) nav[class*="_panelLis
   box-shadow: inset 0 0 0 999px rgba(0, 0, 0, .07) !important;
 }
 
-/* ===== DEPRECATED: 设置面板全屏 =====
-   宿主 v0.2.2-rc5 起设置面板已内置全屏，本段规则与配套的
-   installSettingsBackButton 将在下一版整体移除。
-   下面到「设置导航项」之前的内容全部服务于 settingsFullscreen。 */
-/* ---------- 设置面板：全屏（避开 Electron 标题栏）+ 标题左侧返回按钮 ---------- */
-html[data-dcc-full="on"] [class*="_overlay"]:has([class*="_navTitle"]) {
-  top: var(--dsh-windows-titlebar-height, 0px) !important;
-  align-items: stretch !important;
-  justify-content: stretch !important;
-}
-html[data-dcc-full="on"] [class*="_overlay"]:has([class*="_navTitle"]) > [class*="_panel"] {
-  width: 100% !important;
-  max-width: none !important;
-  height: 100% !important;
-  max-height: none !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-}
-/* 只在窗口足够宽时锁定两列布局，窄窗口沿用宿主自己的单列布局 */
-@media (min-width: 720px) {
-  html[data-dcc-full="on"] [class*="_overlay"]:has([class*="_navTitle"]) > [class*="_panel"] {
-    grid-template-columns: 220px minmax(0, 1fr) !important;
-  }
-}
-/* 全屏时不需要遮罩，去掉它会露出标题栏下方的一条描边 */
-html[data-dcc-full="on"] [class*="_overlay"]:has([class*="_navTitle"]) [class*="_mask"] {
-  display: none !important;
-}
-html[data-dcc-full="on"] [class*="_overlay"]:has([class*="_navTitle"]) [class*="_close"] {
-  display: none !important;
-}
-html[data-dcc-full="on"] [class*="_overlay"]:has([class*="_navTitle"]) [class*="_navTitle"] {
-  padding-left: 52px !important;
-  /* 手型由脚本按文字实际矩形设置，见 installSettingsBackButton */
-}
 /* 设置导航项：略矮一点，归「减小圆角与间距」管 */
 html[data-dcc-radius="on"] [class*="_overlay"]:has([class*="_navTitle"]) [class*="_navCell"] {
   position: relative;
@@ -1454,39 +1415,6 @@ html[data-dcc-radius="on"] [class*="_overlay"]:has([class*="_navTitle"]) [class*
   padding-top: 8px !important;
   padding-bottom: 8px !important;
 }
-html[data-dcc-full="on"] .dcc-settings-back {
-  position: absolute;
-  left: 14px;
-  top: 0;
-  z-index: 2;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 24px;
-  padding: 0;
-  border: 0;
-  border-radius: var(--dsw-radius-sm);
-  background: transparent;
-  color: var(--dsw-alias-label-primary);
-  cursor: pointer;
-  transition: background-color .15s;
-}
-/* hover 也带上同样的前缀：基础规则现在是 html[data-dcc-full="on"] .dcc-settings-back
-   （0,2,1），比裸的 .dcc-settings-back:hover（0,2,0）高，不加前缀底色会被压回去。 */
-html[data-dcc-full="on"] .dcc-settings-back:hover {
-  background: var(--dsw-alias-interactive-bg-hover);
-}
-/* 悬停「设置」标题时，左侧箭头一起高亮。
-   标题盒子撑满整行，:hover 会连空白一起算，所以这里认脚本按文字矩形写的属性。 */
-html[data-dcc-full="on"] [class*="_overlay"]:has([class*="_navTitle"][data-dcc-hot="on"]) .dcc-settings-back {
-  background: var(--dsw-alias-interactive-bg-hover);
-}
-/* 非全屏时用宿主自己的关闭按钮，自绘的返回箭头不出现 */
-html[data-dcc-full="off"] .dcc-settings-back {
-  display: none !important;
-}
-
 /* ---------- 左上角品牌区 ---------- */
 html[data-dcc-logo="hidden"] [class*="_brand"]:not([class*="_brandMark"]):not([class*="_brandName"]):not([class*="_brandIdentity"]),
 html[data-dcc-logo="hidden"] [class*="_railMark"] {
@@ -1644,193 +1572,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         if (clone !== null) clone.remove();
         const orig = findOriginal();
         if (orig !== null) orig.removeAttribute('data-dcc-original');
-      };
-    }
-
-
-    /**
-     * DEPRECATED: 随「设置面板全屏」开关一并移除。
-     * 宿主 v0.2.2-rc5 起设置面板已内置全屏，不再需要自绘关闭按钮。
-     *
-     * 设置面板左上角的返回按钮：点击触发原关闭按钮，保留原关闭逻辑。
-     * 面板挂载时走 requestAnimationFrame 在下一帧补上，不让按钮比面板慢一拍；
-     * 其它 DOM 变动仍用 350ms 兜底，避免流式输出时每帧都做全局查询。
-     */
-    function installSettingsBackButton() {
-      let btn = null;
-      let observer = null;
-      let timer = null;
-      let rafId = 0;
-
-      const findPanel = () => {
-        const title = document.querySelector('[class*="_navTitle"]');
-        return title === null ? null : title.parentElement;
-      };
-
-      /**
-       * 按钮垂直位置按「标题文字的实际矩形」算——容器带 padding 时，
-       * 盒子中心和文字中心并不重合。
-       * 入场动画会给面板挂 transform，rect 是缩放后的，所以再除以缩放比
-       * 还原成布局坐标，动画前后算出来的值才一致。
-       */
-      const align = () => {
-        if (btn === null || !btn.isConnected || btn.offsetParent === null) return;
-        const title = document.querySelector('[class*="_navTitle"]');
-        if (title === null) return;
-        const range = document.createRange();
-        range.selectNodeContents(title);
-        const rects = range.getClientRects();
-        if (rects.length === 0) return;
-        const textRect = rects[0];
-        const panel = btn.offsetParent;
-        const panelRect = panel.getBoundingClientRect();
-        const scale = panel.offsetHeight > 0 ? panelRect.height / panel.offsetHeight : 1;
-        const centerY = (textRect.top + textRect.height / 2 - panelRect.top) / (scale > 0 ? scale : 1);
-        btn.style.top = `${Math.round(centerY - btn.offsetHeight / 2)}px`;
-      };
-
-      const closePanel = (panel) => {
-        const close = panel.querySelector('[class*="_header"] [class*="_close"]');
-        if (close !== null) close.click();
-      };
-
-      const ensure = () => {
-        /* 总开关关闭时自绘按钮也要撤掉，否则会留下一个没有样式的裸按钮 */
-        if (document.documentElement.dataset.dccEnabled !== 'on') {
-          if (btn !== null) btn.remove();
-          btn = null;
-          return;
-        }
-        const panel = findPanel();
-        if (panel === null) {
-          if (btn !== null) btn.remove();
-          btn = null;
-          return;
-        }
-        if (btn !== null && btn.isConnected && btn.parentElement === panel) {
-          align();
-          return;
-        }
-        if (btn !== null) btn.remove();
-        btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'dcc-settings-back';
-        btn.setAttribute('aria-label', isZh() ? '返回' : 'Back');
-        btn.title = isZh() ? '返回' : 'Back';
-        btn.innerHTML = '<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">'
-          + '<path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.6"'
-          + ' stroke-linecap="round" stroke-linejoin="round"/></svg>';
-        btn.addEventListener('click', () => closePanel(panel));
-        panel.appendChild(btn);
-        align();
-      };
-
-      const insertSoon = () => {
-        if (rafId !== 0) return;
-        rafId = window.requestAnimationFrame(() => {
-          rafId = 0;
-          ensure();
-          /* 万一这一帧面板还没挂完，退回原来的兜底节奏 */
-          if (btn === null && timer === null) {
-            timer = window.setTimeout(() => {
-              timer = null;
-              ensure();
-            }, 350);
-          }
-        });
-      };
-
-      const schedule = (records) => {
-        /* 面板是「新增了包含 _navTitle 的节点」，这类变动要求下一帧就有按钮 */
-        for (const record of records) {
-          for (const node of record.addedNodes) {
-            if (node.nodeType !== 1) continue;
-            if (node.matches('[class*="_navTitle"]') || node.querySelector('[class*="_navTitle"]') !== null) {
-              insertSoon();
-              return;
-            }
-          }
-        }
-        if (timer !== null) return;
-        timer = window.setTimeout(() => {
-          timer = null;
-          ensure();
-        }, 350);
-      };
-
-      /* 标题元素被撑满整行，空白处也在它盒子里；只有落在文字实际矩形上才算点击。
-         左侧再放宽一点，把标题与返回箭头之间那段 padding 空隙也算进来。 */
-      const LABEL_LEFT_SLACK = 14;
-      const hitsLabel = (title, event) => {
-        const range = document.createRange();
-        range.selectNodeContents(title);
-        const rects = range.getClientRects();
-        for (let i = 0; i < rects.length; i += 1) {
-          const rect = rects[i];
-          if (event.clientX >= rect.left - LABEL_LEFT_SLACK && event.clientX <= rect.right
-            && event.clientY >= rect.top && event.clientY <= rect.bottom) return true;
-        }
-        return false;
-      };
-
-      /* 点面板标题（「设置」这几个字）也能返回；用委托，面板重渲染不会丢监听 */
-      const onClick = (event) => {
-        if (document.documentElement.dataset.dccFull !== 'on') return;
-        const target = event.target;
-        if (!(target instanceof Element)) return;
-        const title = target.closest('[class*="_navTitle"]');
-        if (title === null || title.parentElement === null) return;
-        if (!hitsLabel(title, event)) return;
-        closePanel(title.parentElement);
-      };
-
-      /* 手型和高亮都只跟着文字走：整行都是标题的盒子，空白不该有可点反馈 */
-      let cursorTitle = null;
-      const clearHot = () => {
-        if (cursorTitle === null) return;
-        cursorTitle.style.cursor = '';
-        cursorTitle.dataset.dccHot = 'off';
-        cursorTitle = null;
-      };
-      const onMove = (event) => {
-        if (document.documentElement.dataset.dccFull !== 'on') {
-          clearHot();
-          return;
-        }
-        const target = event.target;
-        const title = target instanceof Element ? target.closest('[class*="_navTitle"]') : null;
-        if (title === null) {
-          clearHot();
-          return;
-        }
-        const hot = hitsLabel(title, event);
-        const want = hot ? 'pointer' : '';
-        if (title.style.cursor !== want) title.style.cursor = want;
-        const wantHot = hot ? 'on' : 'off';
-        if (title.dataset.dccHot !== wantHot) title.dataset.dccHot = wantHot;
-        cursorTitle = title;
-      };
-
-      ensure();
-      observer = new MutationObserver(schedule);
-      observer.observe(document.body, { childList: true, subtree: true });
-      document.addEventListener('click', onClick, true);
-      document.addEventListener('mousemove', onMove, true);
-      /* 设置面板全屏 / 窗口模式切换后，返回按钮要重新对齐位置 */
-      const onPrefs = (event) => {
-        if (event.detail && event.detail.key === 'settingsFullscreen') ensure();
-      };
-      window.addEventListener('dcc-prefs-changed', onPrefs);
-
-      return () => {
-        window.removeEventListener('dcc-prefs-changed', onPrefs);
-        observer.disconnect();
-        if (timer !== null) clearTimeout(timer);
-        if (rafId !== 0) window.cancelAnimationFrame(rafId);
-        document.removeEventListener('click', onClick, true);
-        document.removeEventListener('mousemove', onMove, true);
-        if (cursorTitle !== null) clearHot();
-        if (btn !== null) btn.remove();
       };
     }
 
@@ -3186,13 +2927,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             onChange: update('disableMenuBlur'),
           }),
           h(Row, {
-            title: zh ? '设置面板全屏' : 'Full-screen settings panel',
-            desc: zh ? '使用非窗口化的设置页面。' : 'Use a non-windowed settings page.',
-            /* DEPRECATED: 宿主 v0.2.2-rc5 起内置全屏，此项将在下一版移除 */
-            checked: prefs.settingsFullscreen,
-            onChange: update('settingsFullscreen'),
-          }),
-          h(Row, {
             title: zh ? 'Windows 默认使用微软雅黑字体' : 'Use Microsoft YaHei by default on Windows',
             desc: zh ? '将 Windows 端默认字体改为微软雅黑。微软雅黑带有 hinting，使文字在显示设置低于 200% 缩放比例下，更加锐利清晰。\n若手动设置了字体，或使用 macOS 端，则不受影响。' : 'Use Microsoft YaHei as the default Windows font. It carries hinting, which keeps text sharp below 200% display scaling.\nHas no effect if you set a font manually, or on macOS.',
             checked: prefs.winFont,
@@ -3401,7 +3135,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             removeCss = () => tag.remove();
           }
           const removeNewSessionRow = installNewSessionRow();
-          const removeSettingsBack = installSettingsBackButton();
           const removeRowActionFilter = installRowActionFilter();
           const removeHoverCardBlocker = installHoverCardBlocker();
           const removeViewSwitcher = installViewSwitcher();
@@ -3416,8 +3149,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           return () => {
             removeCss();
             removeNewSessionRow();
-            removeSettingsBack();
-            removeRowActionFilter();
+              removeRowActionFilter();
             removeHoverCardBlocker();
             removeViewSwitcher();
             removeBalance();
@@ -3439,7 +3171,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             delete root.dataset.dccTextDim;
             delete root.dataset.dccTransition;
             delete root.dataset.dccMenuBlur;
-            delete root.dataset.dccFull;
             delete root.dataset.dccHover;
             delete root.dataset.dccRowButtons;
             delete root.dataset.dccCompactHeader;

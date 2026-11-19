@@ -23,7 +23,6 @@
 | 降低深色模式文字亮度 | 开 | 略微降低深色模式文字亮度，避免纯白文字过于刺眼 |
 | 为菜单和窗口添加动画 | 开 | 为菜单、对话框和压暗遮罩添加更流畅的出现和消失动画。部分菜单由于底层限制无法添加消失动画 |
 | 禁用菜单模糊效果 | 开 | 禁用原版菜单聊胜于无的模糊效果，增加流畅度和整体感 |
-| 设置面板全屏 | 关 | 使用非窗口化的设置页面 |
 
 **导航和工作区**
 
@@ -129,10 +128,9 @@ dsh-ui-alt/
 
 - 预置数据：`STORAGE_KEY`、`DEFAULTS`、`readPrefs()` / `applyPrefs()` / `savePrefs()`。
 - 一大段 `css` 字符串，全部按 `html[data-dcc-*]` 条件生效；设置页自身样式用 `.dcc-*` 前缀。
-- 十三个 DOM 注入函数，各自带总开关守卫；需要跟随宿主重渲染的还带一个监听 `body` 的 `MutationObserver`（350–400ms 防抖）：
+- 十二个 DOM 注入函数，各自带总开关守卫；需要跟随宿主重渲染的还带一个监听 `body` 的 `MutationObserver`（350–400ms 防抖）：
   - `installNewSessionRow()`：克隆宿主的「新会话」按钮成导航行，点击转发给原按钮。
   - `installNavToggle()`：导航下方插入展开/收起箭头，点击切换 `data-dcc-nav` 并写回偏好。
-  - `installSettingsBackButton()`：设置面板左上角插入返回按钮，点击触发原关闭按钮。
   - `installViewSwitcher()`：把视图标签行换成一个下拉按钮，展开后列出全部视图。
   - `installBalancePill()`：在状态行显示账户余额，每 40 秒刷新一次。
   - `installRowActionFilter()`：悬停会话行时只保留菜单和置顶按钮。
