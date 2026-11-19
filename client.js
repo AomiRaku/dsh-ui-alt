@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.430';
+    const VERSION = '0.2.431';
     const UPDATED = '2026-11-19';
     const DEFAULTS = {
       radiusDensity: true,
@@ -799,10 +799,11 @@ html[data-dcc-dim="on"] [class*="_sessionOverflowButton"]:hover {
    宿主的文件夹图标是 16px，行高 32px，缩到 14px 后与 13px 的标题更协调。
    其他插件在这个位置放的图标（自定义 svg、img、字符等）也一并按同一套
    尺寸和偏移处理，保证整列左边缘对齐。 */
+/* 宿主的工作区行图标容器叫 folderActive（Rows.module.css），
+   [class*="_folder"] 能匹配到它。_leading 在别的模块里有，但
+   Rows.module.css 里没有，写成 _projectRow ._leading 是条空规则，已删。 */
 html[data-dcc-radius="on"] [class*="_projectRow"] [class*="_folder"] svg,
-html[data-dcc-radius="on"] [class*="_projectRow"] [class*="_folder"] img,
-html[data-dcc-radius="on"] [class*="_projectRow"] [class*="_leading"] svg,
-html[data-dcc-radius="on"] [class*="_projectRow"] [class*="_leading"] img {
+html[data-dcc-radius="on"] [class*="_projectRow"] [class*="_folder"] img {
   width: 14px !important;
   height: 14px !important;
   /* 上移 1px 与文字基线对齐 */
