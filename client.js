@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.443';
+    const VERSION = '0.2.444';
     const UPDATED = '2026-11-19';
     const DEFAULTS = {
       radiusDensity: true,
@@ -660,7 +660,7 @@ html[data-dcc-hover="off"] [class*="_card_"][data-closing] {
       退场那 200ms 看起来就是「暗层闪了一下」。
       快照本来就在整体淡出，模糊没有意义，去掉最干净。
    不要改定位——原遮罩只盖标题栏以下，铺满视口会盖住标题区。 */
-html[data-dcc-transition="on"] [data-dcc-dialog-clone] [class*="_mask"] {
+html[data-dcc-transition="on"] [data-dcc-dialog-clone][data-dcc-dialog-clone] [class*="_mask"] {
   animation: none !important;
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
