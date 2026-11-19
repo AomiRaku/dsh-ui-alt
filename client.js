@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.428';
+    const VERSION = '0.2.429';
     const UPDATED = '2026-11-19';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1406,6 +1406,16 @@ html[data-dcc-enabled="on"] body:not([data-ds-dark-theme]) nav[class*="_panelLis
 }
 html[data-dcc-enabled="on"] body:not([data-ds-dark-theme]) nav[class*="_panelList"] [class*="_panelRow"][aria-current="page"] {
   box-shadow: inset 0 0 0 999px rgba(0, 0, 0, .07) !important;
+}
+
+/* 设置面板默认 800px 宽（宿主 SettingsRoot.module.css 里写死的），
+   放宽到 1040px，长描述和表单不再频繁换行。
+   高度交给宿主——它按视口算，跟着窗口走。
+   最大宽度也要一起放宽：宿主原值是 calc(100vw - 48px)，
+   不改的话窄窗口下会被这条先钳住，宽度的改动看不出效果。 */
+html[data-dcc-radius="on"] [class*="_overlay"]:has([class*="_navTitle"]) > [class*="_panel"] {
+  width: 1040px !important;
+  max-width: calc(100vw - 96px) !important;
 }
 
 /* 设置导航项：略矮一点，归「减小圆角与间距」管 */
