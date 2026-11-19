@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.444';
+    const VERSION = '0.2.445';
     const UPDATED = '2026-11-19';
     const DEFAULTS = {
       radiusDensity: true,
@@ -659,11 +659,23 @@ html[data-dcc-hover="off"] [class*="_card_"][data-closing] {
       在父级播 opacity 动画时，合成层会重新分配，中间闪一帧——
       退场那 200ms 看起来就是「暗层闪了一下」。
       快照本来就在整体淡出，模糊没有意义，去掉最干净。
+   ③ 伪元素也要停。宿主的 Modal（退出登录、额度提示这些都用它）把压暗层
+      画在遮罩的 ::after 上：
+        ._mask_xxx { backdrop-filter: ... }
+        ._mask_xxx::after { background: var(--dsw-alias-bg-mask-1);
+                            animation: _modalEnter ... }
+      只停遮罩本体的 animation，::after 仍会在克隆重新入树时从 0 重播淡入，
+      叠加到外层的 dcc-fade-out 上，就是「渐隐到一半又变暗，然后再消失」。
+      克隆只是 200ms 的退场快照，伪元素保持静止、跟着整层一起淡出即可。
    不要改定位——原遮罩只盖标题栏以下，铺满视口会盖住标题区。 */
 html[data-dcc-transition="on"] [data-dcc-dialog-clone][data-dcc-dialog-clone] [class*="_mask"] {
   animation: none !important;
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
+}
+html[data-dcc-transition="on"] [data-dcc-dialog-clone][data-dcc-dialog-clone] [class*="_mask"]::before,
+html[data-dcc-transition="on"] [data-dcc-dialog-clone][data-dcc-dialog-clone] [class*="_mask"]::after {
+  animation: none !important;
 }
 
 /* 压暗遮罩的入场：从透明淡到实，时长与退场的 dcc-fade-out 对齐。
