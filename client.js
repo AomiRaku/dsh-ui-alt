@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.436';
+    const VERSION = '0.2.437';
     const UPDATED = '2026-11-19';
     const DEFAULTS = {
       radiusDensity: true,
@@ -2947,7 +2947,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           }),
           h(Row, {
             title: zh ? '增加设置窗口尺寸' : 'Larger settings panel',
-            desc: zh ? '增加设置窗口的最大宽度和高度上限，增加可视范围。' : 'Raises the settings panel maximum width and height caps for more visible content.',
+            desc: zh ? '增加设置窗口的最大宽度和高度上限，以增加可视范围。' : 'Raises the settings panel maximum width and height caps for more visible content.',
             checked: prefs.settingsWide,
             onChange: update('settingsWide'),
           }),
