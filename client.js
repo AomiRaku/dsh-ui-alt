@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.425';
+    const VERSION = '0.2.426';
     const UPDATED = '2026-11-18';
     const DEFAULTS = {
       radiusDensity: true,
@@ -19,6 +19,7 @@ window.__ModuleLoader__.load({
       uiTransition: true,
       disableMenuBlur: true,
       sessionDot: false,
+      /* DEPRECATED: 宿主 v0.2.2-rc5 起设置面板已内置全屏，此项将在下一版移除 */
       settingsFullscreen: false,
       hideHoverCard: true,
       hideRowButtons: true,
@@ -68,6 +69,7 @@ window.__ModuleLoader__.load({
       root.dataset.dccTextDim = prefs.softenDarkText ? 'on' : 'off';
       root.dataset.dccTransition = prefs.uiTransition ? 'on' : 'off';
       root.dataset.dccMenuBlur = prefs.disableMenuBlur ? 'on' : 'off';
+      /* DEPRECATED: 对应 settingsFullscreen，随该开关一并移除 */
       root.dataset.dccFull = prefs.settingsFullscreen ? 'on' : 'off';
       root.dataset.dccHover = prefs.hideHoverCard ? 'off' : 'on';
       root.dataset.dccRowButtons = prefs.hideRowButtons ? 'on' : 'off';
@@ -1410,6 +1412,10 @@ html[data-dcc-enabled="on"] body:not([data-ds-dark-theme]) nav[class*="_panelLis
   box-shadow: inset 0 0 0 999px rgba(0, 0, 0, .07) !important;
 }
 
+/* ===== DEPRECATED: 设置面板全屏 =====
+   宿主 v0.2.2-rc5 起设置面板已内置全屏，本段规则与配套的
+   installSettingsBackButton 将在下一版整体移除。
+   下面到「设置导航项」之前的内容全部服务于 settingsFullscreen。 */
 /* ---------- 设置面板：全屏（避开 Electron 标题栏）+ 标题左侧返回按钮 ---------- */
 html[data-dcc-full="on"] [class*="_overlay"]:has([class*="_navTitle"]) {
   top: var(--dsh-windows-titlebar-height, 0px) !important;
@@ -1643,6 +1649,9 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
 
 
     /**
+     * DEPRECATED: 随「设置面板全屏」开关一并移除。
+     * 宿主 v0.2.2-rc5 起设置面板已内置全屏，不再需要自绘关闭按钮。
+     *
      * 设置面板左上角的返回按钮：点击触发原关闭按钮，保留原关闭逻辑。
      * 面板挂载时走 requestAnimationFrame 在下一帧补上，不让按钮比面板慢一拍；
      * 其它 DOM 变动仍用 350ms 兜底，避免流式输出时每帧都做全局查询。
@@ -3179,6 +3188,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           h(Row, {
             title: zh ? '设置面板全屏' : 'Full-screen settings panel',
             desc: zh ? '使用非窗口化的设置页面。' : 'Use a non-windowed settings page.',
+            /* DEPRECATED: 宿主 v0.2.2-rc5 起内置全屏，此项将在下一版移除 */
             checked: prefs.settingsFullscreen,
             onChange: update('settingsFullscreen'),
           }),
