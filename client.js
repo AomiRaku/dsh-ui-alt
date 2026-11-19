@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.443';
+    const VERSION = '0.2.442';
     const UPDATED = '2026-11-19';
     const DEFAULTS = {
       radiusDensity: true,
@@ -197,9 +197,7 @@ body[data-ds-dark-theme] .dcc-boot-cover {
 .dcc-modal-mask {
   position: absolute;
   inset: 0;
-  /* 和宿主 Modal 的 .mask 用同一个 token（含 24% 黑 + 模糊） */
-  background: var(--dsw-alias-bg-mask-1, rgba(0, 0, 0, .24));
-  backdrop-filter: var(--dsw-mask-blur, none);
+  background: rgba(0, 0, 0, .5);
 }
 .dcc-modal-card {
   position: relative;
@@ -2180,17 +2178,10 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       let modal = null;
       let timer = 0;
 
-      /* 弹窗出现前必须满足三个条件，缺一个都会让背后不是界面：
-           ① 宿主的加载页 [data-dsh-boot] 已经卸载
-           ② 本插件自己的启动遮罩 .dcc-boot-cover 已经移除
-           ③ 侧栏真的画出来了（有尺寸）
-
-         ② 最容易漏：启动遮罩在就绪后还要 500ms 淡出 + 320ms 移除，
-         共约 820ms。弹窗如果在这个窗口内弹，它的半透明遮罩会压在
-         启动遮罩的 #151517 上，叠出来接近纯黑，看起来就是「背景全黑」。 */
+      /* 界面是否真的画出来了。启动遮罩和这个弹窗都靠它判断——
+         遮罩还没收走（宿主的加载页还在）时弹窗会浮在一片空黑上，
+         看不到被压暗的界面，观感像「背景是纯黑」。 */
       const ready = () => {
-        if (document.querySelector('[data-dsh-boot]') !== null) return false;
-        if (document.querySelector('.dcc-boot-cover') !== null) return false;
         const sidebar = document.querySelector('[class*="_root"]:has(nav[class*="_panelList"])');
         if (sidebar === null) return false;
         const rect = sidebar.getBoundingClientRect();
