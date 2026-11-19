@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.438';
+    const VERSION = '0.2.439';
     const UPDATED = '2026-11-19';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1078,6 +1078,59 @@ html[data-dcc-enabled="on"] [data-dsh-boot] [data-dcc-hint-fish] {
   flex: none;
 }
 
+/* 首次安装提示：贴在底部中间，不遮住正文，也不抢焦点。
+   用 fixed + z-index，但低于启动遮罩（2147483000），
+   这样首次启动的遮罩还没收走时不会浮在它上面。 */
+.dcc-firstrun {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  z-index: 2147482000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: min(560px, calc(100vw - 48px));
+  padding: 10px 12px 10px 16px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: var(--dsw-radius-lg, 12px);
+  background: var(--dsw-alias-bg-layer-1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-primary);
+  animation: dcc-firstrun-in .22s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
+}
+@keyframes dcc-firstrun-in {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+.dcc-firstrun-text {
+  min-width: 0;
+  flex: 1;
+}
+.dcc-firstrun-action {
+  flex: none;
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--dsw-alias-border-l3);
+  border-radius: var(--dsw-radius-sm, 8px);
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color .12s;
+}
+.dcc-firstrun-action:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+.dcc-firstrun-action + .dcc-firstrun-action {
+  border-color: transparent;
+  color: var(--dsw-alias-label-secondary);
+}
+
 /* 追加到宿主菜单末尾的「重载前端界面」：外观对齐宿主自己的菜单项，
    高度、内边距、字号都按它的规格来。 */
 .dcc-menu-extra {
@@ -2136,6 +2189,73 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
     }
 
     /**
+     * 首次安装提示。
+     *
+     * 插件是运行期动态注入的，有些宿主元素在注入那一刻还没渲染出来，
+     * 少数依赖它们的模块（视图切换控件、新会话行克隆）可能来不及建立，
+     * 重启一次界面就都正常了。
+     *
+     * 这里不自动刷新——那样会在用户正用着的时候把页面抽走。
+     * 改成弹一条提示，把重不重启的决定权交回给用户。
+     *
+     * 判定「首次安装」用 localStorage 里有没有版本标记：
+     * 标记不存在 = 从没成功加载过本插件。
+     */
+    function installFirstRunNotice() {
+      const KEY = 'dsh-ui-alt:installed';
+      let first = false;
+      try {
+        first = localStorage.getItem(KEY) === null;
+        localStorage.setItem(KEY, VERSION);
+      } catch {
+        /* 存储不可用时就不提示，也不影响其它功能 */
+        return () => {};
+      }
+      if (!first) return () => {};
+      /* 首次加载时宿主可能还没画完，等一会儿再弹，别和启动遮罩抢焦点 */
+      let timer = window.setTimeout(show, 2500);
+      let bar = null;
+
+      function show() {
+        timer = 0;
+        if (bar !== null) return;
+        bar = document.createElement('div');
+        bar.className = 'dcc-firstrun';
+        bar.setAttribute('role', 'status');
+
+        const text = document.createElement('span');
+        text.className = 'dcc-firstrun-text';
+        text.textContent = isZh()
+          ? '首次安装完成。重启一次前端界面可以确保所有功能正常生效。'
+          : 'Installed. Restart the frontend once so every feature takes effect.';
+
+        const reload = document.createElement('button');
+        reload.type = 'button';
+        reload.className = 'dcc-firstrun-action';
+        reload.textContent = isZh() ? '立即重启' : 'Restart now';
+        reload.addEventListener('click', () => {
+          window.location.reload();
+        });
+
+        const close = document.createElement('button');
+        close.type = 'button';
+        close.className = 'dcc-firstrun-action';
+        close.textContent = isZh() ? '稍后' : 'Later';
+        close.addEventListener('click', () => {
+          if (bar !== null) { bar.remove(); bar = null; }
+        });
+
+        bar.append(text, reload, close);
+        document.body.appendChild(bar);
+      }
+
+      return () => {
+        if (timer !== 0) window.clearTimeout(timer);
+        if (bar !== null) { bar.remove(); bar = null; }
+      };
+    }
+
+    /**
      * 宿主加载页（开机时的 "Loading plugins…" 那一屏）的外观适配。
      *
      * ⚠️ 这是一块**高耦合**的补丁，和下面这些宿主实现细节绑死：
@@ -3178,6 +3298,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           const removeReloadItem = installReloadMenuItem();
           const removeHistoryHint = installHistoryHint();
           const removeBootHint = installBootHint();
+          const removeFirstRun = installFirstRunNotice();
           const removeDialogExit = installDialogExit();
           return () => {
             removeCss();
@@ -3192,6 +3313,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
             removeReloadItem();
             removeHistoryHint();
             removeBootHint();
+            removeFirstRun();
             removeDialogExit();
             const root = document.documentElement;
             delete root.dataset.dccRadius;
