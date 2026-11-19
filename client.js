@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.433';
+    const VERSION = '0.2.434';
     const UPDATED = '2026-11-19';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1413,18 +1413,18 @@ html[data-dcc-enabled="on"] body:not([data-ds-dark-theme]) nav[class*="_panelLis
 }
 
 /* 设置面板默认 800×800（宿主 SettingsRoot.module.css 里写死的），
-   打开这个开关后放宽到 1040×1000，长描述和表单不再频繁换行或被滚动截断。
+   打开这个开关后放宽到 1040×900，长描述和表单不再频繁换行或被滚动截断。
 
-   宽度和最大宽度要一起放宽：宿主原值是 calc(100vw - 48px)，
+   宽度上限和最大宽度要一起放宽：宿主原值是 calc(100vw - 48px)，
    不改的话窄窗口下会被这条先钳住，改动看不出效果。
-   高度同理——宿主是 min(800px, calc(100vh - 2 * max(24px, ...)))，
-   上下各留 24px；这里改成上下各留 48px、上限 1000px，
-   让面板在小窗口下也不会被顶到边缘。 */
+
+   高度只改上限，边距沿用宿主的：它写的是
+   min(800px, calc(100vh - 2 * max(24px, var(--dsh-frame-overlay-top, 24px))))，
+   max-height 那半句原样搬过来，只把 800px 换成 900px。 */
 html[data-dcc-settings-wide="on"] [class*="_overlay"]:has([class*="_navTitle"]) > [class*="_panel"] {
   width: 1040px !important;
   max-width: calc(100vw - 96px) !important;
-  height: min(1000px, calc(100vh - 96px)) !important;
-  max-height: calc(100vh - 96px) !important;
+  height: min(900px, calc(100vh - 2 * max(24px, var(--dsh-frame-overlay-top, 24px)))) !important;
 }
 
 /* 设置导航项：略矮一点，归「减小圆角与间距」管 */
