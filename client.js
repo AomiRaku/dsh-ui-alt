@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.451';
+    const VERSION = '0.2.450';
     const UPDATED = '2026-11-23';
     const DEFAULTS = {
       radiusDensity: true,
@@ -2105,12 +2105,11 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
          animation 只播一次，之后再切就看不到了。这里在内容换上来的那一帧
          重播一次：先摘掉动画类、强制重排、再挂回去。
 
-         「内容换没换」按列里的内容节点判断，不按会话 id：列上的
-         data-session 是宿主内部使用的，列里的内容节点带不带都不一定，
-         照它判断会永远判成「没换」，渐显就再也不播。内容节点指的是
-         占据列里 DOM 位置的那些（轮次、正文流、交互层），而「载入历史」
-         提示、加载失败提示、「更早的消息」按钮这类是浮在正文上的部件，
-         它们来去或被换成新节点，不算内容换了。 */
+         只在「提示消失、内容刚换上」这一刻重播：宿主用 data-session 把正文
+         绑在当前会话上，会话一变它就整个换成新内容；而提示、加载失败提示、
+         「更早的消息」按钮这类插在列里的部件，出现/消失、被宿主换新节点时
+         也会走到这里，那时没有新内容，重播只会让已经画出来的正文先闪成空白，
+         所以必须把这两类区分开，只看「列里的内容节点换没换」。 */
       const fadeTargets = (area) => [
         area.querySelector('[class*="_column"]'),
         area.querySelector('[class*="_marks"]'),
@@ -2123,32 +2122,26 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         for (const el of targets) el.setAttribute('data-dcc-fade-in', '');
       };
 
-      /* 列里浮着的部件：用位置把它们认出来（宿主把它们绝对定位/固定住，
-         不占列的空间）。这些名字在宿主没有更稳的标记之前只能算经验值，
-         认不出时它们会被当成内容——最坏情况是切换时多闪一下，不会没有渐显。 */
-      const OVERLAY_NAMES = ['_hint', '_openError', '_older', '_textInteraction'];
-      const isOverlayPart = (item) => {
-        const cls = typeof item.className === 'string' ? item.className : '';
-        for (let i = 0; i < OVERLAY_NAMES.length; i += 1) {
-          if (cls.indexOf(OVERLAY_NAMES[i]) !== -1) return true;
-        }
-        const style = window.getComputedStyle(item);
-        return style.position === 'absolute' || style.position === 'fixed';
-      };
-
-      /* 正文列的「身份」：内容节点列表。只在末尾追加（流式输出）时身份不变；
-         换成另一个会话、或内容被替换，身份就变。 */
+      /* 正文列的「身份」：会话 id + 内容节点列表。只追加内容（流式输出）
+         身份不变；换成另一个会话、或宿主的渲染路径让内容重新挂了一遍，身份就变。 */
       const flowElements = (el) => (el === null ? [] : Array.prototype.slice.call(el.children));
-      const flowSignature = (items) => {
-        let text = '';
+      const flowSignature = (session, items) => {
+        let text = session;
         for (let i = 0; i < items.length; i += 1) {
           const item = items[i];
-          if (isOverlayPart(item)) continue;
+          /* 宿主自己的部件（提示、加载按钮…）不参与判断：
+             「载入历史」提示会插进列里，它来去不算内容换了。 */
+          if (!isContentNode(item)) continue;
           const cls = typeof item.className === 'string' ? item.className : '';
           text += '|' + item.tagName + ':' + cls + ':' + (item.getAttribute('data-slot') || '');
         }
         return text;
       };
+      /* 宿主插在列里的部件（载入历史提示、历史加载失败提示、「更早的消息」
+         按钮这类）不是内容：它们来去、被换成新节点时列的节点列表也会变，
+         但不是「内容刚换上」，不该触发重播。宿主给滚动区标了会话 id，
+         内容节点会继承它；插进来的部件单独渲染，拿不到这个标记。 */
+      const isContentNode = (item) => item.getAttribute('data-conversation-session') !== null;
 
       const tick = () => {
         if (document.documentElement.dataset.dccEnabled !== 'on') return;
@@ -2186,18 +2179,20 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         /* 列的当前身份。previous 为 null 时正在初始化，只需记下身份、不播：
            那时提示可能已经过去，播了等于把刚看到的正文再闪一次。 */
         const column = host.querySelector('[class*="_column"]');
+        const session = column === null ? null : column.getAttribute('data-session');
         const items = flowElements(column);
-        const flow = column === null ? null : flowSignature(items);
+        const flow = column === null ? null : flowSignature(session, items);
         const previous = lastFlow;
         lastFlow = flow;
         /* 提示还挂着说明还在等历史，等它消失再播 */
         if (hint !== null) return;
         if (previous === null || flow === null || flow === previous) return;
 
-        /* 内容的末尾被追加时不算换（流式输出）；内容被替换、换空再填、
-           或这一轮等过历史再出现，才算内容刚换上。 */
+        /* 换会话，或内容被替换掉（不是末尾追加），才算内容刚换上 */
+        const before = previous.slice(0, previous.indexOf('|'));
+        const sessionChanged = before !== session;
         const replaced = !flow.startsWith(previous);
-        if (!replaced && !hintDuringOpen) return;
+        if (!sessionChanged && !replaced && !hintDuringOpen) return;
         hintDuringOpen = false;
         replayFade(fadeTargets(host));
       };
