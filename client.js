@@ -6,8 +6,8 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.445';
-    const UPDATED = '2026-11-19';
+    const VERSION = '0.2.446';
+    const UPDATED = '2026-11-23';
     const DEFAULTS = {
       radiusDensity: true,
       invertNewSession: true,
@@ -209,7 +209,11 @@ body[data-ds-dark-theme] .dcc-boot-cover {
   border-radius: var(--dsw-radius-lg, 12px);
   background: var(--dsw-alias-bg-layer-1);
   box-shadow: 0 16px 48px rgba(0, 0, 0, .35);
+  /* 入场动画跟「为菜单和窗口添加动画」开关走：关掉时直接出现 */
   animation: dcc-plain-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) !important;
+}
+html[data-dcc-transition="off"] .dcc-modal-card {
+  animation: none !important;
 }
 .dcc-modal-content {
   padding: 18px 20px 4px;
@@ -1951,8 +1955,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
               menu.appendChild(entry);
             });
             document.body.appendChild(menu);
-            menu.style.transformOrigin = 'top right';
-            menu.style.animation = 'dcc-plain-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1))';
+            /* 视图菜单属于「菜单」，跟「为菜单和窗口添加动画」这个开关走：
+               关掉时直接出现，不再缩放淡入。 */
+            if (document.documentElement.dataset.dccTransition === 'on') {
+              menu.style.transformOrigin = 'top right';
+              menu.style.animation = 'dcc-plain-in .13s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1))';
+            }
             segMenu = menu;
             segMenuAnchor = more;
             more.setAttribute('data-open', 'true');
