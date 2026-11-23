@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.453';
+    const VERSION = '0.2.454';
     const UPDATED = '2026-11-23';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1034,12 +1034,17 @@ html[data-dcc-always-show="on"] .dcc-segmented {
 
 /* 溢出菜单：对齐宿主菜单的尺寸与层级（圆角 12、内距 6、项高 32、项圆角 8） */
 /* 会话正文渐显：切换会话后，正文列和轮次标记一起淡入。
-   由脚本在加载提示消失后重播——容器本身不重建，单靠 CSS 动画只播一次。
 
-   只从「完全透明」淡到「1」，而且一帧里最多只播一次：
-   重播时元素会先跳回完全透明，这一下就是切换会话时看到的闪，
-   所以只能在内容刚换上来时重播，不能每来一次 DOM 变更都重播。 */
+   两种元素都认：
+     ① [data-dcc-fade-in]       脚本挂的标记，只在切换会话时出现
+     ② 列 / 标记这一类元素本身   宿主每次渲染都会新建它们（页面刷新也是），
+                                对它们一律播一次：新建元素播一次动画是正常
+                                淡入，而切换会话恰好也是整块新建，不会重播。 */
 html[data-dcc-enabled="on"] [data-dcc-fade-in] {
+  animation: dcc-content-in .26s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) 1;
+}
+html[data-dcc-enabled="on"] [class*="_column"],
+html[data-dcc-enabled="on"] [class*="_marks"] {
   animation: dcc-content-in .26s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) 1;
 }
 @keyframes dcc-content-in {
