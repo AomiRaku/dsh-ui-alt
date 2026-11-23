@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.457';
+    const VERSION = '0.2.458';
     const UPDATED = '2026-11-23';
     const DEFAULTS = {
       radiusDensity: true,
@@ -2170,6 +2170,19 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         return count;
       };
 
+      /* 内容列本身：宿主用 data-chat-flow 标出正文流，正文节点也沿用同一个
+         标记，所以只取「滚动区里第一个带该标记的元素」并排除正文节点自身，
+         用它判断「列里是否已经有内容」。 */
+      const CONTENT = '[data-chat-flow]';
+      const contentColumn = (host) => {
+        const list = host.querySelectorAll(CONTENT);
+        for (let i = 0; i < list.length; i += 1) {
+          const el = list[i];
+          if (!el.hasAttribute('data-chat-flow-key')) return el;
+        }
+        return null;
+      };
+
       const tick = () => {
         if (document.documentElement.dataset.dccEnabled !== 'on') return;
         const host = document.querySelector('[data-conversation-scroll]');
@@ -2220,14 +2233,20 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           }
           lastContent = 0;
         }
-        const column = host.querySelector(COLUMN);
+        const column = contentColumn(host);
         const content = countContent(column);
         const previous = lastContent;
         lastContent = content;
-        /* ② 内容还没出现就什么都不做，等它出现 */
-        if (content === 0) return;
-        /* 等过历史的：内容一出现就播，然后清掉待播标志，同一次切换只播一次 */
-        if (pendingFade) {
+        /* 还没换过会话，列里就有内容（例如直接打开某个会话）：
+           内容刚出现时补播一次 */
+        if (!pendingFade && column !== null && content > 0 && previous === 0) {
+          replayFade(fadeTargets());
+          return;
+        }
+        /* 刚换过会话、列里也已经有内容：播一次并清掉待播标志。
+           宿主切换时先建空列、后填内容，这里等到内容出现才播，
+           不会出现「空列先播完、内容再出现」那种情况。 */
+        if (pendingFade && column !== null && content > 0) {
           pendingFade = false;
           replayFade(fadeTargets());
           return;
