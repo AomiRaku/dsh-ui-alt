@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.460';
+    const VERSION = '0.2.459';
     const UPDATED = '2026-11-23';
     const DEFAULTS = {
       radiusDensity: true,
@@ -947,7 +947,7 @@ html[data-dcc-enabled="on"][data-dcc-header-fade="on"] [class*="_header"]:has([c
 /* 顶部柔边只给「对话」用：轨迹视图整块都是界面，渐隐会吃掉它自己的表头。
    轨道上没有 data-view 之类的标记，只能借标签页的选中态判断——
    第一个 tab 就是「对话」，它 aria-selected 时才挂 mask。 */
-html[data-dcc-enabled="on"][data-dcc-header-fade="on"]:has([data-conversation-tabs] [role="tab"]:first-child[aria-selected="true"]) :where([data-conversation-content]) [data-conversation-scroll] {
+html[data-dcc-enabled="on"][data-dcc-header-fade="on"]:has([data-conversation-tabs] [role="tab"]:first-child[aria-selected="true"]) [data-conversation-scroll] {
   -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 20px);
   mask-image: linear-gradient(to bottom, transparent 0, #000 20px);
 }
@@ -1072,11 +1072,10 @@ html[data-dcc-enabled="on"] [data-dsh-boot] [class*="_hint"] {
 
    _hint 这个类名在宿主的其它地方也复用（内置插件的详情页就有一处），
    所以这里用白名单限定，只处理两个容器内的：
-     · 会话正文区 [data-conversation-scroll]（它外面还可能有元素容器，
-       所以用「最近的 [data-conversation-content] 祖先 + 后代」匹配）
+     · [data-conversation-scroll]  会话正文区
      · [data-dsh-boot]             宿主加载页（那条在 BOOT-HINT 段里单独处理）
    其它位置的 _hint 一律不碰。 */
-html[data-dcc-enabled="on"] :where([data-conversation-content]) [data-conversation-scroll] [class*="_hint"] {
+html[data-dcc-enabled="on"] [data-conversation-scroll] [class*="_hint"] {
   position: fixed !important;
   /* left/top 由脚本按正文区域的中心算出来写上去 */
   transform: translate(-50%, -50%) !important;
@@ -1090,7 +1089,7 @@ html[data-dcc-enabled="on"] :where([data-conversation-content]) [data-conversati
   white-space: nowrap !important;
   pointer-events: none !important;
 }
-html[data-dcc-enabled="on"] :where([data-conversation-content]) [data-conversation-scroll] [data-dcc-hint-fish],
+html[data-dcc-enabled="on"] [data-conversation-scroll] [data-dcc-hint-fish],
 html[data-dcc-enabled="on"] [data-dsh-boot] [data-dcc-hint-fish] {
   width: 56px;
   height: auto;
@@ -1338,31 +1337,31 @@ html[data-dcc-select="on"] body * {
   -webkit-user-select: none !important;
 }
 /* 消息正文（含其后代）可选 */
-html[data-dcc-select="on"] body :where([data-conversation-content]) [data-conversation-scroll],
-html[data-dcc-select="on"] body :where([data-conversation-content]) [data-conversation-scroll] * {
+html[data-dcc-select="on"] body [data-conversation-scroll],
+html[data-dcc-select="on"] body [data-conversation-scroll] * {
   user-select: text !important;
   -webkit-user-select: text !important;
 }
 /* 但消息区里的界面元件不算正文：按钮、操作栏、时间、改动卡片一律压回不可选 */
-html[data-dcc-select="on"] body :where([data-conversation-content]) [data-conversation-scroll] button,
-html[data-dcc-select="on"] body :where([data-conversation-content]) [data-conversation-scroll] button *,
-html[data-dcc-select="on"] body :where([data-conversation-content]) [data-conversation-scroll] [role="button"],
-html[data-dcc-select="on"] body :where([data-conversation-content]) [data-conversation-scroll] [role="button"] *,
-html[data-dcc-select="on"] body :where([data-conversation-content]) [data-conversation-scroll] [class*="_action"],
-html[data-dcc-select="on"] body :where([data-conversation-content]) [data-conversation-scroll] [class*="_action"] *,
-html[data-dcc-select="on"] body :where([data-conversation-content]) [data-conversation-scroll] [class*="_time"],
-html[data-dcc-select="on"] body :where([data-conversation-content]) [data-conversation-scroll] time,
-html[data-dcc-select="on"] body :where([data-conversation-content]) [data-conversation-scroll] [data-changed-files="true"],
-html[data-dcc-select="on"] body :where([data-conversation-content]) [data-conversation-scroll] [data-changed-files="true"] *,
+html[data-dcc-select="on"] body [data-conversation-scroll] button,
+html[data-dcc-select="on"] body [data-conversation-scroll] button *,
+html[data-dcc-select="on"] body [data-conversation-scroll] [role="button"],
+html[data-dcc-select="on"] body [data-conversation-scroll] [role="button"] *,
+html[data-dcc-select="on"] body [data-conversation-scroll] [class*="_action"],
+html[data-dcc-select="on"] body [data-conversation-scroll] [class*="_action"] *,
+html[data-dcc-select="on"] body [data-conversation-scroll] [class*="_time"],
+html[data-dcc-select="on"] body [data-conversation-scroll] time,
+html[data-dcc-select="on"] body [data-conversation-scroll] [data-changed-files="true"],
+html[data-dcc-select="on"] body [data-conversation-scroll] [data-changed-files="true"] *,
 /* 进行中的状态提示（「深度求索中，用时 1 秒…」）也是界面元件，不是正文 */
-html[data-dcc-select="on"] body :where([data-conversation-content]) [data-conversation-scroll] [role="status"],
-html[data-dcc-select="on"] body :where([data-conversation-content]) [data-conversation-scroll] [role="status"] *,
-html[data-dcc-select="on"] body :where([data-conversation-content]) [data-conversation-scroll] [aria-live],
-html[data-dcc-select="on"] body :where([data-conversation-content]) [data-conversation-scroll] [aria-live] *,
-html[data-dcc-select="on"] body :where([data-conversation-content]) [data-conversation-scroll] [class*="_running"],
-html[data-dcc-select="on"] body :where([data-conversation-content]) [data-conversation-scroll] [class*="_running"] *,
-html[data-dcc-select="on"] body :where([data-conversation-content]) [data-conversation-scroll] [class*="_status"],
-html[data-dcc-select="on"] body :where([data-conversation-content]) [data-conversation-scroll] [class*="_status"] * {
+html[data-dcc-select="on"] body [data-conversation-scroll] [role="status"],
+html[data-dcc-select="on"] body [data-conversation-scroll] [role="status"] *,
+html[data-dcc-select="on"] body [data-conversation-scroll] [aria-live],
+html[data-dcc-select="on"] body [data-conversation-scroll] [aria-live] *,
+html[data-dcc-select="on"] body [data-conversation-scroll] [class*="_running"],
+html[data-dcc-select="on"] body [data-conversation-scroll] [class*="_running"] *,
+html[data-dcc-select="on"] body [data-conversation-scroll] [class*="_status"],
+html[data-dcc-select="on"] body [data-conversation-scroll] [class*="_status"] * {
   user-select: none !important;
   -webkit-user-select: none !important;
 }
@@ -2079,25 +2078,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         hint.style.top = rect.top + rect.height / 2 - 64 + 'px';
       };
 
-      /* 提示本身只做排版和鲸鱼图标；正文渐显已经整体移除，不在这里处理。
-         连续几轮没有找到提示时，顺手把其它位置遗留的图标收掉
-         （宿主整块重绘会把图标连同旧节点一起扔掉，这里只是兜底）。 */
-      let missed = 0;
+      /* 提示本身只做排版和鲸鱼图标；正文渐显已经整体移除，不在这里处理。 */
       const decorate = () => {
-        const host = document.querySelector('[data-conversation-content] [data-conversation-scroll]')
-          || document.querySelector('[data-conversation-scroll]');
-        const hint = host === null ? null : host.querySelector('[class*="_hint"]');
-        if (hint === null) {
-          missed += 1;
-          if (missed > 30) {
-            missed = 0;
-            for (const el of document.querySelectorAll('[data-dcc-hint-fish]')) {
-              if (el.closest('[data-conversation-scroll]') === null && el.closest('[data-dsh-boot]') === null) el.remove();
-            }
-          }
-          return;
-        }
-        missed = 0;
+        const host = document.querySelector('[data-conversation-scroll]');
+        if (host === null) return;
+        const hint = host.querySelector('[class*="_hint"]');
+        if (hint === null) return;
         if (hint.querySelector('[data-dcc-hint-fish]') === null) {
           const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
           svg.setAttribute('viewBox', '0 0 23.16 17.04');
