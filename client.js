@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.455';
+    const VERSION = '0.2.454';
     const UPDATED = '2026-11-23';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1039,14 +1039,13 @@ html[data-dcc-always-show="on"] .dcc-segmented {
      ① [data-dcc-fade-in]       脚本挂的标记，只在切换会话时出现
      ② 列 / 标记这一类元素本身   宿主每次渲染都会新建它们（页面刷新也是），
                                 对它们一律播一次：新建元素播一次动画是正常
-                                淡入，而切换会话恰好也是整块新建，不会重播。
-   时长 420ms、缓动偏「先快后慢」：太短会显得一闪而过，太长又拖着发呆。 */
+                                淡入，而切换会话恰好也是整块新建，不会重播。 */
 html[data-dcc-enabled="on"] [data-dcc-fade-in] {
-  animation: dcc-content-in .42s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) 1;
+  animation: dcc-content-in .26s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) 1;
 }
 html[data-dcc-enabled="on"] [class*="_column"],
 html[data-dcc-enabled="on"] [class*="_marks"] {
-  animation: dcc-content-in .42s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) 1;
+  animation: dcc-content-in .26s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) 1;
 }
 @keyframes dcc-content-in {
   from { opacity: 0; }
