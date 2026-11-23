@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.455';
+    const VERSION = '0.2.456';
     const UPDATED = '2026-11-23';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1040,7 +1040,9 @@ html[data-dcc-always-show="on"] .dcc-segmented {
      ② 列 / 标记这一类元素本身   宿主每次渲染都会新建它们（页面刷新也是），
                                 对它们一律播一次：新建元素播一次动画是正常
                                 淡入，而切换会话恰好也是整块新建，不会重播。
-   时长 420ms、缓动偏「先快后慢」：太短会显得一闪而过，太长又拖着发呆。 */
+   一个已知限制：会话加载完成之前，正文列是空的，宿主不给任何标记；
+   所以这里只负责「加载完成后播一次」，列表点进来、打开时列上已经带着
+   内容的那些会话由列/标记自带的淡入负责。 */
 html[data-dcc-enabled="on"] [data-dcc-fade-in] {
   animation: dcc-content-in .42s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) 1;
 }
@@ -2088,10 +2090,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
     function installHistoryHint() {
       let observer = null;
       let timer = 0;
-      /* 提示挂着就置位，等它消失、内容出现那一刻播一次渐显 */
+      /* 宿主正在等历史（提示挂着，或刚从列表点进来）时，正文一出现就播 */
       let pendingFade = false;
-      /* 上一次看到的提示节点，仅用于识别「提示被换掉」 */
-      let lastHint = null;
+      /* 宿主当前会话号（正文区上的 data-conversation-session），用来识别「会话换了」 */
+      let lastSessionId = null;
+      /* 上一次看到的内容节点数，用来识别「同一会话里内容被整块换掉」 */
+      let lastContent = -1;
 
       /* 按正文区域（而不是视口）的中心定位：侧栏展开时两者差一截。 */
       const center = (host, hint) => {
@@ -2103,17 +2107,15 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
 
       /* 切换会话时正文是整体换掉的，但容器本身常驻，
-         animation 只播一次，之后再切就看不到了。这里在内容换上来的那一帧
-         重播一次：先摘掉动画类、强制重排、再挂回去。
+         animation 只播一次，之后再切就看不到了。这里在「历史载入完成、
+         内容真的出现」那一刻重播一次：先摘掉动画类、强制重排、再挂回去。
 
-         目标本身是正文列和轮次标记，它们切换会话时都会整块重建——
-         看见的是新元素、新的动画，不存在「在旧元素上重播」的问题，
-         所以触发条件只要求一件事：宿主已经离开「载入历史」状态、
-         而列里这一次真的有了内容节点。
-
-         目标由「持有正文滚动区的那个」确定，不按整片正文区去查：
-         标记本来就挂在列和标记元素自己身上，动画直接播在元素上，
-         这样既不会波及正文区里的输入框，也不受宿主换容器的时序影响。 */
+         关键是不能跟着「宿主开始切换」就播：宿主换会话时先建好空的列，
+         再异步载入历史，如果那一刻就播，动画会在加载期间放完，内容最后
+         直接「嘣」地出现。所以两个条件缺一不可：
+           ① 宿主已经离开「载入历史」状态；
+           ② 列里确实有内容节点。
+         并且每次会话换手只播一次，避免流式输出时反复重播。 */
       const COLUMN = '[class*="_column"]';
       const MARKS = '[class*="_marks"]';
       const fadeTargets = () => {
@@ -2121,9 +2123,10 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         const columns = document.querySelectorAll(COLUMN);
         for (let i = 0; i < columns.length; i += 1) {
           const column = columns[i];
-          if (column.closest('[data-conversation-scroll]') === null) continue;
+          const host = column.closest('[data-conversation-scroll]');
+          if (host === null) continue;
           targets.push(column);
-          const marks = column.closest('[data-conversation-scroll]').querySelector(MARKS);
+          const marks = host.querySelector(MARKS);
           if (marks !== null) targets.push(marks);
           break;
         }
@@ -2137,8 +2140,9 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         for (const el of targets) el.setAttribute('data-dcc-fade-in', '');
       };
 
-      /* 列里浮着的部件：宿主把它们绝对定位/固定住，不占列的空间。
-         它们来去、或被换成新节点，都不算「内容刚换上」。 */
+      /* 列里浮着的部件（载入历史提示、加载失败提示、「更早的消息」按钮、
+         文字交互层）不算内容：它们来去、或被换成新节点时列的节点数也会变，
+         但不是「内容刚换上」。 */
       const OVERLAY_NAMES = ['_hint', '_openError', '_older', '_textInteraction'];
       const isOverlayPart = (item) => {
         const cls = typeof item.className === 'string' ? item.className : '';
@@ -2147,10 +2151,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         }
         return false;
       };
-
-      /* 内容节点的数量。宿主每次换手都会整块重建列，节点数随之变化；
-         只在末尾追加（流式输出）时数量也可能变，所以还要配合「提示消失」
-         与「内容还没出现」这两种时机一起判断。 */
+      /* 列里内容节点的数量；0 表示还是空的（还在等历史或正在换手） */
       const countContent = (column) => {
         if (column === null) return 0;
         const items = column.children;
@@ -2160,21 +2161,19 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         }
         return count;
       };
-      /* 上一次看到的内容节点数 */
-      let lastContent = -1;
 
       const tick = () => {
         if (document.documentElement.dataset.dccEnabled !== 'on') return;
+        const host = document.querySelector('[data-conversation-scroll]');
+        if (host === null) {
+          pendingFade = false;
+          lastSessionId = null;
+          lastContent = -1;
+          return;
+        }
         /* 白名单：只在会话正文区里找 _hint。
            宿主在别处也用了同一个类名（内置插件详情页就有一处），
            全局 querySelector 会抓错地方。 */
-        const host = document.querySelector('[data-conversation-scroll]');
-        if (host === null) {
-          lastHint = null;
-          lastContent = -1;
-          pendingFade = false;
-          return;
-        }
         const hint = host.querySelector('[class*="_hint"]');
         if (hint !== null && hint.querySelector('[data-dcc-hint-fish]') === null) {
           const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -2191,26 +2190,33 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           /* 宿主加载页的适配在 installBootHint 里独立处理，这里只负责会话界面的情况 */
           center(host, hint);
         }
-        /* 提示挂了就说明在等历史：记下来，等它消失、内容出现那一刻再播 */
-        lastHint = hint;
+        /* ① 还在等历史：什么都不播，只记下待播 */
         if (hint !== null) {
           pendingFade = true;
+          lastSessionId = host.getAttribute('data-conversation-session');
+          lastContent = 0;
           return;
+        }
+        /* 会话换了（宿主已把滚动区绑到新会话）也视为「在等历史」 */
+        const sessionId = host.getAttribute('data-conversation-session');
+        if (sessionId !== lastSessionId) {
+          lastSessionId = sessionId;
+          pendingFade = true;
+          lastContent = 0;
         }
         const column = host.querySelector(COLUMN);
         const content = countContent(column);
         const previous = lastContent;
         lastContent = content;
-        /* 内容还没出现（或者刚换掉还没填上）就什么都不做 */
+        /* ② 内容还没出现就什么都不做，等它出现 */
         if (content === 0) return;
+        /* 等过历史的：内容一出现就播，然后清掉待播标志，同一次切换只播一次 */
         if (pendingFade) {
-          /* 刚等过历史：内容一出现就播，这是最常见的一次 */
           pendingFade = false;
           replayFade(fadeTargets());
           return;
         }
-        /* 没有经历提示也换了内容（会话本来就在内存里）：节点数变了也要播。
-           只追加内容时数量通常不变，真变了也不算闪——列是新建的。 */
+        /* 没等历史但在同一会话里内容被整块换掉（节点数变了）：也播一次 */
         if (previous > 0 && previous !== content) replayFade(fadeTargets());
       };
 
