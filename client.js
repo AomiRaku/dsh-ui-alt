@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.456';
+    const VERSION = '0.2.457';
     const UPDATED = '2026-11-23';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1035,20 +1035,14 @@ html[data-dcc-always-show="on"] .dcc-segmented {
 /* 溢出菜单：对齐宿主菜单的尺寸与层级（圆角 12、内距 6、项高 32、项圆角 8） */
 /* 会话正文渐显：切换会话后，正文列和轮次标记一起淡入。
 
-   两种元素都认：
-     ① [data-dcc-fade-in]       脚本挂的标记，只在切换会话时出现
-     ② 列 / 标记这一类元素本身   宿主每次渲染都会新建它们（页面刷新也是），
-                                对它们一律播一次：新建元素播一次动画是正常
-                                淡入，而切换会话恰好也是整块新建，不会重播。
-   一个已知限制：会话加载完成之前，正文列是空的，宿主不给任何标记；
-   所以这里只负责「加载完成后播一次」，列表点进来、打开时列上已经带着
-   内容的那些会话由列/标记自带的淡入负责。 */
-html[data-dcc-enabled="on"] [data-dcc-fade-in] {
-  animation: dcc-content-in .42s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) 1;
-}
-html[data-dcc-enabled="on"] [class*="_column"],
-html[data-dcc-enabled="on"] [class*="_marks"] {
-  animation: dcc-content-in .42s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) 1;
+   只有脚本挂上 data-dcc-fade-in / data-dcc-loaded 时才播，不再按类名
+   无条件淡入。原因：宿主换会话时先建好一张空列、里面挂着「载入历史」
+   提示，最后才填内容；按类名无条件淡入的话，动画会跟着提示一起在加载
+   期间放完，等内容出现时已经结束，看上去就是没有渐显。
+   标记由脚本在「内容真的出现」之后挂上。 */
+html[data-dcc-enabled="on"] [data-dcc-fade-in],
+html[data-dcc-enabled="on"] [data-dcc-loaded] {
+  animation: dcc-content-in .42s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) 1 !important;
 }
 @keyframes dcc-content-in {
   from { opacity: 0; }
@@ -2115,7 +2109,11 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
          直接「嘣」地出现。所以两个条件缺一不可：
            ① 宿主已经离开「载入历史」状态；
            ② 列里确实有内容节点。
-         并且每次会话换手只播一次，避免流式输出时反复重播。 */
+         并且每次会话换手只播一次，避免流式输出时反复重播。
+
+         播放用 data-dcc-loaded：脚本主动摘掉再挂上，触发一次新动画。
+         不用 continue 复活 / 重放旧动画，是因为加载提示那条 CSS 动画可能还
+         挂在这张列表上，旧动画一重放就会跟着播，变成「提示又淡入一次」。 */
       const COLUMN = '[class*="_column"]';
       const MARKS = '[class*="_marks"]';
       const fadeTargets = () => {
@@ -2134,10 +2132,20 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
       const replayFade = (targets) => {
         if (targets.length === 0) return;
-        for (const el of targets) el.removeAttribute('data-dcc-fade-in');
-        /* 读一次布局，让移除生效，再挂回去才会重播 */
+        for (const el of targets) {
+          el.removeAttribute('data-dcc-fade-in');
+          el.removeAttribute('data-dcc-loaded');
+        }
+        /* 读一次布局，让移除生效，再挂回去才会重新播 */
         void document.body.offsetHeight;
-        for (const el of targets) el.setAttribute('data-dcc-fade-in', '');
+        for (const el of targets) el.setAttribute('data-dcc-loaded', '');
+      };
+
+      /* 新一轮加载开始（提示出现 / 宿主绑到新会话）时，先把上一轮的播放
+         标记摘掉，保证这一轮结束时一定能重新播，不会因为标记还在而卡住 */
+      const clearMarks = () => {
+        const marked = document.querySelectorAll('[data-dcc-loaded]');
+        for (let i = 0; i < marked.length; i += 1) marked[i].removeAttribute('data-dcc-loaded');
       };
 
       /* 列里浮着的部件（载入历史提示、加载失败提示、「更早的消息」按钮、
@@ -2192,6 +2200,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         }
         /* ① 还在等历史：什么都不播，只记下待播 */
         if (hint !== null) {
+          if (!pendingFade) clearMarks();
           pendingFade = true;
           lastSessionId = host.getAttribute('data-conversation-session');
           lastContent = 0;
@@ -2200,8 +2209,15 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         /* 会话换了（宿主已把滚动区绑到新会话）也视为「在等历史」 */
         const sessionId = host.getAttribute('data-conversation-session');
         if (sessionId !== lastSessionId) {
-          lastSessionId = sessionId;
-          pendingFade = true;
+          if (lastSessionId === null) {
+            /* 首次扫描：只记下当前会话，不算换手，也不摘标记。
+               页面刚打开时列表可能正在淡入，打断它会一直停在半透明。 */
+            lastSessionId = sessionId;
+          } else {
+            if (!pendingFade) clearMarks();
+            pendingFade = true;
+            lastSessionId = sessionId;
+          }
           lastContent = 0;
         }
         const column = host.querySelector(COLUMN);
@@ -2240,6 +2256,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         if (timer !== 0) window.clearTimeout(timer);
         for (const el of document.querySelectorAll('[data-dcc-hint-fish]')) el.remove();
         for (const el of document.querySelectorAll('[data-dcc-fade-in]')) el.removeAttribute('data-dcc-fade-in');
+        for (const el of document.querySelectorAll('[data-dcc-loaded]')) el.removeAttribute('data-dcc-loaded');
       };
     }
 
