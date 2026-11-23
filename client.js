@@ -6,8 +6,8 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.446';
-    const UPDATED = '2026-11-19';
+    const VERSION = '0.2.447';
+    const UPDATED = '2026-11-20';
     const DEFAULTS = {
       radiusDensity: true,
       invertNewSession: true,
@@ -1464,6 +1464,21 @@ html[data-dcc-radius="on"] [class*="_overlay"]:has([class*="_navTitle"]) [class*
   height: 38px !important;
   padding-top: 8px !important;
   padding-bottom: 8px !important;
+}
+/* 设置面板头部右侧的返回按钮（宿主是 28×28 的圆形按钮，图标 14px）。
+   宿主的图标没有描边宽度可调，只能把整个按钮缩一圈：
+   24×24、图标 12px、悬停底色同步收窄，和旁边的「×」视觉重量一致。
+   设置面板由宿主 portal 到 body，用 _overlay + _navTitle 锁定它，
+   再限定 _header 的子元素，选项区里的按钮不会命中。 */
+html[data-dcc-enabled="on"] [class*="_overlay"]:has([class*="_navTitle"]) [class*="_header"] [class*="_close"] {
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  min-height: 24px !important;
+}
+html[data-dcc-enabled="on"] [class*="_overlay"]:has([class*="_navTitle"]) [class*="_header"] [class*="_close"] svg {
+  width: 12px !important;
+  height: 12px !important;
 }
 /* ---------- 左上角品牌区 ---------- */
 html[data-dcc-logo="hidden"] [class*="_brand"]:not([class*="_brandMark"]):not([class*="_brandName"]):not([class*="_brandIdentity"]),
