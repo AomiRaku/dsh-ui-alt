@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.450';
+    const VERSION = '0.2.449';
     const UPDATED = '2026-11-23';
     const DEFAULTS = {
       radiusDensity: true,
@@ -2085,12 +2085,11 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       /* 上一次看到的提示。用节点引用判断，不能用布尔值——
          宿主是有意把提示留着、等正文加载完才删的：若中间漏看了一次，
          布尔值就先回落成 false，等提示真的被删时却判不出「刚消失」，
-         那一刻就永远等不到了。 */
+         渐显就被吞掉，只看到宿主的整块替换（也就是「闪一下」）。 */
       let lastHint = null;
-      /* 正文列上一次的身份（会话 id + 内容节点列表） */
-      let lastFlow = null;
-      /* 内容还没进来时看到过提示，说明这一轮确实在等历史 */
-      let hintDuringOpen = false;
+      /* 上一次处理的正文区，以及它是否刚被换过 */
+      let lastHost = null;
+      let contentRenewed = false;
 
       /* 按正文区域（而不是视口）的中心定位：侧栏展开时两者差一截。 */
       const center = (host, hint) => {
@@ -2102,46 +2101,25 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
 
       /* 切换会话时正文是整体换掉的，但容器本身常驻，
-         animation 只播一次，之后再切就看不到了。这里在内容换上来的那一帧
+         animation 只播一次，之后再切就看不到了。这里在内容刚换上来时
          重播一次：先摘掉动画类、强制重排、再挂回去。
 
-         只在「提示消失、内容刚换上」这一刻重播：宿主用 data-session 把正文
-         绑在当前会话上，会话一变它就整个换成新内容；而提示、加载失败提示、
-         「更早的消息」按钮这类插在列里的部件，出现/消失、被宿主换新节点时
-         也会走到这里，那时没有新内容，重播只会让已经画出来的正文先闪成空白，
-         所以必须把这两类区分开，只看「列里的内容节点换没换」。 */
-      const fadeTargets = (area) => [
-        area.querySelector('[class*="_column"]'),
-        area.querySelector('[class*="_marks"]'),
-      ].filter((el) => el !== null && el.getBoundingClientRect().height > 0);
-      const replayFade = (targets) => {
+         只在「刚换上」这一帧重播。宿主切换视图时，提示可能比正文先被
+         删掉、正文随后才换上来，那时元素还是旧内容，重播就会先画实再
+         跳到透明，看起来就是闪一下——所以换没换内容要看有没有新节点进过
+         正文区，没进过就跳过。 */
+      const replayFade = (area) => {
+        /* 同样限定在正文区内——_column / _marks 这些名字在别处也可能出现 */
+        const targets = [
+          area.querySelector('[class*="_column"]'),
+          area.querySelector('[class*="_marks"]'),
+        ].filter((el) => el !== null && el.getBoundingClientRect().height > 0);
         if (targets.length === 0) return;
         for (const el of targets) el.removeAttribute('data-dcc-fade-in');
         /* 读一次布局，让移除生效，再挂回去才会重播 */
         void document.body.offsetHeight;
         for (const el of targets) el.setAttribute('data-dcc-fade-in', '');
       };
-
-      /* 正文列的「身份」：会话 id + 内容节点列表。只追加内容（流式输出）
-         身份不变；换成另一个会话、或宿主的渲染路径让内容重新挂了一遍，身份就变。 */
-      const flowElements = (el) => (el === null ? [] : Array.prototype.slice.call(el.children));
-      const flowSignature = (session, items) => {
-        let text = session;
-        for (let i = 0; i < items.length; i += 1) {
-          const item = items[i];
-          /* 宿主自己的部件（提示、加载按钮…）不参与判断：
-             「载入历史」提示会插进列里，它来去不算内容换了。 */
-          if (!isContentNode(item)) continue;
-          const cls = typeof item.className === 'string' ? item.className : '';
-          text += '|' + item.tagName + ':' + cls + ':' + (item.getAttribute('data-slot') || '');
-        }
-        return text;
-      };
-      /* 宿主插在列里的部件（载入历史提示、历史加载失败提示、「更早的消息」
-         按钮这类）不是内容：它们来去、被换成新节点时列的节点列表也会变，
-         但不是「内容刚换上」，不该触发重播。宿主给滚动区标了会话 id，
-         内容节点会继承它；插进来的部件单独渲染，拿不到这个标记。 */
-      const isContentNode = (item) => item.getAttribute('data-conversation-session') !== null;
 
       const tick = () => {
         if (document.documentElement.dataset.dccEnabled !== 'on') return;
@@ -2151,11 +2129,20 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         const host = document.querySelector('[data-conversation-scroll]');
         if (host === null) {
           lastHint = null;
-          lastFlow = null;
-          hintDuringOpen = false;
+          /* 换视图时整个正文区会被换掉，记下它刚换过 */
+          contentRenewed = true;
           return;
         }
+        /* 宿主换内容时不一定真删节点（可能只改子节点），所以这里看的是
+           「正文区里有没有出现过新节点」，不看提示本身。 */
+        if (lastHost !== null && lastHost !== host && host.isConnected) contentRenewed = true;
+        lastHost = host;
         const hint = host.querySelector('[class*="_hint"]');
+        const hintGone = lastHint !== null && lastHint !== hint && !lastHint.isConnected;
+        lastHint = hint;
+        /* 这段取完再判，免得把定时器触发的那次遍历也算进去 */
+        const renewed = contentRenewed;
+        contentRenewed = false;
         if (hint !== null && hint.querySelector('[data-dcc-hint-fish]') === null) {
           const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
           svg.setAttribute('viewBox', '0 0 23.16 17.04');
@@ -2171,30 +2158,9 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           /* 宿主加载页的适配在 installBootHint 里独立处理，这里只负责会话界面的情况 */
           center(host, hint);
         }
-        const hintGone = lastHint !== null && lastHint !== hint && !lastHint.isConnected;
-        lastHint = hint;
-        /* 内容还没进来时提示就消失了 */
-        if (hintGone) hintDuringOpen = true;
-
-        /* 列的当前身份。previous 为 null 时正在初始化，只需记下身份、不播：
-           那时提示可能已经过去，播了等于把刚看到的正文再闪一次。 */
-        const column = host.querySelector('[class*="_column"]');
-        const session = column === null ? null : column.getAttribute('data-session');
-        const items = flowElements(column);
-        const flow = column === null ? null : flowSignature(session, items);
-        const previous = lastFlow;
-        lastFlow = flow;
-        /* 提示还挂着说明还在等历史，等它消失再播 */
-        if (hint !== null) return;
-        if (previous === null || flow === null || flow === previous) return;
-
-        /* 换会话，或内容被替换掉（不是末尾追加），才算内容刚换上 */
-        const before = previous.slice(0, previous.indexOf('|'));
-        const sessionChanged = before !== session;
-        const replaced = !flow.startsWith(previous);
-        if (!sessionChanged && !replaced && !hintDuringOpen) return;
-        hintDuringOpen = false;
-        replayFade(fadeTargets(host));
+        /* 提示由「在」变成「被换掉 / 移除」，这一轮历史已经载入，
+           新内容也进过来了，才值得重播渐显。 */
+        if (hintGone && renewed) replayFade(host);
       };
 
       /* 原先每个 rAF 都扫一遍正文；流式输出时每帧一次，长会话下
