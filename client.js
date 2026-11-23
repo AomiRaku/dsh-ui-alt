@@ -6,8 +6,8 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.448';
-    const UPDATED = '2026-11-20';
+    const VERSION = '0.2.449';
+    const UPDATED = '2026-11-23';
     const DEFAULTS = {
       radiusDensity: true,
       invertNewSession: true,
@@ -1035,9 +1035,12 @@ html[data-dcc-always-show="on"] .dcc-segmented {
 /* 溢出菜单：对齐宿主菜单的尺寸与层级（圆角 12、内距 6、项高 32、项圆角 8） */
 /* 会话正文渐显：切换会话后，正文列和轮次标记一起淡入。
    由脚本在加载提示消失后重播——容器本身不重建，单靠 CSS 动画只播一次。
-   归在「优化加载界面」里，属始终开启项，不受动画开关控制。 */
+
+   只从「完全透明」淡到「1」，而且一帧里最多只播一次：
+   重播时元素会先跳回完全透明，这一下就是切换会话时看到的闪，
+   所以只能在内容刚换上来时重播，不能每来一次 DOM 变更都重播。 */
 html[data-dcc-enabled="on"] [data-dcc-fade-in] {
-  animation: dcc-content-in .26s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1));
+  animation: dcc-content-in .26s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) 1;
 }
 @keyframes dcc-content-in {
   from { opacity: 0; }
@@ -2079,7 +2082,14 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
     function installHistoryHint() {
       let observer = null;
       let timer = 0;
-      let lastHadHint = false;
+      /* 上一次看到的提示。用节点引用判断，不能用布尔值——
+         宿主是有意把提示留着、等正文加载完才删的：若中间漏看了一次，
+         布尔值就先回落成 false，等提示真的被删时却判不出「刚消失」，
+         渐显就被吞掉，只看到宿主的整块替换（也就是「闪一下」）。 */
+      let lastHint = null;
+      /* 上一次处理的正文区，以及它是否刚被换过 */
+      let lastHost = null;
+      let contentRenewed = false;
 
       /* 按正文区域（而不是视口）的中心定位：侧栏展开时两者差一截。 */
       const center = (host, hint) => {
@@ -2091,8 +2101,13 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
       };
 
       /* 切换会话时正文是整体换掉的，但容器本身常驻，
-         animation 只播一次，之后再切就看不到了。这里在提示消失后
-         手动重播一次：先摘掉动画类、强制重排、再挂回去。 */
+         animation 只播一次，之后再切就看不到了。这里在内容刚换上来时
+         重播一次：先摘掉动画类、强制重排、再挂回去。
+
+         只在「刚换上」这一帧重播。宿主切换视图时，提示可能比正文先被
+         删掉、正文随后才换上来，那时元素还是旧内容，重播就会先画实再
+         跳到透明，看起来就是闪一下——所以换没换内容要看有没有新节点进过
+         正文区，没进过就跳过。 */
       const replayFade = (area) => {
         /* 同样限定在正文区内——_column / _marks 这些名字在别处也可能出现 */
         const targets = [
@@ -2113,10 +2128,21 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
            全局 querySelector 会抓错地方。 */
         const host = document.querySelector('[data-conversation-scroll]');
         if (host === null) {
-          lastHadHint = false;
+          lastHint = null;
+          /* 换视图时整个正文区会被换掉，记下它刚换过 */
+          contentRenewed = true;
           return;
         }
+        /* 宿主换内容时不一定真删节点（可能只改子节点），所以这里看的是
+           「正文区里有没有出现过新节点」，不看提示本身。 */
+        if (lastHost !== null && lastHost !== host && host.isConnected) contentRenewed = true;
+        lastHost = host;
         const hint = host.querySelector('[class*="_hint"]');
+        const hintGone = lastHint !== null && lastHint !== hint && !lastHint.isConnected;
+        lastHint = hint;
+        /* 这段取完再判，免得把定时器触发的那次遍历也算进去 */
+        const renewed = contentRenewed;
+        contentRenewed = false;
         if (hint !== null && hint.querySelector('[data-dcc-hint-fish]') === null) {
           const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
           svg.setAttribute('viewBox', '0 0 23.16 17.04');
@@ -2132,10 +2158,9 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           /* 宿主加载页的适配在 installBootHint 里独立处理，这里只负责会话界面的情况 */
           center(host, hint);
         }
-        const hasHint = hint !== null;
-        /* 由「有提示」变成「没提示」，说明这一轮内容已经就位 */
-        if (lastHadHint && !hasHint) replayFade(host);
-        lastHadHint = hasHint;
+        /* 提示由「在」变成「被换掉 / 移除」，这一轮历史已经载入，
+           新内容也进过来了，才值得重播渐显。 */
+        if (hintGone && renewed) replayFade(host);
       };
 
       /* 原先每个 rAF 都扫一遍正文；流式输出时每帧一次，长会话下
