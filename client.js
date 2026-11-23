@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.453';
+    const VERSION = '0.2.452';
     const UPDATED = '2026-11-23';
     const DEFAULTS = {
       radiusDensity: true,
@@ -2103,23 +2103,15 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
          目标本身是正文列和轮次标记，它们切换会话时都会整块重建——
          看见的是新元素、新的动画，不存在「在旧元素上重播」的问题，
          所以触发条件只要求一件事：宿主已经离开「载入历史」状态、
-         而列里这一次真的有了内容节点。
-
-         目标由「持有正文滚动区的那个」确定，不按整片正文区去查：
-         标记本来就挂在列和标记元素自己身上，动画直接播在元素上，
-         这样既不会波及正文区里的输入框，也不受宿主换容器的时序影响。 */
+         而列里这一次真的有了内容节点。 */
       const COLUMN = '[class*="_column"]';
       const MARKS = '[class*="_marks"]';
-      const fadeTargets = () => {
+      const fadeTargets = (area) => {
+        const column = area.querySelector(COLUMN);
+        const marks = area.querySelector(MARKS);
         const targets = [];
-        const columns = document.querySelectorAll(COLUMN);
-        for (let i = 0; i < columns.length; i += 1) {
-          const column = columns[i];
-          if (column.closest('[data-conversation-scroll]') === null) continue;
-          targets.push(column);
-          const marks = column.closest('[data-conversation-scroll]').querySelector(MARKS);
-          if (marks !== null) targets.push(marks);
-          break;
+        for (const el of [column, marks]) {
+          if (el !== null && el.getBoundingClientRect().height > 0) targets.push(el);
         }
         return targets;
       };
@@ -2200,12 +2192,12 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         if (pendingFade) {
           /* 刚等过历史：内容一出现就播，这是最常见的一次 */
           pendingFade = false;
-          replayFade(fadeTargets());
+          replayFade(fadeTargets(host));
           return;
         }
         /* 没有经历提示也换了内容（会话本来就在内存里）：节点数变了也要播。
            只追加内容时数量通常不变，真变了也不算闪——列是新建的。 */
-        if (previous > 0 && previous !== content) replayFade(fadeTargets());
+        if (previous > 0 && previous !== content) replayFade(fadeTargets(host));
       };
 
       /* 原先每个 rAF 都扫一遍正文；流式输出时每帧一次，长会话下
