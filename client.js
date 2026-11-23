@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.458';
+    const VERSION = '0.2.459';
     const UPDATED = '2026-11-23';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1033,22 +1033,6 @@ html[data-dcc-always-show="on"] .dcc-segmented {
 }
 
 /* 溢出菜单：对齐宿主菜单的尺寸与层级（圆角 12、内距 6、项高 32、项圆角 8） */
-/* 会话正文渐显：切换会话后，正文列和轮次标记一起淡入。
-
-   只有脚本挂上 data-dcc-fade-in / data-dcc-loaded 时才播，不再按类名
-   无条件淡入。原因：宿主换会话时先建好一张空列、里面挂着「载入历史」
-   提示，最后才填内容；按类名无条件淡入的话，动画会跟着提示一起在加载
-   期间放完，等内容出现时已经结束，看上去就是没有渐显。
-   标记由脚本在「内容真的出现」之后挂上。 */
-html[data-dcc-enabled="on"] [data-dcc-fade-in],
-html[data-dcc-enabled="on"] [data-dcc-loaded] {
-  animation: dcc-content-in .42s var(--ds-ease-in-out, cubic-bezier(.4, 0, .2, 1)) 1 !important;
-}
-@keyframes dcc-content-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 /* ===== BOOT-HINT: 宿主加载页适配（高耦合，见 installBootHint 的注释）=====
    只藏旋转圈。hint 居中和 HARNESS 隐藏必须在同一帧完成，放在脚本里做。
    宿主加载页若改版，整块删掉即可，不影响其它样式。 */
@@ -2084,12 +2068,6 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
     function installHistoryHint() {
       let observer = null;
       let timer = 0;
-      /* 宿主正在等历史（提示挂着，或刚从列表点进来）时，正文一出现就播 */
-      let pendingFade = false;
-      /* 宿主当前会话号（正文区上的 data-conversation-session），用来识别「会话换了」 */
-      let lastSessionId = null;
-      /* 上一次看到的内容节点数，用来识别「同一会话里内容被整块换掉」 */
-      let lastContent = -1;
 
       /* 按正文区域（而不是视口）的中心定位：侧栏展开时两者差一截。 */
       const center = (host, hint) => {
@@ -2100,103 +2078,13 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
         hint.style.top = rect.top + rect.height / 2 - 64 + 'px';
       };
 
-      /* 切换会话时正文是整体换掉的，但容器本身常驻，
-         animation 只播一次，之后再切就看不到了。这里在「历史载入完成、
-         内容真的出现」那一刻重播一次：先摘掉动画类、强制重排、再挂回去。
-
-         关键是不能跟着「宿主开始切换」就播：宿主换会话时先建好空的列，
-         再异步载入历史，如果那一刻就播，动画会在加载期间放完，内容最后
-         直接「嘣」地出现。所以两个条件缺一不可：
-           ① 宿主已经离开「载入历史」状态；
-           ② 列里确实有内容节点。
-         并且每次会话换手只播一次，避免流式输出时反复重播。
-
-         播放用 data-dcc-loaded：脚本主动摘掉再挂上，触发一次新动画。
-         不用 continue 复活 / 重放旧动画，是因为加载提示那条 CSS 动画可能还
-         挂在这张列表上，旧动画一重放就会跟着播，变成「提示又淡入一次」。 */
-      const COLUMN = '[class*="_column"]';
-      const MARKS = '[class*="_marks"]';
-      const fadeTargets = () => {
-        const targets = [];
-        const columns = document.querySelectorAll(COLUMN);
-        for (let i = 0; i < columns.length; i += 1) {
-          const column = columns[i];
-          const host = column.closest('[data-conversation-scroll]');
-          if (host === null) continue;
-          targets.push(column);
-          const marks = host.querySelector(MARKS);
-          if (marks !== null) targets.push(marks);
-          break;
-        }
-        return targets;
-      };
-      const replayFade = (targets) => {
-        if (targets.length === 0) return;
-        for (const el of targets) {
-          el.removeAttribute('data-dcc-fade-in');
-          el.removeAttribute('data-dcc-loaded');
-        }
-        /* 读一次布局，让移除生效，再挂回去才会重新播 */
-        void document.body.offsetHeight;
-        for (const el of targets) el.setAttribute('data-dcc-loaded', '');
-      };
-
-      /* 新一轮加载开始（提示出现 / 宿主绑到新会话）时，先把上一轮的播放
-         标记摘掉，保证这一轮结束时一定能重新播，不会因为标记还在而卡住 */
-      const clearMarks = () => {
-        const marked = document.querySelectorAll('[data-dcc-loaded]');
-        for (let i = 0; i < marked.length; i += 1) marked[i].removeAttribute('data-dcc-loaded');
-      };
-
-      /* 列里浮着的部件（载入历史提示、加载失败提示、「更早的消息」按钮、
-         文字交互层）不算内容：它们来去、或被换成新节点时列的节点数也会变，
-         但不是「内容刚换上」。 */
-      const OVERLAY_NAMES = ['_hint', '_openError', '_older', '_textInteraction'];
-      const isOverlayPart = (item) => {
-        const cls = typeof item.className === 'string' ? item.className : '';
-        for (let i = 0; i < OVERLAY_NAMES.length; i += 1) {
-          if (cls.indexOf(OVERLAY_NAMES[i]) !== -1) return true;
-        }
-        return false;
-      };
-      /* 列里内容节点的数量；0 表示还是空的（还在等历史或正在换手） */
-      const countContent = (column) => {
-        if (column === null) return 0;
-        const items = column.children;
-        let count = 0;
-        for (let i = 0; i < items.length; i += 1) {
-          if (!isOverlayPart(items[i])) count += 1;
-        }
-        return count;
-      };
-
-      /* 内容列本身：宿主用 data-chat-flow 标出正文流，正文节点也沿用同一个
-         标记，所以只取「滚动区里第一个带该标记的元素」并排除正文节点自身，
-         用它判断「列里是否已经有内容」。 */
-      const CONTENT = '[data-chat-flow]';
-      const contentColumn = (host) => {
-        const list = host.querySelectorAll(CONTENT);
-        for (let i = 0; i < list.length; i += 1) {
-          const el = list[i];
-          if (!el.hasAttribute('data-chat-flow-key')) return el;
-        }
-        return null;
-      };
-
-      const tick = () => {
-        if (document.documentElement.dataset.dccEnabled !== 'on') return;
+      /* 提示本身只做排版和鲸鱼图标；正文渐显已经整体移除，不在这里处理。 */
+      const decorate = () => {
         const host = document.querySelector('[data-conversation-scroll]');
-        if (host === null) {
-          pendingFade = false;
-          lastSessionId = null;
-          lastContent = -1;
-          return;
-        }
-        /* 白名单：只在会话正文区里找 _hint。
-           宿主在别处也用了同一个类名（内置插件详情页就有一处），
-           全局 querySelector 会抓错地方。 */
+        if (host === null) return;
         const hint = host.querySelector('[class*="_hint"]');
-        if (hint !== null && hint.querySelector('[data-dcc-hint-fish]') === null) {
+        if (hint === null) return;
+        if (hint.querySelector('[data-dcc-hint-fish]') === null) {
           const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
           svg.setAttribute('viewBox', '0 0 23.16 17.04');
           svg.setAttribute('data-dcc-hint-fish', '');
@@ -2208,74 +2096,26 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
           shape.setAttribute('fill', darkNow ? '#ffffff' : '#000000');
           svg.appendChild(shape);
           hint.insertBefore(svg, hint.firstChild);
-          /* 宿主加载页的适配在 installBootHint 里独立处理，这里只负责会话界面的情况 */
-          center(host, hint);
         }
-        /* ① 还在等历史：什么都不播，只记下待播 */
-        if (hint !== null) {
-          if (!pendingFade) clearMarks();
-          pendingFade = true;
-          lastSessionId = host.getAttribute('data-conversation-session');
-          lastContent = 0;
-          return;
-        }
-        /* 会话换了（宿主已把滚动区绑到新会话）也视为「在等历史」 */
-        const sessionId = host.getAttribute('data-conversation-session');
-        if (sessionId !== lastSessionId) {
-          if (lastSessionId === null) {
-            /* 首次扫描：只记下当前会话，不算换手，也不摘标记。
-               页面刚打开时列表可能正在淡入，打断它会一直停在半透明。 */
-            lastSessionId = sessionId;
-          } else {
-            if (!pendingFade) clearMarks();
-            pendingFade = true;
-            lastSessionId = sessionId;
-          }
-          lastContent = 0;
-        }
-        const column = contentColumn(host);
-        const content = countContent(column);
-        const previous = lastContent;
-        lastContent = content;
-        /* 还没换过会话，列里就有内容（例如直接打开某个会话）：
-           内容刚出现时补播一次 */
-        if (!pendingFade && column !== null && content > 0 && previous === 0) {
-          replayFade(fadeTargets());
-          return;
-        }
-        /* 刚换过会话、列里也已经有内容：播一次并清掉待播标志。
-           宿主切换时先建空列、后填内容，这里等到内容出现才播，
-           不会出现「空列先播完、内容再出现」那种情况。 */
-        if (pendingFade && column !== null && content > 0) {
-          pendingFade = false;
-          replayFade(fadeTargets());
-          return;
-        }
-        /* 没等历史但在同一会话里内容被整块换掉（节点数变了）：也播一次 */
-        if (previous > 0 && previous !== content) replayFade(fadeTargets());
+        center(host, hint);
       };
 
-      /* 原先每个 rAF 都扫一遍正文；流式输出时每帧一次，长会话下
-         光找 _hint 就要遍历整棵消息树。改成 ~100ms 合并一次，
-         既够及时，又把常驻扫描成本压到原来的十分之一。 */
       const schedule = () => {
         if (timer !== 0) return;
         timer = window.setTimeout(() => {
           timer = 0;
-          tick();
+          decorate();
         }, 96);
       };
 
       observer = new MutationObserver(schedule);
       observer.observe(document.body, { childList: true, subtree: true });
-      tick();
+      decorate();
 
       return () => {
         observer.disconnect();
         if (timer !== 0) window.clearTimeout(timer);
         for (const el of document.querySelectorAll('[data-dcc-hint-fish]')) el.remove();
-        for (const el of document.querySelectorAll('[data-dcc-fade-in]')) el.removeAttribute('data-dcc-fade-in');
-        for (const el of document.querySelectorAll('[data-dcc-loaded]')) el.removeAttribute('data-dcc-loaded');
       };
     }
 
@@ -3414,7 +3254,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
                 '- 工作区文件夹悬停时保留图标。',
                 '- 已归档会话显示删除线。',
                 '- 选择题弹窗细节优化。',
-                '- 优化加载界面，正文切换时渐显。',
+                '- 优化加载界面：载入历史提示居中显示鲸鱼图标。',
                 '- 修复二级右键菜单消失延迟。',
                 '- 顶栏更多菜单添加"重载前端界面"按钮，卡顿时可重载界面，不会中断任务。',
               ].join('\n')
@@ -3424,7 +3264,7 @@ html[data-dcc-logo="hidden"] [class*="_logoRow"] {
                 '- Workspace folder icons stay visible on hover.',
                 '- Archived sessions show a strikethrough.',
                 '- Multiple-choice dialog details refined.',
-                '- Refined the loading screen and added a fade-in when the conversation content changes.',
+                '- Refined the loading screen: the loading-history hint sits in the center with a whale mark.',
                 '- Fixed the delay when closing a second-level context menu.',
                 '- Added a "Reload frontend" button to the top-bar overflow menu; reloads the UI when it lags, without interrupting tasks.',
               ].join('\n'),
