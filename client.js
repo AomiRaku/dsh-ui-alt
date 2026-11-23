@@ -6,7 +6,7 @@ window.__ModuleLoader__.load({
 
     const STORAGE_KEY = 'dsh-ui-alt:prefs:v1';
     /* 发版时与 package.json 的 version 一起改：设置页底部会显示这两个值 */
-    const VERSION = '0.2.460';
+    const VERSION = '0.2.461';
     const UPDATED = '2026-11-23';
     const DEFAULTS = {
       radiusDensity: true,
@@ -1070,13 +1070,11 @@ html[data-dcc-enabled="on"] [data-dsh-boot] [class*="_hint"] {
 /* 会话切换时的「载入历史」提示：挪到正文中心，鲸鱼在上、文字在下。
    文字内容由宿主写入，这里只改排版，不替换文案。
 
-   _hint 这个类名在宿主的其它地方也复用（内置插件的详情页就有一处），
-   所以这里用白名单限定，只处理两个容器内的：
-     · 会话正文区 [data-conversation-scroll]（它外面还可能有元素容器，
-       所以用「最近的 [data-conversation-content] 祖先 + 后代」匹配）
-     · [data-dsh-boot]             宿主加载页（那条在 BOOT-HINT 段里单独处理）
-   其它位置的 _hint 一律不碰。 */
-html[data-dcc-enabled="on"] :where([data-conversation-content]) [data-conversation-scroll] [class*="_hint"] {
+   _hint 在会话正文、插件详情页、加载页里都有同名类。加载页那条由上面的
+   BOOT-HINT 段处理；这里按「会话正文的最近容器」定位，不假设正文区直接
+   挂在某个固定祖先下面——宿主的会话视图外面还套着一层容器，用
+   [data-conversation-scroll] 去限定会因为层级变化而整条落空。 */
+html[data-dcc-enabled="on"] :where([data-conversation-content]) [class*="_hint"] {
   position: fixed !important;
   /* left/top 由脚本按正文区域的中心算出来写上去 */
   transform: translate(-50%, -50%) !important;
@@ -1090,7 +1088,7 @@ html[data-dcc-enabled="on"] :where([data-conversation-content]) [data-conversati
   white-space: nowrap !important;
   pointer-events: none !important;
 }
-html[data-dcc-enabled="on"] :where([data-conversation-content]) [data-conversation-scroll] [data-dcc-hint-fish],
+html[data-dcc-enabled="on"] [data-dcc-hint-fish],
 html[data-dcc-enabled="on"] [data-dsh-boot] [data-dcc-hint-fish] {
   width: 56px;
   height: auto;
